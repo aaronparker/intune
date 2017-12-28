@@ -1,2 +1,2 @@
-# folder-redirection
-Scripts for implementing folder redirection for Windows 10 Modern Management
+# Intune scripts
+Various scripts for use with Microsoft Intune (MDM) and Windows 10 Modern Management
