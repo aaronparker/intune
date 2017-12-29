@@ -6,7 +6,7 @@
 #>
 
 # Variables
-$Url = "https://github.com/aaronparker/intune/blob/master/Folder-Redirection/Redirect-Folders.ps1"
+$Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1"
 $Target = "$env:ProgramData\Scripts"
 $Script = "Redirect-Folders.ps1"
 $TaskName = "Folder Redirection"
