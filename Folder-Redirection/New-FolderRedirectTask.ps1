@@ -21,14 +21,14 @@ If (!(Test-Path $Target)) { New-Item -Path $Target -Type Directory -Force }
 
 # Download the script from the source repository
 If (Test-Path "$Target\$Script") { Remove-Item -Path "$Target\$Script" -Force }
-Start-BitsTransfer -Source $Url -Destination "$Target\$Script"
+Start-BitsTransfer -Source $Url -Destination "$Target\$Script" -Priority Foreground -Verbose -ErrorAction SilentlyContinue -ErrorVariable $TransferError
 
 # Get an existing local task if it exists
-If ($Task = Get-ScheduledTask -TaskName $TaskName) { 
+If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { 
 
     # If the task Action differs from what we have above, update the values and save the task
-    If (!(Compare-Object -ReferenceObject $action -DifferenceObject (New-ScheduledTaskAction -Execute $Task.Actions[0].Execute -Argument $Task.Actions[0].Arguments))) {
-        $Task.Actions[0].Arguments = $Execute
+    If (!( ($Task.Actions[0].Execute -eq $Execute) -and ($Task.Actions[0].Arguments -eq $Arguments) )) {
+        $Task.Actions[0].Execute = $Execute
         $Task.Actions[0].Arguments = $Arguments
         $Task | Set-ScheduledTask
     }
