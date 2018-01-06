@@ -17,4 +17,4 @@ The $BaselineVersion paramter is used to determine whether Receiver should be in
 
 If the script is run manually, the output should look like this:
 
-![Output from a manual execution of the Install-CitrixReceiver.ps1 script](https://raw.githubusercontent.com/aaronparker/intune/blob/master/Apps/img/CitrixReceiverPowerShellInstall.PNG)
+![Output from a manual execution of the Install-CitrixReceiver.ps1 script](https://raw.githubusercontent.com/aaronparker/intune/master/Apps/img/CitrixReceiverPowerShellInstall.PNG)
