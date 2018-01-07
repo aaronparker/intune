@@ -1,5 +1,19 @@
 <#
 .SYNOPSIS
+    Creates a scheduled task to implement folder redirection for .
+
+    .NOTES
+        Name: Install-CitrixReceiver.ps1
+        Author: Aaron Parker
+        Site: https://stealthpuppy.com
+        Twitter: @stealthpuppy
+#>
+# Common variables
+$VerbosePreference = "Continue"
+Start-Transcript -Path "$env:LocalAppData\RedirectLogs\$($MyInvocation.MyCommand.Name).log"
+
+<#
+.SYNOPSIS
     Sets a known folder's path using SHSetKnownFolderPath.
 .PARAMETER KnownFolder
     The known folder whose path to set.
@@ -121,7 +135,7 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
 
 	# Make path, if doesn't exist
 	If (!(Test-Path $Path -PathType Container)) {
-		New-Item -Path $Path -Type Directory -Force
+		New-Item -Path $Path -Type Directory -Force -Verbose
     }
 
     # Validate the path
@@ -129,6 +143,7 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
         # Call SHSetKnownFolderPath
         #  return $Type::SHSetKnownFolderPath([ref]$KnownFolders[$KnownFolder], 0, 0, $Path)
         ForEach ($guid in $KnownFolders[$KnownFolder]) {
+            Write-Verbose "Redirecting $KnownFolders[$KnownFolder]"
             $result = $Type::SHSetKnownFolderPath([ref]$guid, 0, 0, $Path)
             If ($result -ne 0) {
                 $errormsg = "Error redirecting $($KnownFolder). Return code $($result) = $((New-Object System.ComponentModel.Win32Exception($result)).message)"
@@ -188,7 +203,8 @@ Function Move-Files {
     )
 
     If (!(Test-Path (Split-Path $Log))) { New-Item -Path (Split-Path $Log) -ItemType Container }
-    Robocopy.exe $Source $Destination /E /MOV /XJ /R:1 /W:1 /NP /LOG+:$Log
+    Write-Verbose "Moving data in folder $Source to $Destination."
+    Robocopy.exe $Source $Destination /E /MOV /XJ /XF *.ini /R:1 /W:1 /NP /LOG+:$Log
 }
 
 <#
@@ -209,20 +225,24 @@ Function Redirect-Folder {
     # If paths don't match, redirect the folder
     If ($Folder -ne "$SyncFolder\$Target") {
         # Redirect the folder
+        Write-Verbose "Redirecting $SetFolder to $SyncFolder\$Target"
         Set-KnownFolderPath -KnownFolder $SetFolder -Path "$SyncFolder\$Target"
         # Move files/folders into the redirected folder
+        Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
         Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
-    }    
+    } Else {
+        Write-Verbose "Folder $GetFolder matches target. Skipping redirection."
+    }
 }
 
 # Get OneDrive sync folder
 $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts\Business1' -Name 'UserFolder'
+Write-Verbose "Target sync folder is $SyncFolder."
 
 # Get ShareFile sync folder
 # $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Citrix\ShareFile\Sync' -Name PersonalFolderRootLocation
-
 
 # Redirect select folders
 If (Test-Path $SyncFolder) {
@@ -230,4 +250,9 @@ If (Test-Path $SyncFolder) {
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'Desktop' -SetFolder 'Desktop' -Target 'Desktop'
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'MyDocuments' -SetFolder 'Documents' -Target 'Documents'
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'MyPictures' -SetFolder 'Pictures' -Target 'Pictures'
+} Else {
+
+    Write-Verbose "$SyncFolder does not (yet) exist. Skipping folder redirection until next logon."
 }
+
+Stop-Transcript -Verbose
