@@ -15,34 +15,11 @@ $VerbosePreference = "Continue"
 $LogFile = "$env:SystemRoot\Temp\$($MyInvocation.MyCommand.Name).log"
 Start-Transcript -Path $LogFile -Append
 
-Function Get-ReceiverVersion {
-    Param(
-        [string]$Url = 'https://www.citrix.com/downloads/citrix-receiver/windows/receiver-for-windows-latest.html'
-    )
-
-    # RegEx to find version number in format Major.Minor.Build
-    $RegEx = "(\d+\.)(\d+\.)(\d+)"
-
-    # Read the HTML page and filter for meta tags
-    Write-Verbose "Reading Citrix Receiver for Windows public download page for current release."
-    $Html = Invoke-WebRequest -Uri $Url
-    $Content = $Html.ParsedHtml.getElementsByTagName("meta") | Select-Object content
-
-    # Match meta tags with software build number in the text; Remove all alpha characters leaving just the build number
-    $Version = $Content.content -match $RegEx
-    $Build = $Version[0] -replace "[^0-9.]"
-
-    # Output the build nunmber to the pipeline
-    Write-Verbose "Citrix Receiver current release is: $Build."
-    Write-Output $Build
-}
-
 # Receiver variables
 $Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe"
 $Target = "$env:SystemRoot\Temp\CitrixReceiver.exe"
 $TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe"; $Rename = $True
-$BaselineVersion = [System.Version](Get-ReceiverVersion)
-# $BaselineVersion = [System.Version]"4.10.1.0"
+$BaselineVersion = [System.Version]"4.10.1.0"
 $Arguments = "/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False"
 
 # Determine whether Receiver is already installed

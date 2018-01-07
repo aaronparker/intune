@@ -4,7 +4,6 @@ Scripts for installing various applications via PowerShell with Intune and Windo
 ## Install-CitrixReceiver.ps1
 Downloads and installs the Win32/Desktop version of Citrix Receiver from the Citrix web site. Read details here: [Deploy Citrix Receiver to Windows 10 with Intune and PowerShell](https://stealthpuppy.com/deploy-citrix-receiver-intune/)
 
-* Checks for the latest Receiver version with the Get-ReceiverVersion function
 * Checks whether Receiver is already installed and if not or not the latest version, will download and install Receiver
 * Removes the Citrix Receiver for Windows Store because the two can't exist
 * Installs the .NET Framework 3.5, required by Receiver
@@ -15,8 +14,6 @@ Downloads and installs the Win32/Desktop version of Citrix Receiver from the Cit
 * Verbose output is enabled for running the script manually during testing
 
 The $BaselineVersion paramter is used to determine whether Receiver should be installed/upgraded if an existing version is already installed. The script checks the local machine for versions earlier than $BaselineVersion and proceeds if it finds an earlier verion. At this time, you would need to update this value to get machines already on that version to upgrade.
-
-$BaselineVersion is set by the Get-ReceiverVersion function that connects to the public download page for the latest version to determine the current version. This function would be more robust if it could query a JSON source instead of parsing HTML, so test to ensure the script is able to capture the latest version.
 
 If the script is run manually, the output should look like this:
 
