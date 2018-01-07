@@ -3,7 +3,7 @@
     Creates a scheduled task to implement folder redirection for .
 
     .NOTES
-        Name: Install-CitrixReceiver.ps1
+        Name: Redirect-Folders.ps1
         Author: Aaron Parker
         Site: https://stealthpuppy.com
         Twitter: @stealthpuppy
