@@ -43,6 +43,8 @@ If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue 
         $Task.Actions[0].Execute = $Execute
         $Task.Actions[0].Arguments = $Arguments
         $Task | Set-ScheduledTask -Verbose
+    } Else {
+        Write-Verbose "Existing task action is OK, no change required."
     }
 
 } Else {

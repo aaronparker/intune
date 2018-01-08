@@ -2,11 +2,11 @@
 .SYNOPSIS
     Creates a scheduled task to implement folder redirection for .
 
-    .NOTES
-        Name: Redirect-Folders.ps1
-        Author: Aaron Parker
-        Site: https://stealthpuppy.com
-        Twitter: @stealthpuppy
+.NOTES
+    Name: Redirect-Folders.ps1
+    Author: Aaron Parker
+    Site: https://stealthpuppy.com
+    Twitter: @stealthpuppy
 #>
 # Common variables
 $VerbosePreference = "Continue"
@@ -164,7 +164,7 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
 .SYNOPSIS
     Gets a known folder's path using GetFolderPath.
 .PARAMETER KnownFolder
-    The known folder whose path to get.
+    The known folder whose path to get. Validates set to ensure only knwwn folders are passed.
 .NOTES
     https://stackoverflow.com/questions/16658015/how-can-i-use-powershell-to-call-shgetknownfolderpath
 #>

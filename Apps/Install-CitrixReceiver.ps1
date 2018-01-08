@@ -4,11 +4,11 @@
     Allows for Receiver installation via a PowerShell script to Windows 10 with Microsoft Intune.
     Provides basic error checking and outputs to a log file; Add -Verbose for running manually.
 
-    .NOTES
-        Name: Install-CitrixReceiver.ps1
-        Author: Aaron Parker
-        Site: https://stealthpuppy.com
-        Twitter: @stealthpuppy
+.NOTES
+    Name: Install-CitrixReceiver.ps1
+    Author: Aaron Parker
+    Site: https://stealthpuppy.com
+    Twitter: @stealthpuppy
 #>
 # Common variables
 $VerbosePreference = "Continue"
@@ -18,8 +18,8 @@ Start-Transcript -Path $LogFile -Append
 # Receiver variables
 $Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe"
 $Target = "$env:SystemRoot\Temp\CitrixReceiver.exe"
-$TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe"; $Rename = $True
 $BaselineVersion = [System.Version]"4.10.1.0"
+$TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe"; $Rename = $True
 $Arguments = "/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False"
 
 # Determine whether Receiver is already installed
