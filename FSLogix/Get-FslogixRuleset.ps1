@@ -17,8 +17,8 @@
 
 # Common Variables
 $VerbosePreference = "Continue"
-$Target = "$env:ProgramData\Scripts"
-Start-Transcript -Path "$Target\$($MyInvocation.MyCommand.Name).log"
+$LogFile = "$env:ProgramData\Scripts\$($MyInvocation.MyCommand.Name).log"
+Start-Transcript -Path $LogFile
 
 Function Get-AzureBlobItems {
     <#
@@ -79,16 +79,17 @@ Function Get-AzureBlobItems {
 }
 
 #Variables
-$Source = "https://stlhppymdrn.blob.core.windows.net/fslogix/?comp=list"
+$Source = "https://stlhppymdrn.blob.core.windows.net/fslogix-ruleset/?comp=list"
 $RegPath = "HKLM:\SOFTWARE\FSLogix\Apps"
 $RegExDirectory = "^[a-zA-Z]:\\[\\\S|*\S]?.*$"
 
 # Get the FSLogix Agent CompiledRules folder from path stored in the registry
 If (Test-Path -Path $RegPath) {
-    $RulesFolder = "$((Get-ItemProperty -Path $RegPath -Name "InstallPath").InstallPath)CompiledRules"
+    $RulesFolder = "$((Get-ItemProperty -Path $RegPath -Name "InstallPath").InstallPath)Rules"
     Write-Verbose "Got $RulesFolder from the registry."
 } Else {
     Write-Error "Unable to find FSLogix Apps registry entry. Is the agent installed?"
+    Stop-Transcript
     Break
 }
 
@@ -99,6 +100,7 @@ If ($RulesFolder -match $RegExDirectory) {
     $ExistingRuleSet = Get-ChildItem -Path $RulesFolder
 } Else {
     Write-Error "$RulesFolder doesn't look like a valid folder path. Please check."
+    Stop-Transcript
     Break
 }
 
@@ -114,7 +116,7 @@ If ($NewRuleset = Get-AzureBlobItems -Url $Source) {
     # Download each of the new ruleset files
     ForEach ( $file in $NewRuleset ) {
         Write-Verbose "Downloading: $($file.url) to $RulesFolder\$($file.name)"
-        Start-BitsTransfer -Source $file.url -Destination "$RulesFolder\$($file.name)"
+        Start-BitsTransfer -Source $file.url -Destination "$RulesFolder\$($file.name)" -Priority High -TransferPolicy Always -ErrorAction Continue
     }
 }
 
