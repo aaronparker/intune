@@ -79,26 +79,30 @@ If (Test-Path $Installer) {
     Break
 }
 
-# Download the script that will download FSLogix ruleset files
-If (!(Test-Path -Path $Target)) { New-Item -Path $Target -ItemType Directory }
-Start-BitsTransfer -Source $ScriptUrl -Destination "$Target\$Script" -Priority High -TransferPolicy Always -ErrorAction Continue -ErrorVariable $ErrorBits
+# If the agent is installed, create the scheduled task
+If ($Agent) {
 
-# Create a scheduled task to run the script
-Write-Verbose -Message "Creating folder redirection scheduled task."
-# Build a new task object
-$action = New-ScheduledTaskAction -Execute $Execute -Argument $ScriptArguments -Verbose
-$trigger =  New-ScheduledTaskTrigger -AtStartup
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8 -Verbose
-$principal = New-ScheduledTaskPrincipal -GroupId $Group -Verbose
-$newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Verbose
+    # Download the script that will download FSLogix ruleset files
+    If (!(Test-Path -Path $Target)) { New-Item -Path $Target -ItemType Directory }
+    Start-BitsTransfer -Source $ScriptUrl -Destination "$Target\$Script" -Priority High -TransferPolicy Always -ErrorAction Continue -ErrorVariable $ErrorBits
 
-# No task object exists, so register the new task
-Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -Verbose
+    # Create a scheduled task to run the script
+    Write-Verbose -Message "Creating folder redirection scheduled task."
+    # Build a new task object
+    $action = New-ScheduledTaskAction -Execute $Execute -Argument $ScriptArguments -Verbose
+    $trigger =  New-ScheduledTaskTrigger -AtStartup
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8 -Verbose
+    $principal = New-ScheduledTaskPrincipal -GroupId $Group -Verbose
+    $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Verbose
 
-# Get the task properties and set the trigger duration and interval
-$Task = Get-ScheduledTask -TaskName $TaskName
-$Task.Triggers.Repetition.Duration = "PT12H"
-$Task.Triggers.Repetition.Interval = "PT2H"
-$Task | Set-ScheduledTask -User $Group
+    # No task object exists, so register the new task
+    Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -Verbose
+
+    # Get the task properties and set the trigger duration and interval
+    $Task = Get-ScheduledTask -TaskName $TaskName
+    $Task.Triggers.Repetition.Duration = "PT12H"
+    $Task.Triggers.Repetition.Interval = "PT2H"
+    $Task | Set-ScheduledTask -User $Group
+}
 
 Stop-Transcript
