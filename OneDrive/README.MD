@@ -1,4 +1,4 @@
-#OneDrive Configuration Scripts
+# OneDrive Configuration Scripts
 Scripts for configuring the OneDrive client via PowerShell scripts deployed to Windows 10 with Microsoft Intune.
 
 * OneDrive-EnableADAL.ps1 - must be deployed in the user's context by selecting 'Run this script using the logged on credentails'.
