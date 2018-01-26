@@ -18,3 +18,16 @@ The $BaselineVersion paramter is used to determine whether Receiver should be in
 If the script is run manually, the output should look like this:
 
 ![Output from a manual execution of the Install-CitrixReceiver.ps1 script](https://raw.githubusercontent.com/aaronparker/intune/master/Apps/img/CitrixReceiverPowerShellInstall.PNG)
+
+## Install-MicrosoftTeams.ps1
+Downloads and installs the latest Microsoft Teams desktop client. Queries the downloads URL for the latest version, downloads and installs silently.
+
+* Queries the current system for the processor architecture
+* Requests the latest version from a download URL
+* Downloads the latest Microsoft Teams desktop client and installs it silently
+* Checks that the download has completed
+* Logs the steps and the version installed
+
+If the script is run manually, the output should look like this:
+
+![Output from a manual execution of the Install-MicrosoftTeams.ps1 script](https://raw.githubusercontent.com/aaronparker/intune/master/Apps/img/TeamsPowerShellInstall.PNG)
