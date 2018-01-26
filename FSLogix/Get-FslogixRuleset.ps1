@@ -17,7 +17,7 @@
 
 # Common Variables
 $VerbosePreference = "Continue"
-$LogFile = "$env:ProgramData\Scripts\$($MyInvocation.MyCommand.Name).log"
+$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
 Start-Transcript -Path $LogFile
 
 Function Get-AzureBlobItems {

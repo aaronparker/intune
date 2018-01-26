@@ -12,7 +12,7 @@
 #>
 # Common variables
 $VerbosePreference = "Continue"
-$LogFile = "$env:SystemRoot\Temp\$($MyInvocation.MyCommand.Name).log"
+$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
 Start-Transcript -Path $LogFile -Append
 
 # Receiver variables

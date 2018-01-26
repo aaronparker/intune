@@ -6,10 +6,11 @@
 #>
 # Common variables
 $VerbosePreference = "Continue"
-$Target = "$env:ProgramData\Scripts"
-Start-Transcript -Path "$Target\$($MyInvocation.MyCommand.Name).log"
+$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
+Start-Transcript -Path $LogFile
 
 # Variables
+$Target = "$env:ProgramData\stealthpuppy\Scripts"
 $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1"
 $Script = "Redirect-Folders.ps1"
 $ScriptVb = "Redirect-Folders.vbs"
