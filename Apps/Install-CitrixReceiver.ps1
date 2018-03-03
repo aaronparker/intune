@@ -1,3 +1,4 @@
+# Requires -Version 3
 <#
 .SYNOPSIS
     Downloads and installs Citrix Receiver (Win32/Desktop version) for full functionality.

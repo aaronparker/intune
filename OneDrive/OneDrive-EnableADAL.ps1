@@ -1,3 +1,4 @@
+# Requires -Version 2
 <#
     .SYNOPSIS
         Creates the EnableADAL registry value for silent account config

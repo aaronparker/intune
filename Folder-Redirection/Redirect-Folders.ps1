@@ -1,3 +1,4 @@
+# Requires -Version 3
 <#
 .SYNOPSIS
     Creates a scheduled task to implement folder redirection for .

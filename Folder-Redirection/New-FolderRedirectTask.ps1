@@ -1,3 +1,4 @@
+# Requires -Version 3
 <#
 .SYNOPSIS
     Creates a scheduled task to enable folder redirection at user login.
@@ -25,7 +26,6 @@ $Vbscript = $Vbscript + 'Set objFSO=CreateObject("Scripting.FileSystemObject")' 
 $Vbscript = $Vbscript + 'strCMD = "powershell -ExecutionPolicy Bypass -NonInteractive -WindowStyle Minimized -File ' + "$Target\$Script" + '"' + "`r`n"
 $Vbscript = $Vbscript + 'objShell.Run strCMD,0'
 
-
 # If local path for script doesn't exist, create it
 If (!(Test-Path $Target)) { New-Item -Path $Target -Type Directory -Force -Verbose }
 
@@ -44,16 +44,17 @@ If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue 
         $Task.Actions[0].Execute = $Execute
         $Task.Actions[0].Arguments = $Arguments
         $Task | Set-ScheduledTask -Verbose
-    } Else {
+    }
+    Else {
         Write-Verbose "Existing task action is OK, no change required."
     }
 
-} Else {
-    
+}
+Else {
     Write-Verbose "Creating folder redirection scheduled task."
     # Build a new task object
     $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose
-    $trigger =  New-ScheduledTaskTrigger -AtLogon -RandomDelay (New-TimeSpan -Minutes 1) -Verbose
+    $trigger = New-ScheduledTaskTrigger -AtLogon -RandomDelay (New-TimeSpan -Minutes 1) -Verbose
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8 -Verbose
     $principal = New-ScheduledTaskPrincipal -GroupId $Group -Verbose
     $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Verbose

@@ -1,3 +1,4 @@
+# Requires -Version 3
 <#
     .SYNOPSIS
         Downloads and installs the Microsoft Teams desktop client.

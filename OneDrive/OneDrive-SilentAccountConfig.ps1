@@ -1,3 +1,4 @@
+# Requires -Version 2
 <#
     .SYNOPSIS
         Creates the SilentAccountConfig registry value for silent account config
