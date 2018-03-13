@@ -11,17 +11,19 @@
     Site: https://stealthpuppy.com
     Twitter: @stealthpuppy
 #>
-# Common variables
-$VerbosePreference = "Continue"
-$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
+[CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
+    SupportsShouldProcess = $False, PositionalBinding = $False)]
+Param (
+    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()]$Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe",
+    [Parameter()]$Target = "$env:SystemRoot\Temp\CitrixReceiver.exe",
+    [Parameter()]$BaselineVersion = [System.Version]"4.10.1.0",
+    [Parameter()]$TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe",
+    [Parameter()]$Rename = $True,
+    [Parameter()]$Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
+    [Parameter()]$VerbosePreference = "Continue"
+)
 Start-Transcript -Path $LogFile -Append
-
-# Receiver variables
-$Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe"
-$Target = "$env:SystemRoot\Temp\CitrixReceiver.exe"
-$BaselineVersion = [System.Version]"4.10.1.0"
-$TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe"; $Rename = $True
-$Arguments = "/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False"
 
 # Determine whether Receiver is already installed
 Write-Verbose -Message "Querying for installed Receiver version."
@@ -67,9 +69,8 @@ If (!($Receiver) -or ($Receiver.Version -lt $BaselineVersion)) {
     }
 
     # Intune shows basic deployment status in the Overview blade of the PowerShell script properties
-    Return @($ErrorRemoveAppx, $ErrorAddDotNet, $ErrorBits, $ErrorInstall)
+    @($ErrorRemoveAppx, $ErrorAddDotNet, $ErrorBits, $ErrorInstall) | Write-Output
 } Else {
     Write-Verbose "Skipping Receiver installation. Installed version is $($Receiver.Version)"
 }
-
 Stop-Transcript

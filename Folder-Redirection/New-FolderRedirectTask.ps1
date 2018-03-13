@@ -5,20 +5,24 @@
     Enable folder redirection on Windows 10 Azure AD joined PCs.
     Downloads the folder redirection script from a URL locally and creates the schedule task.
 #>
-# Common variables
-$VerbosePreference = "Continue"
-$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
+[CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
+    SupportsShouldProcess = $False, PositionalBinding = $False)]
+Param (
+    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()]$Source = "https://stlhppymdrn.blob.core.windows.net/fslogix-ruleset/?comp=list",
+    [Parameter()]$RegPath = "HKLM:\SOFTWARE\FSLogix\Apps",
+    [Parameter()]$RegExDirectory = "^[a-zA-Z]:\\[\\\S|*\S]?.*$",
+    [Parameter()]$Target = "$env:ProgramData\stealthpuppy\Scripts",
+    [Parameter()]$Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
+    [Parameter()]$Script = "Redirect-Folders.ps1",
+    [Parameter()]$ScriptVb = "Redirect-Folders.vbs",
+    [Parameter()]$TaskName = "Folder Redirection",
+    [Parameter()]$Group = "BUILTIN\Users",
+    [Parameter()]$Execute = "wscript.exe",
+    [Parameter()]$Arguments = "$Target\$ScriptVb /b /nologo",
+    [Parameter()]$VerbosePreference = "Continue"
+)
 Start-Transcript -Path $LogFile
-
-# Variables
-$Target = "$env:ProgramData\stealthpuppy\Scripts"
-$Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1"
-$Script = "Redirect-Folders.ps1"
-$ScriptVb = "Redirect-Folders.vbs"
-$TaskName = "Folder Redirection"
-$Group = "BUILTIN\Users"
-$Execute = "wscript.exe"
-$Arguments = "$Target\$ScriptVb /b /nologo"
 
 # Construct string to output as a VBscript
 $Vbscript = 'Set objShell=CreateObject("WScript.Shell")' + "`r`n"
@@ -48,7 +52,6 @@ If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue 
     Else {
         Write-Verbose "Existing task action is OK, no change required."
     }
-
 }
 Else {
     Write-Verbose "Creating folder redirection scheduled task."
@@ -62,5 +65,4 @@ Else {
     # No task object exists, so register the new task
     Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -Verbose
 }
-
 Stop-Transcript

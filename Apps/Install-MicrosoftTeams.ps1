@@ -15,15 +15,16 @@
     .LINK
         https://stealthpuppy.com
 #>
-#Requires -Version 3
-
-# Variables
-$VerbosePreference = "Continue"
-$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
-$Target = "$env:Temp"
-$Arguments = "--silent"
-$HttpRegEx = "^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$"
-$Teams = "$env:LocalAppData\Microsoft\Teams\Update.exe"
+[CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
+    SupportsShouldProcess = $False, PositionalBinding = $False)]
+Param (
+    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()]$Target = "$env:Temp",
+    [Parameter()]$Arguments = "--silent",
+    [Parameter()]$HttpRegEx = "^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$",
+    [Parameter()]$Teams = "$env:LocalAppData\Microsoft\Teams\Update.exe",
+    [Parameter()]$VerbosePreference = "Continue"
+)
 Start-Transcript -Path $LogFile
 
 # Set installer download URL based on processor architecture
@@ -62,5 +63,4 @@ If (Test-Path $Installer) {
 } Else {
     Write-Error -Message "Unable to find the Microsoft Teams installer. Download failed."
 }
-
 Stop-Transcript
