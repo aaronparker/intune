@@ -1,9 +1,9 @@
 # Requires -Version 3
 <#
-.SYNOPSIS
-    Creates a scheduled task to enable folder redirection at user login.
-    Enable folder redirection on Windows 10 Azure AD joined PCs.
-    Downloads the folder redirection script from a URL locally and creates the schedule task.
+    .SYNOPSIS
+        Creates a scheduled task to enable folder redirection at user login.
+        Enable folder redirection on Windows 10 Azure AD joined PCs.
+        Downloads the folder redirection script from a URL locally and creates the schedule task.
 #>
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]

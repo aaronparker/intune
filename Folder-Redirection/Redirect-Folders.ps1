@@ -129,7 +129,7 @@ Function Get-KnownFolderPath {
                 'Resources', 'SendTo', 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'UserProfile', 'Windows')]
         [string] $KnownFolder
     )
-    Write-Output [Environment]::GetFolderPath($KnownFolder)
+    [Environment]::GetFolderPath($KnownFolder)
 }
 
 Function Move-Files {
@@ -146,18 +146,13 @@ Function Move-Files {
             The log file to store progress/output
     #>
     Param (
-        [Parameter(Mandatory = $true)]
-        [string]$Source,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Destination,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Log
+        $Source,
+        $Destination,
+        $Log
     )
     If (!(Test-Path (Split-Path $Log))) { New-Item -Path (Split-Path $Log) -ItemType Container }
     Write-Verbose "Moving data in folder $Source to $Destination."
-    Robocopy.exe $Source $Destination /E /MOV /XJ /XF *.ini /R:1 /W:1 /NP /LOG+:$Log
+    Robocopy.exe "$Source" "$Destination" /E /MOV /XJ /XF *.ini /R:1 /W:1 /NP /LOG+:$Log
 }
 
 Function Redirect-Folder {
