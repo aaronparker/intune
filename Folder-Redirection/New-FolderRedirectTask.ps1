@@ -8,38 +8,45 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
-    [Parameter()]$Source = "https://stlhppymdrn.blob.core.windows.net/fslogix-ruleset/?comp=list",
-    [Parameter()]$RegPath = "HKLM:\SOFTWARE\FSLogix\Apps",
-    [Parameter()]$RegExDirectory = "^[a-zA-Z]:\\[\\\S|*\S]?.*$",
-    [Parameter()]$Target = "$env:ProgramData\stealthpuppy\Scripts",
-    [Parameter()]$Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
-    [Parameter()]$Script = "Redirect-Folders.ps1",
-    [Parameter()]$ScriptVb = "Redirect-Folders.vbs",
-    [Parameter()]$TaskName = "Folder Redirection",
-    [Parameter()]$Group = "BUILTIN\Users",
-    [Parameter()]$Execute = "wscript.exe",
-    [Parameter()]$Arguments = "$Target\$ScriptVb /b /nologo",
-    [Parameter()]$VerbosePreference = "Continue"
+    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()] $Target = "$env:ProgramData\stealthpuppy\Scripts",
+    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
+    [Parameter()] $Script = "Redirect-Folders.ps1",
+    [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
+    [Parameter()] $TaskName = "Folder Redirection",
+    [Parameter()] $Group = $((Get-LocalGroup -SID S-1-5-32-545).Name),
+    [Parameter()] $Execute = "wscript.exe",
+    [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
+    [Parameter()] $VerbosePreference = "Continue"
 )
 Start-Transcript -Path $LogFile
 
 # Construct string to output as a VBscript
-$Vbscript = 'Set objShell=CreateObject("WScript.Shell")' + "`r`n"
-$Vbscript = $Vbscript + 'Set objFSO=CreateObject("Scripting.FileSystemObject")' + "`r`n"
-$Vbscript = $Vbscript + 'strCMD = "powershell -ExecutionPolicy Bypass -NonInteractive -WindowStyle Minimized -File ' + "$Target\$Script" + '"' + "`r`n"
-$Vbscript = $Vbscript + 'objShell.Run strCMD,0'
+$vbScript = 'Set objShell=CreateObject("WScript.Shell")' + "`r`n"
+$vbScript = $vbScript + 'Set objFSO=CreateObject("Scripting.FileSystemObject")' + "`r`n"
+$vbScript = $vbScript + 'strCMD = "powershell -ExecutionPolicy Bypass -NonInteractive -WindowStyle Minimized -File ' + "$Target\$Script" + '"' + "`r`n"
+$vbScript = $vbScript + 'objShell.Run strCMD,0'
 
 # If local path for script doesn't exist, create it
-If (!(Test-Path $Target)) { New-Item -Path $Target -Type Directory -Force -Verbose }
+If (!(Test-Path -Path $Target)) { 
+    Write-Verbose "Creating $Target."
+    New-Item -Path $Target -Type Directory -Force
+}
 
 # Download the script from the source repository; output the VBscript
-If (Test-Path "$Target\$Script") { Remove-Item -Path "$Target\$Script" -Force -Verbose }
-Start-BitsTransfer -Source $Url -Destination "$Target\$Script" -Priority Foreground -TransferPolicy Always -ErrorAction SilentlyContinue -ErrorVariable $TransferError -Verbose
-$Vbscript | Out-File -FilePath "$Target\$ScriptVb" -Force -Encoding ascii -Verbose
+If (Test-Path "$Target\$Script") {
+    Write-Verbose "Removing $Target\$Script."
+    Remove-Item -Path "$Target\$Script" -Force
+}
+
+Write-Verbose "Downloading $Url to $Target\$Script."
+Start-BitsTransfer -Source $Url -Destination "$Target\$Script" -Priority Foreground -TransferPolicy Always -ErrorAction SilentlyContinue -ErrorVariable $TransferError
+If (Test-Path -Path "$Target\$Script") { Write-Verbose "$Target\$Script downloaded successfully." }
+
+$vbScript | Out-File -FilePath "$Target\$ScriptVb" -Force -Encoding ascii
 
 # Get an existing local task if it exists
-If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue -Verbose ) { 
+If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue ) { 
 
     Write-Verbose "Folder redirection task exists."
     # If the task Action differs from what we have above, update the values and save the task
@@ -56,13 +63,14 @@ If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue 
 Else {
     Write-Verbose "Creating folder redirection scheduled task."
     # Build a new task object
-    $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose
-    $trigger = New-ScheduledTaskTrigger -AtLogon -RandomDelay (New-TimeSpan -Minutes 1) -Verbose
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8 -Verbose
-    $principal = New-ScheduledTaskPrincipal -GroupId $Group -Verbose
-    $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Verbose
+    $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
+    $trigger = New-ScheduledTaskTrigger -AtLogon -RandomDelay (New-TimeSpan -Minutes 1)
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8
+    $principal = New-ScheduledTaskPrincipal -GroupId $Group
+    $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 
     # No task object exists, so register the new task
+    Write-Verbose "Registering new task $TaskName."
     Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -Verbose
 }
 Stop-Transcript

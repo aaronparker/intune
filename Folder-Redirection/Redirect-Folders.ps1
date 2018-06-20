@@ -1,44 +1,33 @@
 # Requires -Version 3
 <#
-.SYNOPSIS
-    Creates a scheduled task to implement folder redirection for .
+    .SYNOPSIS
+        Creates a scheduled task to implement folder redirection for .
 
-.NOTES
-    Name: Redirect-Folders.ps1
-    Author: Aaron Parker
-    Site: https://stealthpuppy.com
-    Twitter: @stealthpuppy
+    .NOTES
+        Name: Redirect-Folders.ps1
+        Author: Aaron Parker
+        Site: https://stealthpuppy.com
+        Twitter: @stealthpuppy
 #>
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$LogFile = "$env:LocalAppData\RedirectLogs\$($MyInvocation.MyCommand.Name).log",
-    [Parameter()]$Source = "https://stlhppymdrn.blob.core.windows.net/fslogix-ruleset/?comp=list",
-    [Parameter()]$RegPath = "HKLM:\SOFTWARE\FSLogix\Apps",
-    [Parameter()]$RegExDirectory = "^[a-zA-Z]:\\[\\\S|*\S]?.*$",
-    [Parameter()]$Target = "$env:ProgramData\stealthpuppy\Scripts",
-    [Parameter()]$Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
-    [Parameter()]$Script = "Redirect-Folders.ps1",
-    [Parameter()]$ScriptVb = "Redirect-Folders.vbs",
-    [Parameter()]$TaskName = "Folder Redirection",
-    [Parameter()]$Group = "BUILTIN\Users",
-    [Parameter()]$Execute = "wscript.exe",
-    [Parameter()]$Arguments = "$Target\$ScriptVb /b /nologo",
-    [Parameter()]$VerbosePreference = "Continue"
+    [Parameter()] $LogFile = "$env:LocalAppData\RedirectLogs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()] $VerbosePreference = "Continue"
 )
 Start-Transcript -Path $LogFile
 
 Function Set-KnownFolderPath {
     <#
-.SYNOPSIS
-    Sets a known folder's path using SHSetKnownFolderPath.
-.PARAMETER KnownFolder
-    The known folder whose path to set.
-.PARAMETER Path
-    The target path to redirect the folder to.
-.NOTES
-    Forked from: https://gist.github.com/semenko/49a28675e4aae5c8be49b83960877ac5
-#>
+        .SYNOPSIS
+            Sets a known folder's path using SHSetKnownFolderPath.
+        .PARAMETER KnownFolder
+            The known folder whose path to set.
+        .PARAMETER Path
+            The target path to redirect the folder to.
+        .NOTES
+            Forked from: https://gist.github.com/semenko/49a28675e4aae5c8be49b83960877ac5
+    #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AddNewPrograms', 'AdminTools', 'AppUpdates', 'CDBurning', 'ChangeRemovePrograms', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', `
@@ -50,10 +39,10 @@ Function Set-KnownFolderPath {
                 'Recent', 'RecycleBinFolder', 'ResourceDir', 'RoamingAppData', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedSearches', `
                 'SEARCH_CSC', 'SEARCH_MAPI', 'SearchHome', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'SyncManagerFolder', 'SyncResultsFolder', `
                 'SyncSetupFolder', 'System', 'SystemX86', 'Templates', 'TreeProperties', 'UserProfiles', 'UsersFiles', 'Videos', 'Windows')]
-        [string]$KnownFolder,
+        [string] $KnownFolder,
 
         [Parameter(Mandatory = $true)]
-        [string]$Path
+        [string] $Path
     )
 
     # Define known folder GUIDs
@@ -119,18 +108,18 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
 	
     # Fix up permissions, if we're still here
     Attrib +r $Path
-    $Path
+    Write-Output $Path
 }
 
 Function Get-KnownFolderPath {
     <#
-.SYNOPSIS
-    Gets a known folder's path using GetFolderPath.
-.PARAMETER KnownFolder
-    The known folder whose path to get. Validates set to ensure only knwwn folders are passed.
-.NOTES
-    https://stackoverflow.com/questions/16658015/how-can-i-use-powershell-to-call-shgetknownfolderpath
-#>
+        .SYNOPSIS
+            Gets a known folder's path using GetFolderPath.
+        .PARAMETER KnownFolder
+            The known folder whose path to get. Validates set to ensure only knwwn folders are passed.
+        .NOTES
+            https://stackoverflow.com/questions/16658015/how-can-i-use-powershell-to-call-shgetknownfolderpath
+    #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AdminTools', 'ApplicationData', 'CDBurning', 'CommonAdminTools', 'CommonApplicationData', 'CommonDesktopDirectory', 'CommonDocuments', 'CommonMusic', `
@@ -138,24 +127,24 @@ Function Get-KnownFolderPath {
                 'CommonVideos', 'Cookies', 'Desktop', 'DesktopDirectory', 'Favorites', 'Fonts', 'History', 'InternetCache', 'LocalApplicationData', 'LocalizedResources', 'MyComputer', `
                 'MyDocuments', 'MyMusic', 'MyPictures', 'MyVideos', 'NetworkShortcuts', 'Personal', 'PrinterShortcuts', 'ProgramFiles', 'ProgramFilesX86', 'Programs', 'Recent', `
                 'Resources', 'SendTo', 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'UserProfile', 'Windows')]
-        [string]$KnownFolder
+        [string] $KnownFolder
     )
-    [Environment]::GetFolderPath($KnownFolder)
+    Write-Output [Environment]::GetFolderPath($KnownFolder)
 }
 
 Function Move-Files {
     <#
-.SYNOPSIS
-    Moves contents of a folder with output to a log.
-    Uses Robocopy to ensure data integrity and all moves are logged for auditing.
-    Means we don't need to re-write functionality in PowerShell.
-.PARAMETER Source
-    The source folder.
-.PARAMETER Destination
-    The destination log.
-.PARAMETER Log
-    The log file to store progress/output
-#>
+        .SYNOPSIS
+            Moves contents of a folder with output to a log.
+            Uses Robocopy to ensure data integrity and all moves are logged for auditing.
+            Means we don't need to re-write functionality in PowerShell.
+        .PARAMETER Source
+            The source folder.
+        .PARAMETER Destination
+            The destination log.
+        .PARAMETER Log
+            The log file to store progress/output
+    #>
     Param (
         [Parameter(Mandatory = $true)]
         [string]$Source,
@@ -173,14 +162,21 @@ Function Move-Files {
 
 Function Redirect-Folder {
     <#
-.SYNOPSIS
-    Function exists to reduce code required to redirect each folder.
-#>
+        .SYNOPSIS
+            Function exists to reduce code required to redirect each folder.
+    #>
     Param (
-        $SyncFolder,
-        $GetFolder,
-        $SetFolder,
-        $Target
+        [Parameter(Mandatory = $true)]
+        [string] $SyncFolder,
+
+        [Parameter(Mandatory = $true)]
+        [string] $GetFolder,
+
+        [Parameter(Mandatory = $true)]
+        [string] $SetFolder,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Target
     )
 
     # Get current Known folder path
@@ -191,9 +187,11 @@ Function Redirect-Folder {
         # Redirect the folder
         Write-Verbose "Redirecting $SetFolder to $SyncFolder\$Target"
         Set-KnownFolderPath -KnownFolder $SetFolder -Path "$SyncFolder\$Target"
+
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
         Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
+        
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
     }
@@ -201,6 +199,7 @@ Function Redirect-Folder {
         Write-Verbose "Folder $GetFolder matches target. Skipping redirection."
     }
 }
+
 
 # Get OneDrive sync folder
 $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts\Business1' -Name 'UserFolder'
