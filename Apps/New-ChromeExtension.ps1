@@ -8,7 +8,8 @@ New-ItemProperty -Path $Key -Name $Value -Value $Data -Force -ErrorAction Silent
 
 # Citrix Receiver / Workspace app as a policy
 $Key = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist"
-$Value = "3"
+$ExistingValues = (Get-Item -Path $Key).Property
+$Value = [int]$ExistingValues[$ExistingValues.Count-1] + 1
 $Data = "haiffjcadagjlijoggckpgfnoeiflnem;https://clients2.google.com/service/update2/crx"
 New-Item -Path $Key -ErrorAction SilentlyContinue
 New-ItemProperty -Path $Key -Name $Value -Value $Data -Force -ErrorAction SilentlyContinue
