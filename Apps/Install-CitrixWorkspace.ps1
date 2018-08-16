@@ -14,14 +14,15 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
-    [Parameter()]$Url = "https://downloadplugins.citrix.com/Windows/CitrixWorkspaceApp.exe",
-    [Parameter()]$Target = "$env:SystemRoot\Temp\CitrixWorkspace.exe",
-    [Parameter()]$BaselineVersion = [System.Version]"4.10.1.0",
-    [Parameter()]$TargetWeb = "$env:SystemRoot\Temp\CitrixWorkspaceWeb.exe",
-    [Parameter()]$Rename = $True,
-    [Parameter()]$Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
-    [Parameter()]$VerbosePreference = "Continue"
+    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
+    [Parameter()] $Url = "https://downloadplugins.citrix.com/Windows/CitrixWorkspaceApp.exe",
+    [Parameter()] $UrlHdx = "https://downloads.citrix.com/12105/HDX_RealTime_Media_Engine_2.5_for_Windows.msi",
+    [Parameter()] $Target = "$env:SystemRoot\Temp\CitrixWorkspace.exe",
+    [Parameter()] $BaselineVersion = [System.Version]"18.8.0.19031",
+    [Parameter()] $TargetWeb = "$env:SystemRoot\Temp\CitrixWorkspaceWeb.exe",
+    [Parameter()] $Rename = $True,
+    [Parameter()] $Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
+    [Parameter()] $VerbosePreference = "Continue"
 )
 Start-Transcript -Path $LogFile -Append
 
@@ -65,13 +66,20 @@ If (!($Workspace) -or ($Workspace.Version -lt $BaselineVersion)) {
         Write-Verbose -Message "Querying for installed Workspace version."
         $Workspace = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -Like "Citrix Workspace Inside*" } | Select-Object Name, Version
         Write-Verbose -Message "Installed Citrix Workspace: $($Workspace.Version)."
-    } Else {
+    }
+    Else {
         $ErrorInstall = "Citrix Workspace installer path at $Target not found."
     }
 
+    # Download Citrix HDX RealTime Media Engine locally; This should succeed, because the machine must have Internet access to receive the script from Intune
+    # Will download regardless of network cost state (i.e. if network is marked as roaming, it will still download); Likely won't support proxy servers
+    Write-Verbose -Message "Downloading Citrix HDX RealTime Media Engine from $UrlHdx"
+    Start-BitsTransfer -Source $UrlHdx -Destination $Target -Priority High -TransferPolicy Always -ErrorAction Continue -ErrorVariable $ErrorBits -Verbose
+
     # Intune shows basic deployment status in the Overview blade of the PowerShell script properties
     @($ErrorRemoveAppx, $ErrorAddDotNet, $ErrorBits, $ErrorInstall) | Write-Output
-} Else {
+}
+Else {
     Write-Verbose "Skipping Workspace installation. Installed version is $($Workspace.Version)"
 }
 Stop-Transcript
