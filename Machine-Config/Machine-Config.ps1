@@ -12,7 +12,7 @@
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log"
+    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\Machine-Config.log"
 )
 
 # Start logging
@@ -42,10 +42,9 @@ Get-WindowsCapability -Online | Where-Object { $_.Name -like "Media.WindowsMedia
 
 # Remove other optional features
 $Features = @("WorkFolders-Client", `
-        "Internet-Explorer-Optional-amd64", `
         "Microsoft-Windows-Printing-XPSServices-Package", `
         "Printing-XPSServices-Features", `
-        "WindowsMediaPlayer", `
+        "MediaPlayback", `
         "FaxServicesClientPackage")
 Disable-WindowsOptionalFeature -Online -FeatureName $Features -NoRestart -Verbose
 
