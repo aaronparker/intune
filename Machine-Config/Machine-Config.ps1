@@ -32,11 +32,6 @@ Function New-RegValue {
     New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
 }
 
-# Creates the SilentAccountConfig registry value for silent account config
-# Creates the FilesOnDemandEnabled registry value to enabled Files On Demand for Windows 10 1709 and later
-New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "SilentAccountConfig" -Data "1" -Type "Dword" -Verbose
-New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "FilesOnDemandEnabled" -Data "1" -Type "Dword" -Verbose
-
 # Install .NET Framework 3.5
 $State = Get-WindowsCapability -Online | Where-Object { $_.Name -like "NetFx3~~~~" -and $_.State -eq "NotPresent" }
 If ($State) { Add-WindowsCapability -Online -Name "NetFx3~~~~" -Verbose }
