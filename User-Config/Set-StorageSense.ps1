@@ -1,5 +1,8 @@
 # Enable Storage Sense
 
+$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\StorageSense.log"
+Start-Transcript -Path $LogFile
+
 # Ensure the StorageSense key exists
 $key = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense"
 If (!(Test-Path "$key")) {
@@ -32,3 +35,5 @@ Set-ItemProperty -Path "$key\Parameters\StoragePolicy" -Name "512" -Type DWord -
 
 # Set value that Storage Sense has already notified the user
 Set-ItemProperty -Path "$key\Parameters\StoragePolicy" -Name "StoragePoliciesNotified" -Type DWord -Value 1
+
+Stop-Transcript

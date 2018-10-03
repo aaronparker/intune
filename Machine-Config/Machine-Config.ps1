@@ -12,7 +12,7 @@
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\Machine-Config.log"
+    [Parameter()] $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Machine-Config.log"
 )
 
 # Start logging

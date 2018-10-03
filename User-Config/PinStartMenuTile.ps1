@@ -111,9 +111,14 @@ Function PinStartMenuTile {
 }
 
 # Pin and Unpin applications
-PinStartMenuTile "Skype"
-PinStartMenuTile "Xbox"
-PinStartMenuTile "Microsoft Remote Desktop"
-PinStartMenuTile "Network Speed Test"
-PinStartMenuTile "Microsoft News"
-PinStartMenuTile "My Office"
+$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\PinStartMenuTile.log"
+Start-Transcript -Path $LogFile
+
+PinStartMenuTile "Skype" -Verbose
+PinStartMenuTile "Xbox" -Verbose
+PinStartMenuTile "Microsoft Remote Desktop" -Verbose
+PinStartMenuTile "Network Speed Test" -Verbose
+PinStartMenuTile "Microsoft News" -Verbose
+PinStartMenuTile "My Office" -Verbose
+
+Stop-Transcript

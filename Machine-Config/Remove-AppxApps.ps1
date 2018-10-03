@@ -49,6 +49,7 @@
     #>
 [CmdletBinding(DefaultParameterSetName = "Blacklist")]
 Param (
+    [Parameter()] $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Remove-AppxApps.log"
     [Parameter(Mandatory = $false, ParameterSetName = "Blacklist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [ValidateSet('Blacklist', 'Whitelist')]
@@ -105,6 +106,9 @@ Begin {
             "Microsoft.Wallet_8wekyb3d8bbwe" )
 }
 Process {
+    # Start logging
+    Start-Transcript -Path $LogFile
+
     Switch ($Operation) {
 
         "Blacklist" {
@@ -154,4 +158,5 @@ Process {
 }
 End {
     Return $output
+    Stop-Transcript
 }
