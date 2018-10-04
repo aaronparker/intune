@@ -1,10 +1,37 @@
-# Enable Storage Sense
+# Requires -Version 2
+<#
+    .SYNOPSIS
+        Enable Windows 10 Storage Sense.
+
+    .NOTES
+        Author: Aaron Parker
+        Twitter: @stealthpuppy
+
+    .LINK
+        https://stealthpuppy.com
+#>
+
+Function New-RegValue {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $True)] $Key,
+        [Parameter(Mandatory = $True)] $Value,
+        [Parameter(Mandatory = $True)] $Data,
+        [Parameter(Mandatory = $True)]
+        [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
+        $Type
+    )
+    If (!(Test-Path $Key)) { New-Item -Path $Key -Force }
+    New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+}
 
 $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\StorageSense.log"
 Start-Transcript -Path $LogFile
 
 # Ensure the StorageSense key exists
 $key = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense"
+
+
 If (!(Test-Path "$key")) {
     New-Item -Path "$key" | Out-Null
 }

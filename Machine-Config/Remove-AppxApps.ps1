@@ -49,7 +49,6 @@
     #>
 [CmdletBinding(DefaultParameterSetName = "Blacklist")]
 Param (
-    [Parameter()] $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Remove-AppxApps.log"
     [Parameter(Mandatory = $false, ParameterSetName = "Blacklist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [ValidateSet('Blacklist', 'Whitelist')]
@@ -68,8 +67,7 @@ Param (
             "Microsoft.ZuneMusic_8wekyb3d8bbwe", `
             "Microsoft.ZuneVideo_8wekyb3d8bbwe", `
             "Microsoft.OneConnect_8wekyb3d8bbwe", `
-            "king.com.CandyCrushSodaSaga_kgqvnymyfvs32", `
-            "Microsoft.Windows.SecureAssessmentBrowser_cw5n1h2txyewy" ),
+            "king.com.CandyCrushSodaSaga_kgqvnymyfvs32" ),
         
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify an AppX package or packages to keep, removing all others.")]
     [array] $Whitelist = ( "Microsoft.BingWeather_8wekyb3d8bbwe", `
@@ -107,6 +105,7 @@ Begin {
 }
 Process {
     # Start logging
+    $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Remove-AppxApps.log"
     Start-Transcript -Path $LogFile
 
     Switch ($Operation) {

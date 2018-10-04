@@ -111,7 +111,7 @@ Function PinStartMenuTile {
 }
 
 # Pin and Unpin applications
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\PinStartMenuTile.log"
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\PinStartMenuTile.log"
 Start-Transcript -Path $LogFile
 
 PinStartMenuTile "Skype" -Verbose
