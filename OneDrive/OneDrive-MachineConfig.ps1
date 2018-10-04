@@ -29,3 +29,6 @@ Function New-RegValue {
 # Creates the FilesOnDemandEnabled registry value to enabled Files On Demand for Windows 10 1709 and later
 New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "SilentAccountConfig" -Data "1" -Type "Dword" -Verbose
 New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "FilesOnDemandEnabled" -Data "1" -Type "Dword" -Verbose
+
+# Ensure OneDrive is not disabled
+New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Value "DisableFileSyncNGSC" -Data 0 -Type Dword -Verbose

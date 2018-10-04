@@ -23,9 +23,10 @@ $state = Get-WindowsCapability -Online | Where-Object {($_.Name -like "NetFx3~~~
 If ($state) {Add-WindowsCapability -Online -Name "NetFx3~~~~" -Verbose}
 
 # Remove capabilities
-$capabilities = @(  "Browser.InternetExplorer~~~~*", `
+<# $capabilities = @(  "Browser.InternetExplorer~~~~*", `
         "Media.WindowsMediaPlayer~~~~*", `
-        "XPS.Viewer~~~~*")
+        "XPS.Viewer~~~~*") #>
+$capabilities = @("XPS.Viewer~~~~*")
 ForEach ($capability in $capabilities) {
     Get-WindowsCapability -Online | Where-Object {($_.Name -like $capability) -and `
         ($_.State -eq "Installed" )} | Remove-WindowsCapability -Online

@@ -67,7 +67,7 @@ function Get-Application {
     }
 }
 
-Function PinStartMenuTile {
+Function Pin-StartMenuTile {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [parameter(Mandatory = $true, HelpMessage = "Name of the application that should be pinned.")]
@@ -94,8 +94,31 @@ Function PinStartMenuTile {
                 }
             }
             else {
+                Write-Information -Message "Application '$($ApplicationName)' is already pinned to the Start menu"
+            }
+        }
+    }
+}
+
+Function Unpin-StartMenuTile {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [parameter(Mandatory = $true, HelpMessage = "Name of the application that should be unpinned.")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ApplicationName
+    )
+    Process {
+        # Set PowerShell variables
+        $ErrorActionPreference = "Stop"
+
+        # Check if the specified parameter input is valid
+        $ValidApplication = Get-Application -ApplicationName $ApplicationName
+        if ($ValidApplication -eq $true) {
+            # Check if app is already pinned
+            $PinnedState = Get-PinnedAppState -ApplicationName $ApplicationName
+            if ($PinnedState -eq $true) {
                 try {
-                    # Attempt to unpin the application
+                    # Attempt to pin the application
                     $InvokePin = ((New-Object -ComObject Shell.Application).NameSpace("shell:::{4234d49b-0245-4df3-b780-3893943456e1}").Items() | Where-Object { $_.Name -like $ApplicationName }).verbs() | Where-Object { $_.Name.replace('&', '') -match 'Unpin from Start' } | ForEach-Object { $_.DoIt() }
                     Write-Verbose -Message "Successfully unpinned application: $($ApplicationName)"
                 }
@@ -103,9 +126,9 @@ Function PinStartMenuTile {
                     Write-Warning -Message "Failed to unpin application '$($ApplicationName)'. Error message: $($_.Exception.Message)"
                 }
             }
-        }
-        else {
-            Write-Warning -Message "Invalid application name specified"
+            else {
+                Write-Information -Message "Application '$($ApplicationName)' is already unpinned from the Start menu"
+            }
         }
     }
 }
@@ -114,11 +137,19 @@ Function PinStartMenuTile {
 $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\PinStartMenuTile.log"
 Start-Transcript -Path $LogFile
 
-PinStartMenuTile "Skype" -Verbose
-PinStartMenuTile "Xbox" -Verbose
-PinStartMenuTile "Microsoft Remote Desktop" -Verbose
-PinStartMenuTile "Network Speed Test" -Verbose
-PinStartMenuTile "Microsoft News" -Verbose
-PinStartMenuTile "My Office" -Verbose
+Unpin-StartMenuTile "Skype" -Verbose
+Unpin-StartMenuTile "Xbox" -Verbose
+Unpin-StartMenuTile "Microsoft Remote Desktop" -Verbose
+Unpin-StartMenuTile "Network Speed Test" -Verbose
+Unpin-StartMenuTile "Microsoft News" -Verbose
+Unpin-StartMenuTile "My Office" -Verbose
+Unpin-StartMenuTile "Microsoft Store" -Verbose
+
+Pin-StartMenuTile "Company Portal" -Verbose
+Pin-StartMenuTile "Microsoft Teams" -Verbose
+Pin-StartMenuTile "Excel" -Verbose
+Pin-StartMenuTile "Word" -Verbose
+Pin-StartMenuTile "Outlook" -Verbose
+Pin-StartMenuTile "PowerPoint" -Verbose
 
 Stop-Transcript
