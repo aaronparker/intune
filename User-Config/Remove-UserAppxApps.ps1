@@ -67,7 +67,15 @@ Param (
             "Microsoft.ZuneMusic_8wekyb3d8bbwe", `
             "Microsoft.ZuneVideo_8wekyb3d8bbwe", `
             "Microsoft.OneConnect_8wekyb3d8bbwe", `
-            "king.com.CandyCrushSodaSaga_kgqvnymyfvs32" ),
+            "king.com.CandyCrushSodaSaga_kgqvnymyfvs32", `
+            "Microsoft.Office.Desktop.Access_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop.Excel_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop.Outlook_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop.PowerPoint_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop.Publisher_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop.Word_8wekyb3d8bbwe", `
+            "Microsoft.Office.Desktop_8wekyb3d8bbwe", `
+            "7EE7776C.LinkedInforWindows_w1wdnht996qgy" ),
         
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify an AppX package or packages to keep, removing all others.")]
     [array] $Whitelist = ( "Microsoft.BingWeather_8wekyb3d8bbwe", `
