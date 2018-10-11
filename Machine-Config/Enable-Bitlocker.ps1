@@ -25,11 +25,12 @@ Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version  starting o
 
 $key = 'HKLM:\SOFTWARE\Policies\Microsoft\FVE'
 If (Test-Path -Path $key){
-    Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version  removing $key"
+    Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version removing $key"
     Remove-Item -Path $key -Force
 }
 
 try {
+    Add-Content -Path $logFile -Value "Checking BitLocker status of system drive $_"
     $bitlockerStatus = Get-BitLockerVolume $env:SystemDrive -ErrorAction Stop | Select-Object -Property VolumeStatus
 }
 catch {
@@ -55,6 +56,7 @@ if ($bitlockerStatus.VolumeStatus -eq "FullyDecrypted") {
         # Automatically unmount any USB sticks
         $volumes = get-wmiobject -Class Win32_Volume | Where-Object {$_.drivetype -eq '2'}  
         foreach ($volume in $volumes) {
+            Add-Content -Path $logFile -Value "Ejecting volume $volume.driveletter"
             $ejectCmd = New-Object -comObject Shell.Application
             $ejectCmd.NameSpace(17).ParseName($volume.driveletter).InvokeVerb("Eject")
         }
@@ -129,6 +131,6 @@ if ($postKeyToAAD) {
     }
     catch {
         Add-Content -Path $logFile -Value "Failed to update key in AAD: $_"
-        Throw "Failed to update key in AAD: $_"
+        # Throw "Failed to update key in AAD: $_"
     }
 }

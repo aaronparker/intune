@@ -25,6 +25,9 @@ Function New-RegValue {
     New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
 }
 
+$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\OneDrive-MachineConfig.log"
+Start-Transcript -Path $LogFile
+
 # Creates the SilentAccountConfig registry value for silent account config
 # Creates the FilesOnDemandEnabled registry value to enabled Files On Demand for Windows 10 1709 and later
 New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "SilentAccountConfig" -Data "1" -Type "Dword" -Verbose
@@ -32,3 +35,5 @@ New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Value "FilesOnDe
 
 # Ensure OneDrive is not disabled
 New-RegValue -Key "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Value "DisableFileSyncNGSC" -Data 0 -Type Dword -Verbose
+
+Stop-Transcript
