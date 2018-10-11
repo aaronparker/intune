@@ -24,7 +24,7 @@ $scriptName = "enableBitlocker"
 Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version  starting on $($env:computername)"
 
 $key = 'HKLM:\SOFTWARE\Policies\Microsoft\FVE'
-If (Test-Path -Path -Path $key){
+If (Test-Path -Path $key){
     Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version  removing $key"
     Remove-Item -Path $key -Force
 }
