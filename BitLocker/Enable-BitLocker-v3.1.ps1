@@ -36,6 +36,7 @@ try {
     $bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
     $transcriptName = $bitlockerTempDir + "\EnableBitlocker_" + $stampDate.ToFileTimeUtc() + ".txt"
     Start-Transcript -Path $transcriptName -NoClobber
+    $VerbosePreference = "Continue"
 
     # Running as SYSTEM BitLocker may not implicitly load and running as SYSTEM the env variable is likely not set, so explicitly load it
     Import-Module -Name "C:\Windows\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker" -Verbose
@@ -46,7 +47,7 @@ try {
     Write-Verbose " STARTING POINT:  Get-BitLockerVolume " + $OSDrive
     $bdeStartingStatus = Get-BitLockerVolume $OSDrive 
 
-    #  Evaluate the Volume Status to see what we need to do...
+    # Evaluate the Volume Status to see what we need to do...
     $bdeProtect = Get-BitLockerVolume $OSDrive | Select-Object -Property VolumeStatus
     # Account for an uncrypted drive 
     if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
@@ -68,16 +69,15 @@ try {
         }
     }    
 
-    #Writing recovery key to temp directory, another user-mode task will move this to OneDrive for Business (if configured)
+    # Writing recovery key to temp directory, another user-mode task will move this to OneDrive for Business (if configured)
     Write-Verbose " Writing key protector to temp file so we can move it to OneDrive for Business"
-    New-Item -ItemType Directory -Force -Path "$env:SystemRoot\Temp" | out-null
-    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector   | Out-File "$env:SystemRoot\Temp\$($env:computername)_BitlockerRecoveryPassword.txt"
+    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)_BitlockerRecoveryPassword.txt"
 				
-    #Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
+    # Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
     $cmdName = "BackupToAAD-BitLockerKeyProtector"
     if (Get-Command $cmdName -ErrorAction SilentlyContinue) {
         Write-Verbose " Saving Key to AAD using BackupToAAD-BitLockerKeyProtector commandlet"
-        #BackupToAAD-BitLockerKeyProtector commandlet exists
+        # BackupToAAD-BitLockerKeyProtector commandlet exists
         $BLV = Get-BitLockerVolume -MountPoint $OSDrive | Select-Object *
         BackupToAAD-BitLockerKeyProtector -MountPoint $OSDrive -KeyProtectorId $BLV.KeyProtector[1].KeyProtectorId
     }
@@ -99,7 +99,7 @@ try {
 				    # Get the BitLocker key information from WMI
         (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Where-Object {$_.KeyProtectorType -eq 'RecoveryPassword'} | ForEach-Object {
             $key = $_
-            write-verbose "kid : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
+            Write-Verbose "kid : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
             $body = "{""key"":""$($key.RecoveryPassword)"",""kid"":""$($key.KeyProtectorId.replace('{','').Replace('}',''))"",""vol"":""OSV""}"
 				
             # Create the URL to post the data to based on the tenant and device information
@@ -112,7 +112,7 @@ try {
         }
     }
 
-    #In case we had to encrypt, turn it on for any enabled volume
+    # In case we had to encrypt, turn it on for any enabled volume
     Get-BitLockerVolume | Resume-BitLocker
 
     # --------------------------------------------------------------------------
@@ -122,5 +122,5 @@ try {
     $bdeProtect = Get-BitLockerVolume $OSDrive 
 } 
 catch { 
-    Write-Rrror "Error while setting up AAD Bitlocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
+    Write-Error "Error while setting up AAD Bitlocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
 }
