@@ -14,14 +14,14 @@
     .RELEASENOTES  
 #>
 
-<# 
+<#
     .DESCRIPTION 
         Check whether BitLocker is Enabled, if not Enable Bitlocker on AAD Joined devices and store recovery info in AAD. 
         Store key in temp folder, just in case we need to use another task to copy it to OD4B
 
     .NOTES
         URL: https://blogs.technet.microsoft.com/showmewindows/2018/01/18/how-to-enable-bitlocker-and-escrow-the-keys-to-azure-ad-when-using-autopilot-for-standard-users/
-        Updated to remove aliases, formatting, folder paths
+        Updates with removing aliases, update paths, formatting
 #> 
 [cmdletbinding()]
 param(
@@ -30,22 +30,23 @@ param(
     [string] $OSDrive = $env:SystemDrive
 )
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-try {
-    # Transcript for logging/troubleshooting
-    $stampDate = Get-Date
-    $bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-    $transcriptName = $bitlockerTempDir + "\EnableBitlocker_" + $stampDate.ToFileTimeUtc() + ".txt"
-    Start-Transcript -Path $transcriptName -NoClobber
-    $VerbosePreference = "Continue"
 
+# Transcript for logging/troubleshooting
+$stampDate = Get-Date
+$bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
+$transcriptName = "$($bitlockerTempDir)\EnableBitlocker-$($stampDate.ToFileTimeUtc()).txt"
+Start-Transcript -Path $transcriptName -NoClobber
+$VerbosePreference = "Continue"
+
+try {
     # Running as SYSTEM BitLocker may not implicitly load and running as SYSTEM the env variable is likely not set, so explicitly load it
-    Import-Module -Name "C:\Windows\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker" -Verbose
+    Import-Module -Name "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker" -Verbose
 
     # --------------------------------------------------------------------------
     #  Let's dump the starting point
     # --------------------------------------------------------------------------
-    Write-Verbose " STARTING POINT:  Get-BitLockerVolume " + $OSDrive
-    $bdeStartingStatus = Get-BitLockerVolume $OSDrive 
+    Write-Verbose " STARTING POINT:  Get-BitLockerVolume $OSDrive"
+    $bdeStartingStatus = Get-BitLockerVolume $OSDrive
 
     # Evaluate the Volume Status to see what we need to do...
     $bdeProtect = Get-BitLockerVolume $OSDrive | Select-Object -Property VolumeStatus
@@ -67,11 +68,11 @@ try {
             Write-Verbose " BitLocker is in Wait State - running manage-bde -on -UsedSpaceOnly"
             manage-bde -on $OSDrive -UsedSpaceOnly
         }
-    }    
+    }
 
     # Writing recovery key to temp directory, another user-mode task will move this to OneDrive for Business (if configured)
     Write-Verbose " Writing key protector to temp file so we can move it to OneDrive for Business"
-    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)_BitlockerRecoveryPassword.txt"
+    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)-BitlockerRecoveryPassword.txt"
 				
     # Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
     $cmdName = "BackupToAAD-BitLockerKeyProtector"
@@ -124,3 +125,5 @@ try {
 catch { 
     Write-Error "Error while setting up AAD Bitlocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
 }
+
+Stop-Transcript
