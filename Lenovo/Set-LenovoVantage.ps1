@@ -16,7 +16,7 @@
 # Transcript for logging ###
 $stampDate = Get-Date
 $vantageTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-$transcriptName = $vantageTempDir + "\VantageConfig-" + $stampDate.ToFileTimeUtc() + ".txt"
+$transcriptName = $vantageTempDir + "\Set-LenovoVantage-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $transcriptName -NoClobber
 $VerbosePreference = "Continue"
 

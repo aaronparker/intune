@@ -25,7 +25,8 @@ Function New-RegValue {
     New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
 }
 
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\StorageSense.log"
+$stampDate = Get-Date
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Set-StorageSense-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Ensure the StorageSense key exists

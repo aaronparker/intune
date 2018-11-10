@@ -8,8 +8,6 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
-    [Parameter()] $Target = "$env:ProgramData\stealthpuppy\Scripts",
     [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
@@ -19,6 +17,9 @@ Param (
     [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
     [Parameter()] $VerbosePreference = "Continue"
 )
+
+$stampDate = Get-Date
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Construct string to output as a VBscript
@@ -73,4 +74,5 @@ Else {
     Write-Verbose "Registering new task $TaskName."
     Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -Verbose
 }
+
 Stop-Transcript

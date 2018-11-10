@@ -12,9 +12,11 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()] $LogFile = "$env:LocalAppData\RedirectLogs\$($MyInvocation.MyCommand.Name).log",
     [Parameter()] $VerbosePreference = "Continue"
 )
+
+$stampDate = Get-Date
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 Function Set-KnownFolderPath {

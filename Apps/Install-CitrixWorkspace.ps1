@@ -14,7 +14,6 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()] $LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
     [Parameter()] $Url = "https://downloadplugins.citrix.com/Windows/CitrixWorkspaceApp.exe",
     [Parameter()] $UrlHdx = "https://downloads.citrix.com/12105/HDX_RealTime_Media_Engine_2.5_for_Windows.msi",
     [Parameter()] $Target = "$env:SystemRoot\Temp\CitrixWorkspace.exe",
@@ -24,6 +23,9 @@ Param (
     [Parameter()] $Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
     [Parameter()] $VerbosePreference = "Continue"
 )
+
+$stampDate = Get-Date
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-CitrixWorkspace-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile -Append
 
 # Determine whether Workspace is already installed
@@ -82,4 +84,5 @@ If (!($Workspace) -or ($Workspace.Version -lt $BaselineVersion)) {
 Else {
     Write-Verbose "Skipping Workspace installation. Installed version is $($Workspace.Version)"
 }
+
 Stop-Transcript

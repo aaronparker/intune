@@ -110,7 +110,8 @@ Begin {
 }
 Process {
     # Start logging
-    $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Remove-UserAppxApps.log"
+    $stampDate = Get-Date
+    $logFile = "$env:LocalAppData\Intune-PowerShell-Logs\Remove-UserAppxApps-" + $stampDate.ToFileTimeUtc() + ".log"
     Start-Transcript -Path $LogFile
 
     Switch ($Operation) {

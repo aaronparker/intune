@@ -34,7 +34,7 @@ param(
 # Transcript for logging/troubleshooting
 $stampDate = Get-Date
 $bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-$transcriptName = "$($bitlockerTempDir)\EnableBitlocker-$($stampDate.ToFileTimeUtc()).txt"
+$transcriptName = "$($bitlockerTempDir)\EnableBitlocker-$($stampDate.ToFileTimeUtc()).log"
 Start-Transcript -Path $transcriptName -NoClobber
 $VerbosePreference = "Continue"
 

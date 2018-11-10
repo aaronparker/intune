@@ -10,12 +10,10 @@
     .LINK
         https://stealthpuppy.com
 #>
-[CmdletBinding()]
-Param (
-    [Parameter()] $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Machine-Config.log"
-)
 
 # Start logging
+$stampDate = Get-Date
+$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Machine-Config-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Install .NET Framework 3.5

@@ -16,7 +16,12 @@
     .LINK
         http://www.lieben.nu/liebensraum/2017/06/automatically-BitLocker-windows-10-mdm-intune-azure-ad-joined-devices/
 #>
-$logFile = Join-Path $env:ProgramData -ChildPath "Intune-PowerShell-Logs\enableBitlocker.log"
+
+# Log file
+$stampDate = Get-Date
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\Enable-Bitlocker-" + $stampDate.ToFileTimeUtc() + ".log"
+
+# Variables
 $postKeyToAAD = $True
 $ErrorActionPreference = "Stop"
 $version = "0.04"

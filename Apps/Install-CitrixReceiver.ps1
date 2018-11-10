@@ -14,7 +14,6 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$LogFile = "$env:ProgramData\stealthpuppy\Logs\$($MyInvocation.MyCommand.Name).log",
     [Parameter()]$Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe",
     [Parameter()]$Target = "$env:SystemRoot\Temp\CitrixReceiver.exe",
     [Parameter()]$BaselineVersion = [System.Version]"4.10.1.0",
@@ -23,6 +22,9 @@ Param (
     [Parameter()]$Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
     [Parameter()]$VerbosePreference = "Continue"
 )
+
+$stampDate = Get-Date
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-CitrixReceiver-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile -Append
 
 # Determine whether Receiver is already installed
@@ -73,4 +75,5 @@ If (!($Receiver) -or ($Receiver.Version -lt $BaselineVersion)) {
 } Else {
     Write-Verbose "Skipping Receiver installation. Installed version is $($Receiver.Version)"
 }
+
 Stop-Transcript
