@@ -5,7 +5,7 @@
         
         10/11/2018
         Aaron Parker, @stealthpuppy
-        Add check for Win32_ComputerSystem.Manufacturer = LENOVO
+        - Add check for Win32_ComputerSystem.Manufacturer = LENOVO
 
     .DESCRIPTION
         This script is designed to hide Vantage features that may not be appropriate
@@ -13,7 +13,7 @@
         each array.
 #>
 
-# Transcript for logging ###
+# Transcript for logging
 $stampDate = Get-Date
 $vantageTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
 $transcriptName = $vantageTempDir + "\Set-LenovoVantage-" + $stampDate.ToFileTimeUtc() + ".log"
