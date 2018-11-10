@@ -1,7 +1,11 @@
 <# PSScriptInfo
     .NOTES
-        Updated: 10/26/2018
+        Updated: 26/10/2018
         http://thinkdeploy.blogspot.com/2018/01/configuring-lenovo-vantage-with-mdm.html
+        
+        10/11/2018
+        Aaron Parker, @stealthpuppy
+        Add check for Win32_ComputerSystem.Manufacturer = LENOVO
 
     .DESCRIPTION
         This script is designed to hide Vantage features that may not be appropriate
@@ -17,12 +21,12 @@ Start-Transcript -Path $transcriptName -NoClobber
 $VerbosePreference = "Continue"
 
 # Start PowerShell as 64 bit process
-If ($ENV:PROCESSOR_ARCHITEW6432 -eq “AMD64”) {
+If ($ENV:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
     Try {
-        &”$ENV:WINDIR\SysNative\WindowsPowershell\v1.0\PowerShell.exe” -File $PSCOMMANDPATH
+        &"$ENV:WINDIR\SysNative\WindowsPowershell\v1.0\PowerShell.exe" -File $PSCOMMANDPATH
     }
     Catch {
-        Throw “Failed to start $PSCOMMANDPATH”
+        Throw "Failed to start $PSCOMMANDPATH"
     }
     Exit
 }
@@ -110,13 +114,15 @@ If ((Get-CimInstance -ClassName "Win32_ComputerSystem").Manufacturer -eq "LENOVO
 
 
     # System Update
+    <#
     Write-Output "Disabling System Update Plugin"
     $sUPlugin = "HKLM:\SOFTWARE\WOW6432Node\Policies\Lenovo\ImController\Plugins\LenovoSystemUpdatePlugin"
     If (!(Test-Path $sUPlugin)) {
         New-Item -Path $sUPlugin -Force > $null
     }
-    New-ItemProperty -Path $sUPlugin -Name Imc-Block -Value 1 -Force > $null                        # System Update Plugin
-    New-ItemProperty -Path $path -Name E40B12CE-C5DD-4571-BBC6-7EA5879A8472 -Value 0 -Force > $null # System Update GUI
+    New-ItemProperty -Path $sUPlugin -Name "Imc-Block" -Value 1 -Force > $null                        # System Update Plugin
+    New-ItemProperty -Path $path -Name "E40B12CE-C5DD-4571-BBC6-7EA5879A8472" -Value 0 -Force > $null # System Update GUI
+    #>
 
 }
 Else {
