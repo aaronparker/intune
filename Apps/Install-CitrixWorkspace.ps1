@@ -1,21 +1,30 @@
-# Requires -Version 3
-<#
-.SYNOPSIS
-    Downloads and installs Citrix Workspace (Win32/Desktop version) for full functionality.
-    Allows for Workspace installation via a PowerShell script to Windows 10 with Microsoft Intune.
-    Provides basic error checking and outputs to a log file; Add -Verbose for running manually.
-
-.NOTES
-    Name: Install-CitrixWorkspace.ps1
-    Author: Aaron Parker
-    Site: https://stealthpuppy.com
-    Twitter: @stealthpuppy
+<#PSScriptInfo
+    .VERSION 1.0
+    .GUID bc4f72f8-6fa6-4a76-88ba-961144da6044
+    .AUTHOR Aaron Parker, @stealthpuppy
+    .COMPANYNAME stealthpuppy
+    .COPYRIGHT Aaron Parker, https://stealthpuppy.com
+    .TAGS Intune Citrix Workspace
+    .LICENSEURI https://github.com/aaronparker/Intune/blob/master/LICENSE
+    .PROJECTURI https://github.com/aaronparker/Intune 
+    .ICONURI 
+    .EXTERNALMODULEDEPENDENCIES 
+    .REQUIREDSCRIPTS 
+    .EXTERNALSCRIPTDEPENDENCIES 
+    .RELEASENOTES
+    .PRIVATEDATA 
+#>
+<# 
+    .DESCRIPTION 
+        Downloads and installs Citrix Workspace (Win32/Desktop version) for full functionality.
+        Allows for Workspace installation via a PowerShell script to Windows 10 with Microsoft Intune.
+        Provides basic error checking and outputs to a log file; Add -Verbose for running manually.
 #>
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
     [Parameter()] $Url = "https://downloadplugins.citrix.com/Windows/CitrixWorkspaceApp.exe",
-    [Parameter()] $UrlHdx = "https://downloads.citrix.com/12105/HDX_RealTime_Media_Engine_2.5_for_Windows.msi",
+    [Parameter()] $UrlHdx = "https://downloads.citrix.com/12105/HDX_RealTime_Media_Engine_2.6_for_Windows.msi",
     [Parameter()] $Target = "$env:SystemRoot\Temp\CitrixWorkspace.exe",
     [Parameter()] $BaselineVersion = [System.Version]"18.8.0.19031",
     [Parameter()] $TargetWeb = "$env:SystemRoot\Temp\CitrixWorkspaceWeb.exe",
@@ -24,6 +33,7 @@ Param (
     [Parameter()] $VerbosePreference = "Continue"
 )
 
+# Logging
 $stampDate = Get-Date
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-CitrixWorkspace-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile -Append
@@ -82,7 +92,7 @@ If (!($Workspace) -or ($Workspace.Version -lt $BaselineVersion)) {
     @($ErrorRemoveAppx, $ErrorAddDotNet, $ErrorBits, $ErrorInstall) | Write-Output
 }
 Else {
-    Write-Verbose "Skipping Workspace installation. Installed version is $($Workspace.Version)"
+    Write-Output "Skipping Workspace installation. Installed version is $($Workspace.Version)"
 }
 
 Stop-Transcript

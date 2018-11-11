@@ -1,28 +1,38 @@
-# Requires -Version 3
-<#
-.SYNOPSIS
-    Downloads and installs Citrix Receiver (Win32/Desktop version) for full functionality.
-    Allows for Receiver installation via a PowerShell script to Windows 10 with Microsoft Intune.
-    Provides basic error checking and outputs to a log file; Add -Verbose for running manually.
-
-.NOTES
-    Name: Install-CitrixReceiver.ps1
-    Author: Aaron Parker
-    Site: https://stealthpuppy.com
-    Twitter: @stealthpuppy
+<#PSScriptInfo
+    .VERSION 1.0
+    .GUID ec1cff54-f1c1-4564-ba00-3a45999bc2d3
+    .AUTHOR Aaron Parker, @stealthpuppy
+    .COMPANYNAME stealthpuppy
+    .COPYRIGHT Aaron Parker, https://stealthpuppy.com
+    .TAGS Intune Citrix Receiver
+    .LICENSEURI https://github.com/aaronparker/Intune/blob/master/LICENSE
+    .PROJECTURI https://github.com/aaronparker/Intune 
+    .ICONURI 
+    .EXTERNALMODULEDEPENDENCIES 
+    .REQUIREDSCRIPTS 
+    .EXTERNALSCRIPTDEPENDENCIES 
+    .RELEASENOTES
+    .PRIVATEDATA 
 #>
+<# 
+    .DESCRIPTION 
+        Downloads and installs Citrix Receiver (Win32/Desktop version) for full functionality.
+        Allows for Receiver installation via a PowerShell script to Windows 10 with Microsoft Intune.
+        Provides basic error checking and outputs to a log file; Add -Verbose for running manually.
+#> 
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe",
-    [Parameter()]$Target = "$env:SystemRoot\Temp\CitrixReceiver.exe",
-    [Parameter()]$BaselineVersion = [System.Version]"4.10.1.0",
-    [Parameter()]$TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe",
-    [Parameter()]$Rename = $True,
-    [Parameter()]$Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
-    [Parameter()]$VerbosePreference = "Continue"
+    [Parameter()] $Url = "https://downloadplugins.citrix.com/Windows/CitrixReceiver.exe",
+    [Parameter()] $Target = "$env:SystemRoot\Temp\CitrixReceiver.exe",
+    [Parameter()] $BaselineVersion = [System.Version]"4.12.0.0",
+    [Parameter()] $TargetWeb = "$env:SystemRoot\Temp\CitrixReceiverWeb.exe",
+    [Parameter()] $Rename = $True,
+    [Parameter()] $Arguments = '/AutoUpdateCheck=auto /AutoUpdateStream=Current /DeferUpdateCount=5 /AURolloutPriority=Medium /NoReboot /Silent EnableCEIP=False',
+    [Parameter()] $VerbosePreference = "Continue"
 )
 
+# Logging
 $stampDate = Get-Date
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-CitrixReceiver-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile -Append
@@ -73,7 +83,7 @@ If (!($Receiver) -or ($Receiver.Version -lt $BaselineVersion)) {
     # Intune shows basic deployment status in the Overview blade of the PowerShell script properties
     @($ErrorRemoveAppx, $ErrorAddDotNet, $ErrorBits, $ErrorInstall) | Write-Output
 } Else {
-    Write-Verbose "Skipping Receiver installation. Installed version is $($Receiver.Version)"
+    Write-Output "Skipping Receiver installation. Installed version is $($Receiver.Version)"
 }
 
 Stop-Transcript

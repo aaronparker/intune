@@ -1,19 +1,23 @@
-# Requires -Version 3
-<#
-    .SYNOPSIS
-        Downloads and installs the Microsoft Teams desktop client.
-
-    .DESCRIPTION
+<#PSScriptInfo
+    .VERSION 1.0
+    .GUID 700277ac-33a2-42cf-b78e-e5a46ba5f335
+    .AUTHOR Aaron Parker, @stealthpuppy
+    .COMPANYNAME stealthpuppy
+    .COPYRIGHT Aaron Parker, https://stealthpuppy.com
+    .TAGS Intune Microsoft Teams
+    .LICENSEURI https://github.com/aaronparker/Intune/blob/master/LICENSE
+    .PROJECTURI https://github.com/aaronparker/Intune 
+    .ICONURI 
+    .EXTERNALMODULEDEPENDENCIES 
+    .REQUIREDSCRIPTS 
+    .EXTERNALSCRIPTDEPENDENCIES 
+    .RELEASENOTES
+    .PRIVATEDATA 
+#>
+<# 
+    .DESCRIPTION 
         Downloads and installs the Microsoft Teams desktop client. Run in end-user's context.
         The Teams client does not come as an MSI; installing via PowerShell makes it easier to download and install for Windows 10 MDM.
-        
-    .NOTES
-        Name: Install-MicrosoftTeams.ps1
-        Author: Aaron Parker
-        Twitter: @stealthpuppy
-
-    .LINK
-        https://stealthpuppy.com
 #>
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
@@ -57,7 +61,7 @@ If (Test-Path $Installer) {
 
     # Detect that the Microsoft Teams client has been installed
     If (Test-Path -Path $Teams) {
-        Write-Verbose -Message "Installed Microsoft Teams $((Get-ItemProperty -Path $Teams).VersionInfo.ProductVersion)"
+        Write-Output -Message "Installed Microsoft Teams $((Get-ItemProperty -Path $Teams).VersionInfo.ProductVersion)"
     } Else {
         Write-Error -Message "Unable to find the Teams executable, assume installation failed."
     }
