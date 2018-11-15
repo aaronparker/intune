@@ -11,7 +11,7 @@ Param (
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
     [Parameter()] $TaskName = "Folder Redirection",
-    [Parameter()] $Group = $((Get-LocalGroup -SID S-1-5-32-545).Name),
+    [Parameter()] $Group = "S-1-5-32-545",
     [Parameter()] $Execute = "wscript.exe",
     [Parameter()] $Target = "$env:ProgramData\Intune-Scripts",
     [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
@@ -22,6 +22,19 @@ Param (
 $stampDate = Get-Date
 $LogFile = "$env:ProgramData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
+
+# Resolve group
+$module = "$env:SystemRoot\system32\WindowsPowerShell\v1.0\Modules\Microsoft.PowerShell.LocalAccounts\1.0.0.0\Microsoft.Powershell.LocalAccounts.dll"
+try {
+    Import-Module $module -Force -ErrorAction SilentlyContinue
+    $userGroup = (Get-LocalGroup -SID $Group).Name
+}
+catch {
+    Write-Output "Unable to import module Microsoft.PowerShell.LocalAccounts, default group to 'Users'."
+}
+finally {
+    If ($Null -eq $userGroup) { $userGroup = "Users" }
+}
 
 # Construct string to output as a VBscript
 $vbScript = 'Set objShell=CreateObject("WScript.Shell")' + "`r`n"
@@ -68,7 +81,7 @@ Else {
     $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
     $trigger = New-ScheduledTaskTrigger -AtLogon -RandomDelay (New-TimeSpan -Minutes 1)
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden -DontStopIfGoingOnBatteries -Compatibility Win8
-    $principal = New-ScheduledTaskPrincipal -GroupId $Group
+    $principal = New-ScheduledTaskPrincipal -GroupId $userGroup
     $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 
     # No task object exists, so register the new task
