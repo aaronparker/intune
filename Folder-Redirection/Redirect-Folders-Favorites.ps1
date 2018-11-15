@@ -102,7 +102,7 @@ Function Get-KnownFolderPath {
         [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos')]
         [string] $KnownFolder
     )
-    Write-Output [Environment]::GetFolderPath($KnownFolder)
+    [Environment]::GetFolderPath($KnownFolder)
 }
 
 Function Move-Files {
@@ -158,7 +158,8 @@ Function Redirect-Folder {
 
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
-        Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
+        $log = "$env:LocalAppData\Intune-PowerShell-Logs\Robocopy-" + $stampDate.ToFileTimeUtc() + ".log"
+        Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log $log
         
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
