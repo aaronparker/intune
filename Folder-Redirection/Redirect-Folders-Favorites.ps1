@@ -7,8 +7,7 @@
         Name: Redirect-Folders.ps1
         Author: Aaron Parker
 #>
-[CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
-    SupportsShouldProcess = $False, PositionalBinding = $False)]
+[CmdletBinding()]
 Param (
     [Parameter()] $VerbosePreference = "Continue"
 )
@@ -31,7 +30,7 @@ Function Set-KnownFolderPath {
     #>
     Param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos', )]
+        [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos')]
         [string] $KnownFolder,
 
         [Parameter(Mandatory = $true)]
@@ -100,7 +99,7 @@ Function Get-KnownFolderPath {
     #>
     Param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos', )]
+        [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos')]
         [string] $KnownFolder
     )
     Write-Output [Environment]::GetFolderPath($KnownFolder)
