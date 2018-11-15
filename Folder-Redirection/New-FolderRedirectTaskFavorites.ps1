@@ -5,10 +5,9 @@
         Enable folder redirection on Windows 10 Azure AD joined PCs.
         Downloads the folder redirection script from a URL locally and creates the schedule task.
 #>
-[CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
-    SupportsShouldProcess = $False, PositionalBinding = $False)]
+[CmdletBinding()]
 Param (
-    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
+    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders-Favorites.ps1",
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
     [Parameter()] $TaskName = "Folder Redirection",
@@ -18,6 +17,7 @@ Param (
     [Parameter()] $VerbosePreference = "Continue"
 )
 
+# Log file
 $stampDate = Get-Date
 $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile

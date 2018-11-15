@@ -22,11 +22,11 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()]$Target = "$env:Temp",
-    [Parameter()]$Arguments = "--silent",
-    [Parameter()]$HttpRegEx = "^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$",
-    [Parameter()]$Teams = "$env:LocalAppData\Microsoft\Teams\Update.exe",
-    [Parameter()]$VerbosePreference = "Continue"
+    [Parameter()] $Target = "$env:Temp",
+    [Parameter()] $Arguments = "--silent",
+    [Parameter()] $HttpRegEx = "^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$",
+    [Parameter()] $Teams = "$env:LocalAppData\Microsoft\Teams\Update.exe",
+    [Parameter()] $VerbosePreference = "Continue"
 )
 
 $stampDate = Get-Date

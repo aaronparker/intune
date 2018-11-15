@@ -1,7 +1,7 @@
 # Requires -Version 3
 <#
     .SYNOPSIS
-        Creates a scheduled task to implement folder redirection for .
+        Creates a scheduled task to implement folder redirection for.
 
     .NOTES
         Name: Redirect-Folders.ps1
@@ -15,6 +15,7 @@ Param (
     [Parameter()] $VerbosePreference = "Continue"
 )
 
+# Log file
 $stampDate = Get-Date
 $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
@@ -134,29 +135,6 @@ Function Get-KnownFolderPath {
     [Environment]::GetFolderPath($KnownFolder)
 }
 
-Function Move-Files {
-    <#
-        .SYNOPSIS
-            Moves contents of a folder with output to a log.
-            Uses Robocopy to ensure data integrity and all moves are logged for auditing.
-            Means we don't need to re-write functionality in PowerShell.
-        .PARAMETER Source
-            The source folder.
-        .PARAMETER Destination
-            The destination log.
-        .PARAMETER Log
-            The log file to store progress/output
-    #>
-    Param (
-        $Source,
-        $Destination,
-        $Log
-    )
-    If (!(Test-Path (Split-Path $Log))) { New-Item -Path (Split-Path $Log) -ItemType Container }
-    Write-Verbose "Moving data in folder $Source to $Destination."
-    Robocopy.exe "$Source" "$Destination" /E /MOV /XJ /XF *.ini /R:1 /W:1 /NP /LOG+:$Log
-}
-
 Function Redirect-Folder {
     <#
         .SYNOPSIS
@@ -197,6 +175,99 @@ Function Redirect-Folder {
     }
 }
 
+Function Invoke-Process {
+    <#PSScriptInfo 
+        .VERSION 1.4 
+        .GUID b787dc5d-8d11-45e9-aeef-5cf3a1f690de 
+        .AUTHOR Adam Bertram 
+        .COMPANYNAME Adam the Automator, LLC 
+        .TAGS Processes 
+    #>
+    <# 
+    .DESCRIPTION 
+        Invoke-Process is a simple wrapper function that aims to "PowerShellyify" launching typical external processes. There 
+        are lots of ways to invoke processes in PowerShell with Start-Process, Invoke-Expression, & and others but none account 
+        well for the various streams and exit codes that an external process returns. Also, it's hard to write good tests 
+        when launching external proceses. 
+    
+        This function ensures any errors are sent to the error stream, standard output is sent via the Output stream and any 
+        time the process returns an exit code other than 0, treat it as an error. 
+    #> 
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $FilePath,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string] $ArgumentList
+    )
+    $ErrorActionPreference = 'Stop'
+
+    try {
+        $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
+        $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
+
+        $startProcessParams = @{
+            FilePath               = $FilePath
+            ArgumentList           = $ArgumentList
+            RedirectStandardError  = $stdErrTempFile
+            RedirectStandardOutput = $stdOutTempFile
+            Wait                   = $true;
+            PassThru               = $true;
+            NoNewWindow            = $true;
+        }
+        if ($PSCmdlet.ShouldProcess("Process [$($FilePath)]", "Run with args: [$($ArgumentList)]")) {
+            $cmd = Start-Process @startProcessParams
+            $cmdOutput = Get-Content -Path $stdOutTempFile -Raw
+            $cmdError = Get-Content -Path $stdErrTempFile -Raw
+            if ($cmd.ExitCode -ne 0) {
+                if ($cmdError) {
+                    throw $cmdError.Trim()
+                }
+                if ($cmdOutput) {
+                    throw $cmdOutput.Trim()
+                }
+            }
+            else {
+                if ([string]::IsNullOrEmpty($cmdOutput) -eq $false) {
+                    Write-Output -InputObject $cmdOutput
+                }
+            }
+        }
+    }
+    catch {
+        $PSCmdlet.ThrowTerminatingError($_)
+    }
+    finally {
+        Remove-Item -Path $stdOutTempFile, $stdErrTempFile -Force -ErrorAction Ignore
+    }
+}
+
+Function Move-Files {
+    <#
+        .SYNOPSIS
+            Moves contents of a folder with output to a log.
+            Uses Robocopy to ensure data integrity and all moves are logged for auditing.
+            Means we don't need to re-write functionality in PowerShell.
+        .PARAMETER Source
+            The source folder.
+        .PARAMETER Destination
+            The destination log.
+        .PARAMETER Log
+            The log file to store progress/output
+    #>
+    Param (
+        $Source,
+        $Destination,
+        $Log
+    )
+    If (!(Test-Path (Split-Path $Log))) { New-Item -Path (Split-Path $Log) -ItemType Container }
+    Write-Verbose "Moving data in folder $Source to $Destination."
+    Robocopy.exe "$Source" "$Destination" /E /MOV /XJ /XF *.ini /R:1 /W:1 /NP /LOG+:$Log
+}
+
 
 # Get OneDrive sync folder
 $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts\Business1' -Name 'UserFolder'
@@ -214,4 +285,5 @@ If (Test-Path $SyncFolder) {
 Else {
     Write-Verbose "$SyncFolder does not (yet) exist. Skipping folder redirection until next logon."
 }
+
 Stop-Transcript -Verbose
