@@ -80,6 +80,7 @@ Function Install-OneDrive {
     }
 }
 
+# Start log file
 $stampDate = Get-Date
 $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Set-OneDriveUser-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
@@ -87,15 +88,17 @@ Start-Transcript -Path $LogFile
 # Creates the EnableADAL registry value for silent account config
 New-RegValue -Key "HKCU:\SOFTWARE\Microsoft\OneDrive" -Value "EnableADAL" -Data "1" -Type "Dword"
 
-# Update OneDrive
-$CurrentVersion = [System.Version]"18.151.0729.0012"
+# Update OneDrive variables
+$CurrentVersion = [System.Version]"18.192.0920.0015"
 $OldVersion = [System.Version]"17.3.6816.0313"
 $OneDrivePath = "$env:LocalAppData\Microsoft\OneDrive"
 $OneDriveStandaloneUpdater = "OneDriveStandaloneUpdater.exe"
 
+# Update, Install and Run OneDrive
 Update-OneDrive -CurrentVersion $CurrentVersion -OldVersion $OldVersion `
     -OneDrivePath $OneDrivePath -OneDriveStandaloneUpdater $OneDriveStandaloneUpdater
-
 Install-OneDrive -CurrentVersion $CurrentVersion
+Start-Sleep -Seconds 10
+Start-Process -FilePath "$env:LocalAppData\Microsoft\OneDrive\OneDrive.exe" -ArgumentList "/background"
 
 Stop-Transcript
