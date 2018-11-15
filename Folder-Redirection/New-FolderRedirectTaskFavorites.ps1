@@ -13,6 +13,7 @@ Param (
     [Parameter()] $TaskName = "Folder Redirection",
     [Parameter()] $Group = $((Get-LocalGroup -SID S-1-5-32-545).Name),
     [Parameter()] $Execute = "wscript.exe",
+    [Parameter()] $Target = "$env:ProgramData\Intune-Scripts",
     [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
     [Parameter()] $VerbosePreference = "Continue"
 )
