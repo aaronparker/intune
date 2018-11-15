@@ -20,7 +20,7 @@ Param (
 )
 
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
+$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Construct string to output as a VBscript
