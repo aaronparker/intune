@@ -43,8 +43,12 @@ Function Get-KnownFolderPath {
 Function New-Shortcut {
     [CmdletBinding()]
     Param (
+        [ValidateNotNullOrEmpty]
         [string] $Path,
+
+        [ValidateNotNullOrEmpty]
         [string] $Target,
+
         [string] $Arguments,
         [string] $WorkingDirectory,
         [string] $WindowStyle = 1,
@@ -60,7 +64,7 @@ Function New-Shortcut {
         $shortCut.Arguments = $Arguments
         $shortCut.WorkingDirectory = $WorkingDirectory
         $shortCut.WindowStyle = $WindowStyle
-        $shortCut.Hotkey = ""
+        $shortCut.Hotkey = $Hotkey
         $shortCut.IconLocation = $Icon
         $shortCut.Description = $Description
         $shortCut.Save()
@@ -79,9 +83,7 @@ $LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Shortcuts-" + $stampDate.To
 Start-Transcript -Path $LogFile
 
 # Create shortcut locations
-$desktopFolder = Get-KnownFolderPath -KnownFolder Desktop
-$startMenuFolder = "$(Get-KnownFolderPath -KnownFolder StartMenu)\Programs"
-$shortcuts = @($desktopFolder, $startMenuFolder)
+$shortcuts = @($(Get-KnownFolderPath -KnownFolder Desktop), "$(Get-KnownFolderPath -KnownFolder StartMenu)\Programs")
 
 # Create the shortcuts
 ForEach ($shortcut in $shortcuts) {
