@@ -7,7 +7,8 @@
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders-Favorites.ps1",
+    # [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders-Favorites.ps1"    
+    [Parameter()] $Url = "https://d1eiwfct039c42.cloudfront.net/Redirect-Folders-Favorites.ps1",
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
     [Parameter()] $TaskName = "Folder Redirection",
