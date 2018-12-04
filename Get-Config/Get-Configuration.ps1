@@ -22,9 +22,24 @@ Function Remove-InvalidFileNameChars {
     Write-Output ($Name -replace $re)
 }
 
-# Get configurations
-$configs = Get-IntuneDeviceConfigurationPolicy
-ForEach ($config in $configs) {
-    $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" | Remove-InvalidFileNameChars
-    $config | ConvertTo-Json | Add-Content -Path (Join-Path $pwd $fileName)
+Function Export-Configs {
+    [CmdletBinding()]
+    Param (
+        [Parameter()] $Configs,
+        [Parameter()] $Path
+    )
+    ForEach ($config in $Configs) {
+        $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" | Remove-InvalidFileNameChars
+        $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
+    }
 }
+
+# Output path
+$Path = "C:\Temp\IntuneConfigs"
+
+# Get device policies and write out to JSON files
+Export-Configs -Configs (Get-IntuneDeviceConfigurationPolicy) -Path $Path
+Export-Configs -Configs (Get-IntuneDeviceCompliancePolicy) -Path $Path
+Export-Configs -Configs (Get-IntuneDeviceEnrollmentConfiguration) -Path $Path
+Export-Configs -Configs (Get-IntuneDeviceCategory) -Path $Path
+Export-Configs -Configs (Get-IntuneWindowsInformationProtectionPolicy) -Path $Path
