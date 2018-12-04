@@ -29,7 +29,8 @@ Function Export-Configs {
         [Parameter()] $Path
     )
     ForEach ($config in $Configs) {
-        $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" | Remove-InvalidFileNameChars
+        $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" `
+            | Remove-InvalidFileNameChars
         $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
     }
 }
