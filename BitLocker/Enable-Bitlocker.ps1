@@ -1,141 +1,129 @@
-# Requires -Version 4
-<#
-    .SYNOPSIS
-        Ensure BitLocker is running on Windows 10 Azure AD joined machines and the recovery key is written to Azure AD.
-
-    .NOTES
-        Author: Jos Lieben
-        Twitter: @joslieben
-
-        Original Author / idea: Jan Van Meirvenne
-        Additional credit: Pieter Wigleven
-        Date: 14-06-2017
-        Script home: http://www.lieben.nu
-        Copyright: MIT
-
-    .LINK
-        http://www.lieben.nu/liebensraum/2017/06/automatically-BitLocker-windows-10-mdm-intune-azure-ad-joined-devices/
+<#PSScriptInfo 
+    .VERSION 3.0
+    .GUID f5187e3f-ed0a-4ce1-b438-d8f421619ca3 
+    .ORIGINAL AUTHOR Jan Van Meirvenne 
+    .MODIFIED BY Sooraj Rajagopalan, Paul Huijbregts & Pieter Wigleven, Sean McLaren, Imad Balute
+    .COPYRIGHT 
+    .TAGS Azure Intune BitLocker  
+    .LICENSEURI  
+    .PROJECTURI  
+    .ICONURI  
+    .EXTERNALMODULEDEPENDENCIES  
+    .REQUIREDSCRIPTS  
+    .EXTERNALSCRIPTDEPENDENCIES  
+    .RELEASENOTES  
 #>
 
-# Log file
+<#
+    .DESCRIPTION 
+        Check whether BitLocker is Enabled, if not Enable Bitlocker on AAD Joined devices and store recovery info in AAD. 
+        Store key in temp folder, just in case we need to use another task to copy it to OD4B
+
+    .NOTES
+        URL: https://blogs.technet.microsoft.com/showmewindows/2018/01/18/how-to-enable-bitlocker-and-escrow-the-keys-to-azure-ad-when-using-autopilot-for-standard-users/
+        Updates with removing aliases, update paths, formatting
+#> 
+[cmdletbinding()]
+param(
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $OSDrive = $env:SystemDrive
+)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Transcript for logging/troubleshooting
 $stampDate = Get-Date
-$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\Enable-Bitlocker-" + $stampDate.ToFileTimeUtc() + ".log"
-
-# Variables
-$postKeyToAAD = $True
-$ErrorActionPreference = "Stop"
-$version = "0.04"
-$scriptName = "enableBitlocker"
-Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version  starting on $($env:computername)"
-
-$key = 'HKLM:\SOFTWARE\Policies\Microsoft\FVE'
-If (Test-Path -Path $key){
-    Add-Content -Path $logFile -Value "$(Get-Date): $scriptName $version removing $key"
-    Remove-Item -Path $key -Force
-}
+$bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
+$transcriptName = "$($bitlockerTempDir)\EnableBitlocker-$($stampDate.ToFileTimeUtc()).log"
+Start-Transcript -Path $transcriptName -NoClobber
+$VerbosePreference = "Continue"
 
 try {
-    Add-Content -Path $logFile -Value "Checking BitLocker status of system drive $_"
-    $bitlockerStatus = Get-BitLockerVolume $env:SystemDrive -ErrorAction Stop | Select-Object -Property VolumeStatus
-}
-catch {
-    Add-Content -Path $logFile -Value "Failed to retrieve BitLocker status of system drive $_"
-    $postKeyToAAD = $False
-    Throw "Failed to retrieve BitLocker Status of System Drive"
-}
+    # Running as SYSTEM BitLocker may not implicitly load and running as SYSTEM the env variable is likely not set, so explicitly load it
+    Import-Module -Name "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker" -Verbose
 
-if ($bitlockerStatus.VolumeStatus -eq "FullyDecrypted") {
-    Add-Content -Path $logFile -Value "$($env:SystemDrive) system volume not yet encrypted, ejecting media and attempting to encrypt"
-    try {
-        # Automatically unmount any iso/dvd's
-        $diskmaster = New-Object -ComObject IMAPI2.MsftDiscMaster2 
-        $diskRecorder = New-Object -ComObject IMAPI2.MsftDiscRecorder2 
-        $diskRecorder.InitializeDiscRecorder($diskMaster) 
-        $diskRecorder.EjectMedia() 
-    }
-    catch {
-        Add-Content -Path $logFile -Value "Failed to unmount DVD $_"
-    }
+    # --------------------------------------------------------------------------
+    #  Let's dump the starting point
+    # --------------------------------------------------------------------------
+    Write-Verbose " STARTING POINT:  Get-BitLockerVolume $OSDrive"
+    $bdeStartingStatus = Get-BitLockerVolume $OSDrive
 
-    try {
-        # Automatically unmount any USB sticks
-        $volumes = get-wmiobject -Class Win32_Volume | Where-Object {$_.drivetype -eq '2'}  
-        foreach ($volume in $volumes) {
-            Add-Content -Path $logFile -Value "Ejecting volume $volume.driveletter"
-            $ejectCmd = New-Object -comObject Shell.Application
-            $ejectCmd.NameSpace(17).ParseName($volume.driveletter).InvokeVerb("Eject")
-        }
-    }
-    catch {
-        Add-Content -Path $logFile -Value "Failed to unmount USB device $_"
-    }
-
-    try {
-        #Enable BitLocker using TPM
-        Enable-BitLocker -MountPoint $env:SystemDrive -UsedSpaceOnly -TpmProtector -ErrorAction Stop -SkipHardwareTest -Confirm:$False
-        Add-Content -Path $logFile -Value "BitLocker enabled using TPM"
-    }
-    catch {
-        Add-Content -Path $logFile -Value "Failed to enable BitLocker using TPM: $_"
-        $postKeyToAAD = $False
-        Throw "Error while setting up AAD BitLocker during TPM step: $_"
-    }
-
-    try {
-        #Enable BitLocker with a normal password protector
-        Enable-BitLocker -MountPoint $env:SystemDrive -UsedSpaceOnly -RecoveryPasswordProtector -ErrorAction Stop -SkipHardwareTest -Confirm:$False
-        Add-Content -Path $logFile -Value "BitLocker recovery password set."
-    }
-    catch {
-        if ($_.Exception -like "*0x8031004E*") {
-            Add-Content -Path $logFile -Value "reboot required before BitLocker can be enabled."
+    # Evaluate the Volume Status to see what we need to do...
+    $bdeProtect = Get-BitLockerVolume $OSDrive | Select-Object -Property VolumeStatus
+    # Account for an uncrypted drive 
+    if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
+        Write-Verbose " Enabling BitLocker due to FullyDecrypted status or KeyProtector count less than 1"
+        # Enable Bitlocker using TPM
+        Enable-BitLocker -MountPoint $OSDrive  -TpmProtector -SkipHardwareTest -UsedSpaceOnly -ErrorAction Continue
+        Enable-BitLocker -MountPoint $OSDrive  -RecoveryPasswordProtector -SkipHardwareTest
+    }  
+    elseif ($bdeProtect.VolumeStatus -eq "FullyEncrypted" -or $bdeProtect.VolumeStatus -eq "UsedSpaceOnly") {
+        # $bdeProtect.ProtectionStatus -eq "Off" - This catches the Wait State
+        if ($bdeProtect.KeyProtector.Count -lt 2) {
+            Write-Verbose " Volume Status is encrypted, but BitLocker only has one key protector (TPM)"
+            Write-Verbose "  Adding a RecoveryPasswordProtector"
+            manage-bde -on $OSDrive -UsedSpaceOnly -rp
         }
         else {
-            Add-Content -Path $logFile -Value "Error while setting up AAD BitLocker: $_"
-            $postKeyToAAD = $False
-            Throw "Error while setting up AAD BitLocker during noTPM step: $_"
+            Write-Verbose " BitLocker is in Wait State - running manage-bde -on -UsedSpaceOnly"
+            manage-bde -on $OSDrive -UsedSpaceOnly
         }
-    } 
-}
-else {
-    Add-Content -Path $logFile -Value "System volume $($env:SystemDrive) already encrypted"
-}
+    }
 
-if ($postKeyToAAD) {
-    Add-Content -Path $logFile -Value "Will attempt to update your recovery key in AAD"
-    try {
+    # Writing recovery key to temp directory, another user-mode task will move this to OneDrive for Business (if configured)
+    Write-Verbose " Writing key protector to temp file so we can move it to OneDrive for Business"
+    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)-BitlockerRecoveryPassword.txt"
+				
+    # Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
+    $cmdName = "BackupToAAD-BitLockerKeyProtector"
+    if (Get-Command $cmdName -ErrorAction SilentlyContinue) {
+        Write-Verbose " Saving Key to AAD using BackupToAAD-BitLockerKeyProtector commandlet"
+        # BackupToAAD-BitLockerKeyProtector commandlet exists
+        $BLV = Get-BitLockerVolume -MountPoint $OSDrive | Select-Object *
+        BackupToAAD-BitLockerKeyProtector -MountPoint $OSDrive -KeyProtectorId $BLV.KeyProtector[1].KeyProtectorId
+    }
+    else { 
+        # BackupToAAD-BitLockerKeyProtector commandlet not available, using other mechanisme  
+        # Get the AAD Machine Certificate
         $cert = Get-ChildItem Cert:\LocalMachine\My\ | Where-Object { $_.Issuer -match "CN=MS-Organization-Access" }
-        $id = $cert.Subject.Replace("CN=", "")
-        Add-Content -Path $logFile "using certificate $id"
-        
-        $objUser = New-Object System.Security.Principal.NTAccount($env:USERNAME)
-        $strSID = ($objUser.Translate([System.Security.Principal.SecurityIdentifier])).Value
-        $basePath = "HKLM:\SOFTWARE\Microsoft\IdentityStore\Cache\$strSID\IdentityCache\$strSID"
-        $userId = (Get-ItemProperty -Path $basePath -Name UserName).UserName
-        if ($userId -and $userId -like "*@*") {
-            $tenant = ($userId).ToLower().Split('@')[1]
-        }
-        Add-Content -Path $logFile -Value "detected tenant $tenant"
 
-        try {
-            # Set TLS v1.2
-            $res = [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            Add-Content -Path $logFile -Value "TLS set to v1.2"
-        }
-        catch {
-            Add-Content -Path $logFile -Value "could not set TLS to v1.2"
-        }
-        (Get-BitLockerVolume -MountPoint $env:SystemDrive).KeyProtector| Where-Object {$_.KeyProtectorType -eq 'RecoveryPassword'}| ForEach-Object {
+        # Obtain the AAD Device ID from the certificate
+        $id = $cert.Subject.Replace("CN=", "")
+
+        # Get the tenant name from the registry
+        $tenant = (Get-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\CloudDomainJoin\JoinInfo\$($id)).UserEmail.Split('@')[1]
+
+        # Generate the body to send to AAD containing the recovery information
+        Write-Verbose " COMMAND BackupToAAD-BitLockerKeyProtector failed!"
+        Write-Verbose " Saving key protector to AAD for self-service recovery by manually posting it to:"
+        Write-Verbose "                     https://enterpriseregistration.windows.net/manage/$tenant/device/$($id)?api-version=1.0"
+				    # Get the BitLocker key information from WMI
+        (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Where-Object {$_.KeyProtectorType -eq 'RecoveryPassword'} | ForEach-Object {
             $key = $_
-            Add-Content -Path $logFile -Value "kid : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
+            Write-Verbose "kid : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
             $body = "{""key"":""$($key.RecoveryPassword)"",""kid"":""$($key.KeyProtectorId.replace('{','').Replace('}',''))"",""vol"":""OSV""}"
+				
+            # Create the URL to post the data to based on the tenant and device information
             $url = "https://enterpriseregistration.windows.net/manage/$tenant/device/$($id)?api-version=1.0"
+				
+            # Post the data to the URL and sign it with the AAD Machine Certificate
             $req = Invoke-WebRequest -Uri $url -Body $body -UseBasicParsing -Method Post -UseDefaultCredentials -Certificate $cert
-            Add-Content -Path $logFile -Value "Key updated in AAD"
+            $req.RawContent
+            Write-Verbose " -- Key save web request sent to AAD - Self-Service Recovery should work"
         }
     }
-    catch {
-        Add-Content -Path $logFile -Value "Failed to update key in AAD: $_"
-        # Throw "Failed to update key in AAD: $_"
-    }
+
+    # In case we had to encrypt, turn it on for any enabled volume
+    Get-BitLockerVolume | Resume-BitLocker
+
+    # --------------------------------------------------------------------------
+    #  Finish - Let's dump the ending point
+    # --------------------------------------------------------------------------
+    Write-Verbose " ENDING POINT:  Get-BitLockerVolume $OSDrive"
+    $bdeProtect = Get-BitLockerVolume $OSDrive 
+} 
+catch { 
+    Write-Error "Error while setting up AAD Bitlocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
 }
+
+Stop-Transcript
