@@ -270,17 +270,15 @@ Function Move-Files {
 
 
 # Get OneDrive sync folder
-$SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts\Business1' -Name 'UserFolder'
+$SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts\Business1' -Name 'UserFolder' -ErrorAction SilentlyContinue
 Write-Verbose "Target sync folder is $SyncFolder."
 
-# Get ShareFile sync folder
-# $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Citrix\ShareFile\Sync' -Name PersonalFolderRootLocation
-
 # Redirect select folders
-If (Test-Path $SyncFolder) {
+If (Test-Path -Path $SyncFolder -ErrorAction SilentlyContinue) {
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'Desktop' -SetFolder 'Desktop' -Target 'Desktop'
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'MyDocuments' -SetFolder 'Documents' -Target 'Documents'
     Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'MyPictures' -SetFolder 'Pictures' -Target 'Pictures'
+    Redirect-Folder -SyncFolder $SyncFolder -GetFolder 'Favorites' -SetFolder 'Favorites' -Target 'Favorites'
 }
 Else {
     Write-Verbose "$SyncFolder does not (yet) exist. Skipping folder redirection until next logon."
