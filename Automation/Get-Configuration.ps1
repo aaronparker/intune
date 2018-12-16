@@ -1,13 +1,7 @@
 <#
-    Export Intune configuration to disk
+    Export Intune configuration to disk.
+    Ensure the Intune PowerShell SDK is imported and you have connected to the MSGraph API
 #>
-
-# Import the Intune PowerShell module
-Import-Module "C:\Temp\Intune\Microsoft.Graph.Intune.psd1"
-
-# Connect to Intune Graph API
-Connect-MSGraph
-
 Function Remove-InvalidFileNameChars {
     param(
         [Parameter(Mandatory = $true,
