@@ -13,7 +13,6 @@
     .EXTERNALSCRIPTDEPENDENCIES  
     .RELEASENOTES  
 #>
-
 <#
     .DESCRIPTION 
         Check whether BitLocker is Enabled, if not Enable Bitlocker on AAD Joined devices and store recovery info in AAD. 
@@ -40,7 +39,7 @@ $VerbosePreference = "Continue"
 
 try {
     # Running as SYSTEM BitLocker may not implicitly load and running as SYSTEM the env variable is likely not set, so explicitly load it
-    Import-Module -Name "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker" -Verbose
+    Import-Module -Name "$env:SystemRoot\SysWOW64\WindowsPowerShell\v1.0\Modules\BitLocker"
 
     # --------------------------------------------------------------------------
     #  Let's dump the starting point
@@ -54,8 +53,8 @@ try {
     if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
         Write-Verbose " Enabling BitLocker due to FullyDecrypted status or KeyProtector count less than 1"
         # Enable Bitlocker using TPM
-        Enable-BitLocker -MountPoint $OSDrive  -TpmProtector -SkipHardwareTest -UsedSpaceOnly -ErrorAction Continue
-        Enable-BitLocker -MountPoint $OSDrive  -RecoveryPasswordProtector -SkipHardwareTest
+        Enable-BitLocker -MountPoint $OSDrive -TpmProtector -SkipHardwareTest -UsedSpaceOnly -ErrorAction Continue
+        Enable-BitLocker -MountPoint $OSDrive -RecoveryPasswordProtector -SkipHardwareTest
     }  
     elseif ($bdeProtect.VolumeStatus -eq "FullyEncrypted" -or $bdeProtect.VolumeStatus -eq "UsedSpaceOnly") {
         # $bdeProtect.ProtectionStatus -eq "Off" - This catches the Wait State
@@ -71,8 +70,8 @@ try {
     }
 
     # Writing recovery key to temp directory, another user-mode task will move this to OneDrive for Business (if configured)
-    Write-Verbose " Writing key protector to temp file so we can move it to OneDrive for Business"
-    (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)-BitlockerRecoveryPassword.txt"
+    # Write-Verbose " Writing key protector to temp file so we can move it to OneDrive for Business"
+    # (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Out-File "$env:SystemRoot\Temp\$($env:computername)-BitlockerRecoveryPassword.txt"
 				
     # Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
     $cmdName = "BackupToAAD-BitLockerKeyProtector"

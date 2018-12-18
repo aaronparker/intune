@@ -2,6 +2,12 @@
     Export Intune configuration to disk.
     Ensure the Intune PowerShell SDK is imported and you have connected to the MSGraph API
 #>
+[CmdletBinding()]
+Param (
+    [Parameter()]
+    [string] $Path = $pwd
+)
+
 Function Remove-InvalidFileNameChars {
     param(
         [Parameter(Mandatory = $true,
@@ -16,25 +22,22 @@ Function Remove-InvalidFileNameChars {
     Write-Output ($Name -replace $re)
 }
 
-Function Export-Configs {
+Function Export-Config {
     [CmdletBinding()]
     Param (
-        [Parameter()] $Configs,
+        [Parameter()] $Configuration,
         [Parameter()] $Path
     )
-    ForEach ($config in $Configs) {
+    ForEach ($config in $Configuration) {
         $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" `
             | Remove-InvalidFileNameChars
         $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
     }
 }
 
-# Output path
-$Path = "C:\Temp\IntuneConfigs"
-
 # Get device policies and write out to JSON files
-Export-Configs -Configs (Get-IntuneDeviceConfigurationPolicy) -Path $Path
-Export-Configs -Configs (Get-IntuneDeviceCompliancePolicy) -Path $Path
-Export-Configs -Configs (Get-IntuneDeviceEnrollmentConfiguration) -Path $Path
-Export-Configs -Configs (Get-IntuneDeviceCategory) -Path $Path
-Export-Configs -Configs (Get-IntuneWindowsInformationProtectionPolicy) -Path $Path
+Export-Config -Configuration (Get-IntuneDeviceConfigurationPolicy) -Path $Path
+Export-Config -Configuration (Get-IntuneDeviceCompliancePolicy) -Path $Path
+Export-Config -Configuration (Get-IntuneDeviceEnrollmentConfiguration) -Path $Path
+Export-Config -Configuration (Get-IntuneDeviceCategory) -Path $Path
+Export-Config -Configuration (Get-IntuneWindowsInformationProtectionPolicy) -Path $Path
