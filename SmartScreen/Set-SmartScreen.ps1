@@ -1,5 +1,4 @@
 # Requires -Version 2
-# Requires -RunAsAdministrator
 <#
     .SYNOPSIS
         Enables Windows SmartScreen.
@@ -37,8 +36,9 @@ Function Set-RegValue {
 }
 
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Set-SmartScreen-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Ensure the SmartScreen key exists
 $key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\AppHost"

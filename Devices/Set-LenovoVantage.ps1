@@ -15,9 +15,9 @@
 
 # Transcript for logging
 $stampDate = Get-Date
-$vantageTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-$transcriptName = $vantageTempDir + "\Set-LenovoVantage-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $transcriptName -NoClobber
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile -NoClobber
 $VerbosePreference = "Continue"
 
 # Start PowerShell as 64 bit process

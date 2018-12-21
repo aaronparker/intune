@@ -17,7 +17,8 @@ Param (
 
 # Log file
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 Function Set-KnownFolderPath {

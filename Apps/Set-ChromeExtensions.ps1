@@ -1,6 +1,31 @@
 
+Function Set-RegValue {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $True)] $Key,
+        [Parameter(Mandatory = $True)] $Value,
+        [Parameter(Mandatory = $True)] $Data,
+        [Parameter(Mandatory = $True)]
+        [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
+        $Type
+    )
+    try {
+        If (!(Test-Path $Key)) {
+            New-Item -Path $Key -Force -ErrorAction SilentlyContinue
+        }
+    }
+    catch {
+        Write-Error "Failed to create key $Key with error $_."
+        Break
+    }
+    finally {
+        New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+    }
+}
+
 $stampDate = Get-Date
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-GoogleChromeExtensions-" + $stampDate.ToFileTimeUtc() + ".log"
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Citrix Receiver / Workspace app as a preference

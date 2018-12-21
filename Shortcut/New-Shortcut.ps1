@@ -79,8 +79,10 @@ Function New-Shortcut {
 
 # Start log file
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Shortcuts-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Create shortcut locations
 $shortcuts = @($(Get-KnownFolderPath -KnownFolder Desktop), "$(Get-KnownFolderPath -KnownFolder StartMenu)\Programs")

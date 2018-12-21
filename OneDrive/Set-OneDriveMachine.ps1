@@ -26,7 +26,8 @@ Function New-RegValue {
 }
 
 $stampDate = Get-Date
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Set-OneDriveMachine-" + $stampDate.ToFileTimeUtc() + ".log"
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Creates the SilentAccountConfig registry value for silent account config

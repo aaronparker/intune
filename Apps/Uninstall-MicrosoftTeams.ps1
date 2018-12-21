@@ -3,7 +3,8 @@
     This script allows you to uninstall the Microsoft Teams app and remove Teams directory for a user.
 
 .DESCRIPTION
-    Use this script to clear the installed Microsoft Teams application. Run this PowerShell script for each user profile for which the Teams App was installed on a machine. After the PowerShell has executed on all user profiles, Teams can be redeployed.
+    Use this script to clear the installed Microsoft Teams application. Run this PowerShell script for each user profile
+    for which the Teams App was installed on a machine. After the PowerShell has executed on all user profiles, Teams can be redeployed.
 
 .NOTES
     https://docs.microsoft.com/en-us/microsoftteams/scripts/powershell-script-teams-deployment-clean-up

@@ -1,4 +1,5 @@
 # Requires -Version 2
+# Requires -RunAsAdministrator
 <#
     .SYNOPSIS
         Configures the local machine with various tasks / features.
@@ -13,8 +14,9 @@
 
 # Start logging
 $stampDate = Get-Date
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\Machine-Config-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Install .NET Framework 3.5
 $state = Get-WindowsCapability -Online | Where-Object {($_.Name -like "NetFx3~~~~") -and ($_.State -eq "NotPresent")}

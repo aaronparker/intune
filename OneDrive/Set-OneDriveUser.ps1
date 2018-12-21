@@ -82,8 +82,9 @@ Function Install-OneDrive {
 
 # Start log file
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Set-OneDriveUser-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Creates the EnableADAL registry value for silent account config
 New-RegValue -Key "HKCU:\SOFTWARE\Microsoft\OneDrive" -Value "EnableADAL" -Data "1" -Type "Dword"

@@ -1,8 +1,7 @@
 # Requires -Version 2
-# Requires -RunAsAdministrator
 <#
     .SYNOPSIS
-        Configures a store in the Citrix Workspace app. Works for Microsoft Store or Win32 version of the Workspace app.
+        Enables 'Fix scaling for apps' feature for High DPI screens.
 
     .NOTES
         Author: Aaron Parker
@@ -41,10 +40,8 @@ $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $scrip
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
-# Ensure the SmartScreen key exists
-$key = "HKLM:\SOFTWARE\Policies\Citrix\Receiver\Sites"
-
-# Add a Citrix Cloud Workspace store (with Gateway service) to the Workspace app
-Set-RegValue -Key $key -Value "STORE1" -Type String -Data "Store;https://customer.cloud.com#Store;On;Store description"
+# Enable 'Let Windows try to fix apps so they are not blurry'
+$key = "HKEY_CURRENT_USER\Control Panel\Desktop"
+Set-RegValue -Key $key -Value "EnablePerProcessSystemDPI" -Type DWord -Data 1
 
 Stop-Transcript

@@ -35,7 +35,8 @@ Param (
 
 # Logging
 $stampDate = Get-Date
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\Install-CitrixWorkspace-" + $stampDate.ToFileTimeUtc() + ".log"
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile -Append
 
 # Determine whether Workspace is already installed

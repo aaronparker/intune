@@ -33,8 +33,9 @@ param(
 # Transcript for logging/troubleshooting
 $stampDate = Get-Date
 $bitlockerTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-$transcriptName = "$($bitlockerTempDir)\EnableBitlocker-$($stampDate.ToFileTimeUtc()).log"
-Start-Transcript -Path $transcriptName -NoClobber
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile -NoClobber
 $VerbosePreference = "Continue"
 
 try {

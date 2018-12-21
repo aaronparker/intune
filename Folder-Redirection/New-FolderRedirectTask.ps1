@@ -20,7 +20,8 @@ Param (
 )
 
 $stampDate = Get-Date
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Construct string to output as a VBscript

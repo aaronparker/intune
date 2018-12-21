@@ -46,7 +46,7 @@
  
         .LINK
             http://stealthpuppy.com
-    #>
+#>
 [CmdletBinding(DefaultParameterSetName = "Blacklist")]
 Param (
     [Parameter(Mandatory = $false, ParameterSetName = "Blacklist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
@@ -111,7 +111,9 @@ Begin {
 Process {
     # Start logging
     $stampDate = Get-Date
-    $logFile = "$env:LocalAppData\Intune-PowerShell-Logs\Remove-UserAppxApps-" + $stampDate.ToFileTimeUtc() + ".log"
+    $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+    $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+    $logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
     Start-Transcript -Path $LogFile
 
     Switch ($Operation) {

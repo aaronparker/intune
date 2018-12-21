@@ -28,9 +28,9 @@ If ($ENV:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
 
 # Transcript for logging
 $stampDate = Get-Date
-$vantageTempDir = "$env:ProgramData\Intune-PowerShell-Logs"
-$transcriptName = $vantageTempDir + "\Set-LenovoAssetTag-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $transcriptName -NoClobber
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile -NoClobber
 $VerbosePreference = "Continue"
 
 # Intune PowerShell scripts can only be targeted at user groups not device groups

@@ -26,8 +26,9 @@ Function New-RegValue {
 }
 
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Set-StorageSense-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Ensure the StorageSense key exists
 $key = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense"
