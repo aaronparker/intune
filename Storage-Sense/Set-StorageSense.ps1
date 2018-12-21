@@ -11,7 +11,7 @@
         https://stealthpuppy.com
 #>
 
-Function New-RegValue {
+Function Set-RegValue {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $True)] $Key,
@@ -21,8 +21,18 @@ Function New-RegValue {
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
         $Type
     )
-    If (!(Test-Path $Key)) { New-Item -Path $Key -Force }
-    New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+    try {
+        If (!(Test-Path $Key)) {
+            New-Item -Path $Key -Force -ErrorAction SilentlyContinue
+        }
+    }
+    catch {
+        Write-Error "Failed to create key $Key with error $_."
+        Break
+    }
+    finally {
+        New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+    }
 }
 
 $stampDate = Get-Date

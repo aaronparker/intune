@@ -37,11 +37,11 @@ Function Set-RegValue {
 
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $logFile
 
 # Enable 'Let Windows try to fix apps so they are not blurry'
-$key = "HKEY_CURRENT_USER\Control Panel\Desktop"
+$key = "HKCU:\Control Panel\Desktop"
 Set-RegValue -Key $key -Value "EnablePerProcessSystemDPI" -Type DWord -Data 1
 
 Stop-Transcript
