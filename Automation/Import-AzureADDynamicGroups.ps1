@@ -34,36 +34,65 @@ $csvGroups = Import-Csv $Path -ErrorAction SilentlyContinue
 
 # Get the existing dynamic groups from Azure AD
 try {
-    $existingGroups = Get-AzureADMSGroup -All:$True | Where-Object { $_.GroupTypes -eq "DynamicMembership" } -ErrorAction SilentlyContinue `
-        | Select-Object DisplayName, MembershipRule
+    $existingGroups = Get-AzureADMSGroup -All:$True | Where-Object { $_.GroupTypes -eq "DynamicMembership" } `
+        -ErrorAction SilentlyContinue
 }
 catch {
     Throw $_
 }
 finally {
-    Write-Verbose "Found existing dynamic groups."
+    If ($existingGroups) { Write-Verbose "Found existing dynamic groups." }
 }
 
 # Step through each group from the CSV file
+$output = @()
 ForEach ($group in $csvGroups) {
 
     # Match any existing group with the same membership rule
     $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
     If ($matchingGroup) {
         Write-Warning "Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName). Skipping import."
+        If ($matchingGroup.Description -ne $group.Description) {
+            try {
+                $setGrpParams = @{
+                    Id          = ($matchingGroup.Id)
+                    Description = $group.Description
+                    ErrorAction = "SilentlyContinue"
+                }
+                Set-AzureADMSGroup @setGrpParams
+                Write-Verbose "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+            }
+            catch {
+                Write-Warning "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                Throw $_
+            }
+        }
     }
     Else {
         try {
             # Create the new group
-            New-AzureADMSGroup -DisplayName $group.DisplayName -Description $group.Description -MembershipRule $group.MembershipRule `
-                -SecurityEnabled $True -MailEnabled $False -MailNickname (New-Guid) -ErrorAction SilentlyContinue
+            $newGrpParams = @{
+                DisplayName                   = $group.DisplayName
+                Description                   = $group.Description
+                GroupTypes                    = "DynamicMembership"
+                MembershipRule                = $group.MembershipRule
+                MembershipRuleProcessingState = "On"
+                SecurityEnabled               = $True
+                MailEnabled                   = $False
+                MailNickname                  = (New-Guid)
+                ErrorAction                   = "SilentlyContinue"
+            }
+            $newGroup = New-AzureADMSGroup @newGrpParams
+            $output += $newGroup
+            Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
         }
         catch {
             Write-Error "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
             Throw $_
-        }
-        finally {
-            Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+            Break
         }
     }
 }
+
+# Return the list of groups that were created
+Write-Output $output

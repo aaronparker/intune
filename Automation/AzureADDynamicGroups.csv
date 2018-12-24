@@ -3,7 +3,7 @@ Devices-Corporate,(device.deviceOwnership -startsWith "Corporate"),"Corporate-ow
 Devices-Personal,(device.deviceOwnership -startsWith "Personal"),"Personal-owned devices."
 Devices-Pilot,(device.deviceCategory -eq "Pilot"),"Devices enrolled in Pilot software update rings."
 Devices-Preview,(device.deviceCategory -eq "Preview"),"Devices enrolled in Preview software update rings."
-Devices-Production,(device.deviceCategory -eq "Production"),"Devices enrolled in Production software update rings."
+Devices-Production,(device.deviceCategory -eq "Production") -or (device.deviceCategory -eq "Unknown"),"Devices enrolled in Production software update rings."
 Devices-Disabled,(device.accountEnabled -eq False),"Disabled devices."
 Devices-Surface,(device.deviceModel -startsWith "Surface"),"Microsoft Surface Pro, Surface 3, Surface Go, Surface Laptop, Surface Studio devices."
 Devices-Lenovo,(device.deviceManufacturer -eq "LENOVO"),"Lenovo desktops and laptops."
