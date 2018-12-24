@@ -10,9 +10,10 @@
     .LINK
         https://stealthpuppy.com
 #>
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
 Param (
     [Parameter(ValueFromPipeline, Mandatory = $False, Position = 0, HelpMessage = "Path to the CSV document describing the Dynamic Groups.")]
+    [ValidateNotNullOrEmpty()]
     [ValidateScript( {
             If ( -Not (Test-Path -Path $_)) {
                 Throw "$_ does not exist."
@@ -59,12 +60,15 @@ ForEach ($group in $csvGroups) {
                     Description = $group.Description
                     ErrorAction = "SilentlyContinue"
                 }
-                Set-AzureADMSGroup @setGrpParams
-                Write-Verbose "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                If ($PSCmdlet.ShouldProcess($group.DisplayName , "Add description: [$($group.Description)].")) {
+                    Set-AzureADMSGroup @setGrpParams
+                    Write-Verbose "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                }
             }
             catch {
                 Write-Warning "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
                 Throw $_
+                Break
             }
         }
     }
@@ -82,9 +86,11 @@ ForEach ($group in $csvGroups) {
                 MailNickname                  = (New-Guid)
                 ErrorAction                   = "SilentlyContinue"
             }
-            $newGroup = New-AzureADMSGroup @newGrpParams
-            $output += $newGroup
-            Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+            If ($PSCmdlet.ShouldProcess($group.DisplayName , "Create group.")) {
+                $newGroup = New-AzureADMSGroup @newGrpParams
+                $output += $newGroup
+                Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+            }
         }
         catch {
             Write-Error "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
@@ -95,4 +101,5 @@ ForEach ($group in $csvGroups) {
 }
 
 # Return the list of groups that were created
+Write-Verbose "Created the following groups:"
 Write-Output $output
