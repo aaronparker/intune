@@ -1,4 +1,3 @@
-#Requires -Version 2
 #Requires -Modules AzureADPreview
 <#
     .SYNOPSIS
@@ -27,7 +26,7 @@ Param (
             
             Return $True
         })]
-    [System.IO.FileInfo] $Path = (Join-Path $pwd "DynamicGroups.csv")
+    [System.IO.FileInfo] $Path = (Join-Path $pwd "AzureADDynamicGroups.csv")
 )
 
 # Import CSV
@@ -51,21 +50,20 @@ ForEach ($group in $csvGroups) {
     # Match any existing group with the same membership rule
     $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
     If ($matchingGroup) {
-        Write-Warning "Membership rule for $group.DisplayName matches existing group $matchingGroup.DisplayName. Skipping import."
+        Write-Warning "Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName). Skipping import."
     }
     Else {
         try {
-
             # Create the new group
             New-AzureADMSGroup -DisplayName $group.DisplayName -Description $group.Description -MembershipRule $group.MembershipRule `
-                -SecurityEnabled $True -ErrorAction SilentlyContinue
+                -SecurityEnabled $True -MailEnabled $False -MailNickname (New-Guid) -ErrorAction SilentlyContinue
         }
         catch {
-            Write-Error "Failed to create group $group.DisplayName with membership rule $group.MembershipRule."
+            Write-Error "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
             Throw $_
         }
         finally {
-            Write-Verbose "Created group $group.DisplayName with membership rule $group.MembershipRule."
+            Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
         }
     }
 }
