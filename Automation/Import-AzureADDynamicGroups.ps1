@@ -53,6 +53,8 @@ ForEach ($group in $csvGroups) {
     $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
     If ($matchingGroup) {
         Write-Warning "Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName). Skipping import."
+        
+        # If the description needs updating on the group, update to match that listed in the CSV file
         If ($matchingGroup.Description -ne $group.Description) {
             try {
                 $setGrpParams = @{
@@ -101,5 +103,4 @@ ForEach ($group in $csvGroups) {
 }
 
 # Return the list of groups that were created
-Write-Verbose "Created the following groups:"
 Write-Output $output
