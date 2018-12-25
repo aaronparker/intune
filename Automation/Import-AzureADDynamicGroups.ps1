@@ -42,7 +42,7 @@ catch {
     Throw $_
 }
 finally {
-    If ($existingGroups) { Write-Verbose "Found existing dynamic groups." }
+    If ($existingGroups) { Write-Verbose -Message "Found existing dynamic groups." }
 }
 
 # Step through each group from the CSV file
@@ -52,7 +52,7 @@ ForEach ($group in $csvGroups) {
     # Match any existing group with the same membership rule
     $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
     If ($matchingGroup) {
-        Write-Warning "Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName). Skipping import."
+        Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
         
         # If the description needs updating on the group, update to match that listed in the CSV file
         If ($matchingGroup.Description -ne $group.Description) {
@@ -64,11 +64,11 @@ ForEach ($group in $csvGroups) {
                 }
                 If ($PSCmdlet.ShouldProcess($group.DisplayName , "Add description: [$($group.Description)].")) {
                     Set-AzureADMSGroup @setGrpParams
-                    Write-Verbose "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                    Write-Verbose -Message "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
                 }
             }
             catch {
-                Write-Warning "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                Write-Warning -Message "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
                 Throw $_
                 Break
             }
@@ -91,11 +91,11 @@ ForEach ($group in $csvGroups) {
             If ($PSCmdlet.ShouldProcess($group.DisplayName , "Create group.")) {
                 $newGroup = New-AzureADMSGroup @newGrpParams
                 $output += $newGroup
-                Write-Verbose "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+                Write-Verbose -Message "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
             }
         }
         catch {
-            Write-Error "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+            Write-Error -Message "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
             Throw $_
             Break
         }
@@ -103,4 +103,4 @@ ForEach ($group in $csvGroups) {
 }
 
 # Return the list of groups that were created
-Write-Output $output
+Write-Output -InputObject $output

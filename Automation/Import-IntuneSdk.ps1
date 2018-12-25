@@ -5,7 +5,7 @@ Param (
 )
 
 # Get the latest Intune PowerShell SDK
-$latestRelease = (Invoke-Webrequest -uri https://api.github.com/repos/Microsoft/Intune-PowerShell-SDK/releases | ConvertFrom-Json)[0]
+$latestRelease = (Invoke-Webrequest -uri https://api.github.com/repos/Microsoft/Intune-PowerShell-SDK/releases -UseBasicParsing | ConvertFrom-Json)[0]
 
 # Return the latest version tag
 $latestVersion = $latestRelease.tag_name
