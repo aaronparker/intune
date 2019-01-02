@@ -20,7 +20,7 @@ $intuneSdk = "Intune-SDK"
 $releaseZip = Join-Path $Path (Join-Path $intuneSdk $(Split-Path $releases.browser_download_url -Leaf))
 $extractFolder = Join-Path $Path $intuneSdk
 Write-Verbose "New directory $extractFolder."
-New-Item -Path $extractFolder -ItemType Directory
+If (!(Test-Path -Path $extractFolder)) { New-Item -Path $extractFolder -ItemType Directory }
 
 # Download and extract the latest release
 try {
