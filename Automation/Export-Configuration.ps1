@@ -29,8 +29,17 @@ Function Export-Config {
         [Parameter()] $Path
     )
     ForEach ($config in $Configuration) {
-        $fileName = "$($config.displayName -replace '\s','')-$($config.'@odata.type' -replace '#microsoft.graph.', '').json" `
-            | Remove-InvalidFileNameChars
+
+        If ($config | Get-Member -Name '@odata.type') {
+            $type = $config.'@odata.type' -replace '#microsoft.graph.', ''
+        } ElseIf ($config | Get-Member -Name 'deviceCategoryODataType') {
+            $type = $config.deviceCategoryODataType -replace 'microsoft.graph.', ''
+        }
+
+        $fileName = "$($type)_$($config.displayName -replace '\s','')" | Remove-InvalidFileNameChars
+        $fileName = "$($fileName.TrimEnd("-")).json"
+
+        Write-Verbose -Message "Export config: $($config.displayName) to $fileName."
         $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
     }
 }

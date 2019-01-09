@@ -51,13 +51,15 @@ Else {
 
 # Import the Intune PowerShell module and connect to Intune Graph API
 try {
-    Write-Verbose "Target module folder is $moduleFolder."
-    Import-Module (Join-Path $moduleFolder "Microsoft.Graph.Intune.psd1")
+    Write-Verbose -Message "Target module folder is $moduleFolder."
+    Write-Verbose -Message "Importing the Intune SDK module."
+    Import-Module (Join-Path $moduleFolder "Microsoft.Graph.Intune.psd1") > $Null
 }
 catch {
     $_
     Break
 }
 finally {
+    Write-Verbose -Message "Authenticating to the MS Graph API."
     Connect-MSGraph
 }
