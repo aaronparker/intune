@@ -166,6 +166,6 @@ Process {
     }
 }
 End {
-    Return $output
+    Write-Output $output
     Stop-Transcript
 }
