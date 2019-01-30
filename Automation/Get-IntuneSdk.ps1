@@ -1,11 +1,15 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [string] $Path = $pwd
+    [string] $Path = $pwd,
+
+    [Parameter()]
+    [string] $SdkPath = "Intune-SDK"
 )
 
 # Get the latest Intune PowerShell SDK
-$latestRelease = (Invoke-Webrequest -uri https://api.github.com/repos/Microsoft/Intune-PowerShell-SDK/releases -UseBasicParsing | ConvertFrom-Json)[0]
+$latestRelease = (Invoke-Webrequest -uri https://api.github.com/repos/Microsoft/Intune-PowerShell-SDK/releases -UseBasicParsing `
+        | ConvertFrom-Json)[0]
 
 # Return the latest version tag
 $latestVersion = $latestRelease.tag_name
@@ -16,9 +20,8 @@ $releases = $latestRelease.assets | Select-Object name, browser_download_url
 Write-Output $releases
 
 # Output paths
-$intuneSdk = "Intune-SDK"
-$releaseZip = Join-Path $Path (Join-Path $intuneSdk $(Split-Path $releases.browser_download_url -Leaf))
-$extractFolder = Join-Path $Path $intuneSdk
+$releaseZip = Join-Path $Path (Join-Path $SdkPath $(Split-Path $releases.browser_download_url -Leaf))
+$extractFolder = Join-Path $Path $SdkPath
 Write-Verbose "New directory $extractFolder."
 If (!(Test-Path -Path $extractFolder)) { New-Item -Path $extractFolder -ItemType Directory }
 
