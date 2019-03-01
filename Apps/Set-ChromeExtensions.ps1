@@ -12,6 +12,7 @@
         https://stealthpuppy.com
 #>
 
+#region Functions
 Function Set-RegValue {
     [CmdletBinding()]
     Param (
@@ -20,7 +21,7 @@ Function Set-RegValue {
         [Parameter(Mandatory = $True)] $Data,
         [Parameter(Mandatory = $False)]
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
-        $Type = "String"
+        [string] $Type = "String"
     )
     try {
         If (!(Test-Path -Path $Key)) {
@@ -32,9 +33,21 @@ Function Set-RegValue {
         Break
     }
     finally {
-        New-ItemProperty -Path $Key -Name $value -Value $Data -PropertyType $Type -Force
+        New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
     }
 }
+
+Function Get-RegValueCount {
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory = $True)]
+        [string] $Key
+    )
+    $existingValues = (Get-Item -Path $Key).Property
+    $value = [int]$existingValues[$existingValues.Count - 1] + 1
+    Write-Output $value
+}
+#endregion
 
 
 # Log file
@@ -53,6 +66,7 @@ $extensions = @{
 
 
 # Chrome extensions as Preferences
+# https://developer.chrome.com/apps/external_extensions#registry
 $regKey = 'HKLM:\SOFTWARE\WOW6432Node\Google\Chrome\Extensions'
 $value = 'update_url'
 $data = 'https://clients2.google.com/service/update2/crx'
@@ -62,15 +76,13 @@ ForEach ($ext in $extensions.Values) {
 
 <#
 # Enforce Chrome extensions
+# https://www.chromium.org/administrators/policy-list-3#ExtensionInstallForcelist
 $regKey = 'HKLM:\Software\Policies\Google\Chrome\ExtensionInstallForcelist'
 If (!(Test-Path -Path $regKey)) {
     New-Item -Path $regKey -Force -ErrorAction SilentlyContinue
 }
-$existingValues = (Get-Item -Path $regKey).Property
-$value = [int]$existingValues[$existingValues.Count - 1] + 1
 ForEach ($ext in $extensions.Values) {
-    $existingValues = (Get-Item -Path $regKey).Property
-    $value = [int]$existingValues[$existingValues.Count - 1] + 1
+    $value = Get-RegValueCount -Key $regKey
     Set-RegValue -Key $regKey -Value $value -Data "$ext;https://clients2.google.com/service/update2/crx"
 }
 #>
