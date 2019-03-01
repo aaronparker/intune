@@ -1,5 +1,5 @@
-# Requires -Version 2
-# Requires -RunAsAdministrator
+#Requires -Version 2
+#Requires -RunAsAdministrator
 <#
     .SYNOPSIS
         Configures a store in the Citrix Workspace app. Works for Microsoft Store or Win32 version of the Workspace app.
