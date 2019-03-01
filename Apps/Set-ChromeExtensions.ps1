@@ -1,3 +1,16 @@
+#Requires -Version 2
+#Requires -RunAsAdministrator
+<#
+    .SYNOPSIS
+        Configures Google Chrome extensions as preferences or enforced.
+
+    .NOTES
+        Author: Aaron Parker
+        Twitter: @stealthpuppy
+
+    .LINK
+        https://stealthpuppy.com
+#>
 
 Function Set-RegValue {
     [CmdletBinding()]
@@ -5,12 +18,12 @@ Function Set-RegValue {
         [Parameter(Mandatory = $True)] $Key,
         [Parameter(Mandatory = $True)] $Value,
         [Parameter(Mandatory = $True)] $Data,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $False)]
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
-        $Type
+        $Type = "String"
     )
     try {
-        If (!(Test-Path $Key)) {
+        If (!(Test-Path -Path $Key)) {
             New-Item -Path $Key -Force -ErrorAction SilentlyContinue
         }
     }
@@ -19,35 +32,47 @@ Function Set-RegValue {
         Break
     }
     finally {
-        New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+        New-ItemProperty -Path $Key -Name $value -Value $Data -PropertyType $Type -Force
     }
 }
 
+
+# Log file
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
-# Citrix Receiver / Workspace app as a preference
-$Path = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Google\Chrome\Extensions"
-$Value = "update_url"
-$Data = "https://clients2.google.com/service/update2/crx"
-$Key = "$Path\haiffjcadagjlijoggckpgfnoeiflnem"
-New-Item -Path $Key -ErrorAction SilentlyContinue
-New-ItemProperty -Path $Key -Name $Value -Value $Data -Force -ErrorAction SilentlyContinue
+# Extensions
+$extensions = @{
+    # "Windows Defender Browser Protection" = "bkbeeeffjjeopflfhgeknacdieedcoml"
+    "My Apps Secure Sign-in Extension" = "ggjhpefgjjfobnfoldnjipclpcfbgbhl"
+    "Web Activities"                   = "eiipeonhflhoiacfbniealbdjoeoglid"
+    "Office Online"                    = "ndjpnladcallmjemlbaebfadecfhkepb"
+}
 
-# Citrix Receiver / Workspace app as a policy
-$Key = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist"
-$ExistingValues = (Get-Item -Path $Key).Property
-$Value = [int]$ExistingValues[$ExistingValues.Count - 1] + 1
-$Data = "haiffjcadagjlijoggckpgfnoeiflnem;https://clients2.google.com/service/update2/crx"
-New-Item -Path $Key -ErrorAction SilentlyContinue
-New-ItemProperty -Path $Key -Name $Value -Value $Data -Force -ErrorAction SilentlyContinue
 
-# Chrome extensions
-New-Item -Path 'HKLM:\Software\Policies\Google\Chrome' -Name ExtensionInstallForcelist -Force
+# Chrome extensions as Preferences
+$regKey = 'HKLM:\SOFTWARE\WOW6432Node\Google\Chrome\Extensions'
+$value = 'update_url'
+$data = 'https://clients2.google.com/service/update2/crx'
+ForEach ($ext in $extensions.Values) {
+    Set-RegValue -Key "$regKey\$ext" -Value $value -Data $data
+}
+
+<#
+# Enforce Chrome extensions
 $regKey = 'HKLM:\Software\Policies\Google\Chrome\ExtensionInstallForcelist'
-Set-ItemProperty -path $regKey -name 1 -value 'bkbeeeffjjeopflfhgeknacdieedcoml;https://clients2.google.com/service/update2/crx'
-Set-ItemProperty -path $regKey -name 2 -value 'ggjhpefgjjfobnfoldnjipclpcfbgbhl;https://clients2.google.com/service/update2/crx'
+If (!(Test-Path -Path $regKey)) {
+    New-Item -Path $regKey -Force -ErrorAction SilentlyContinue
+}
+$existingValues = (Get-Item -Path $regKey).Property
+$value = [int]$existingValues[$existingValues.Count - 1] + 1
+ForEach ($ext in $extensions.Values) {
+    $existingValues = (Get-Item -Path $regKey).Property
+    $value = [int]$existingValues[$existingValues.Count - 1] + 1
+    Set-RegValue -Key $regKey -Value $value -Data "$ext;https://clients2.google.com/service/update2/crx"
+}
+#>
 
 Stop-Transcript
