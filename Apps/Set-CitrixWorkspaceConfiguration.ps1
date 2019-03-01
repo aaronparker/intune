@@ -18,9 +18,9 @@ Function Set-RegValue {
         [Parameter(Mandatory = $True)] $Key,
         [Parameter(Mandatory = $True)] $Value,
         [Parameter(Mandatory = $True)] $Data,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $False)]
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
-        $Type
+        [string] $Type
     )
     try {
         If (!(Test-Path $Key)) {
@@ -36,15 +36,14 @@ Function Set-RegValue {
     }
 }
 
+# Log file
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
-
-# Ensure the SmartScreen key exists
-$key = "HKLM:\SOFTWARE\Policies\Citrix\Receiver\Sites"
+Start-Transcript -Path $logFile
 
 # Add a Citrix Cloud Workspace store (with Gateway service) to the Workspace app
+$key = "HKLM:\SOFTWARE\Policies\Citrix\Receiver\Sites"
 Set-RegValue -Key $key -Value "STORE1" -Type String -Data "Store;https://customer.cloud.com#Store;On;Store description"
 
 Stop-Transcript
