@@ -1,21 +1,21 @@
 DisplayName,MembershipRule,Description
-Devices-Corporate,(device.deviceOwnership -eq "Corporate"),Corporate-owned devices.
-Devices-Personal,(device.deviceOwnership -eq "Personal"),Personal-owned devices.
+Devices-Corporate,"(device.deviceOwnership -eq ""Corporate"")",Corporate-owned devices.
+Devices-Personal,"(device.deviceOwnership -eq ""Personal"")",Personally-owned devices.
 Devices-Disabled,(device.accountEnabled -eq False),Disabled devices.
-Devices-Surface,(device.deviceModel -startsWith "Surface"),Microsoft Surface devices.
-Devices-Lenovo,(device.deviceManufacturer -startsWith "LENOVO"),Lenovo desktops and laptops.
-Devices-HP,(device.deviceManufacturer -startsWith "HP"),HP desktops and laptops.
-Devices-Dell,(device.deviceManufacturer -startsWith "Dell"),Dell desktops and laptops.
-Devices-Asus,(device.deviceManufacturer -startsWith "ASUS"),Asus desktops and laptops.
-Devices-Acer,(device.deviceManufacturer -startsWith "Acer"),Acer desktops and laptops.
-Devices-Samsung,(device.deviceManufacturer -startsWith "Samsung"),Samsung PCs and mobile devices.
-Devices-Apple,(device.deviceManufacturer -startsWith "Apple"),All Apple devices.
-Devices-Google,(device.deviceManufacturer -startsWith "Google"),Google tablets and phones
-Devices-VirtualMachine,(device.deviceManufacturer -startsWith "Parallels") -or (device.deviceManufacturer -startsWith "VMware") -or (device.deviceModel -eq "Virtual Machine") -or (device.deviceModel -eq "VirtualBox"),Virtual machines.
-Devices-Android,(device.deviceOSType -startsWith "Android"),Android phones and tablets.
-Devices-iOS,(device.deviceOSType -startsWith "iPhone") -or (device.deviceOSType -startsWith "iPad"),Apple iPhones and iPads.
-Devices-macOS,(device.deviceOSType -startsWith "Mac"),Apple Macs and MacBooks.
-Devices-Windows,(device.deviceOSType -startsWith "Windows"),All Windows devices.
-Devices-AutoPilotEnabledDevices,(device.devicePhysicalIDs -any _ -contains "[ZTDId]"),All Windows AutoPilot enabled devices.
-Devices-AutoPilotStandardProfile,(device.enrollmentProfileName -eq "Standard users"),Devices assigned the Standard users AutoPilot profile.
-Devices-AutoPilotAdminProfile,(device.enrollmentProfileName -eq "Admin users"),Devices assigned the Admin users AutoPilot profile.
+Devices-Surface,"(device.deviceModel -startsWith ""Surface"")",Microsoft Surface devices.
+Devices-Lenovo,"(device.deviceManufacturer -startsWith ""LENOVO"")",Lenovo desktops and laptops.
+Devices-HP,"(device.deviceManufacturer -startsWith ""HP"")",HP desktops and laptops.
+Devices-Dell,"(device.deviceManufacturer -startsWith ""Dell"")",Dell desktops and laptops.
+Devices-Asus,"(device.deviceManufacturer -startsWith ""ASUS"")",Asus desktops and laptops.
+Devices-Acer,"(device.deviceManufacturer -startsWith ""Acer"")",Acer desktops and laptops.
+Devices-Samsung,"(device.deviceManufacturer -startsWith ""Samsung"")",Samsung PCs and mobile devices.
+Devices-Apple,"(device.deviceManufacturer -startsWith ""Apple"")",All Apple devices.
+Devices-Google,"(device.deviceManufacturer -startsWith ""Google"")",Google tablets and phones
+Devices-VirtualMachine,"(device.deviceManufacturer -startsWith ""Parallels"") -or (device.deviceManufacturer -startsWith ""VMware"") -or (device.deviceModel -eq ""Virtual Machine"") -or (device.deviceModel -eq ""VirtualBox"")",Virtual machines.
+Devices-Android,"(device.deviceOSType -startsWith ""Android"")",Android phones and tablets.
+Devices-iOS,"(device.deviceOSType -startsWith ""iPhone"") -or (device.deviceOSType -startsWith ""iPad"")",Apple iPhones and iPads.
+Devices-macOS,"(device.deviceOSType -startsWith ""Mac"")",Apple Macs and MacBooks.
+Devices-Windows,"(device.deviceOSType -startsWith ""Windows"")",All Windows devices.
+Devices-AutoPilotEnabledDevices,"(device.devicePhysicalIDs -any _ -contains ""[ZTDId]"")",All Windows AutoPilot enabled devices.
+Devices-AutoPilotStandardProfile,"(device.enrollmentProfileName -eq ""Standard users"")",Devices assigned the Standard users AutoPilot profile.
+Devices-AutoPilotAdminProfile,"(device.enrollmentProfileName -eq ""Admin users"")",Devices assigned the Admin users AutoPilot profile.
