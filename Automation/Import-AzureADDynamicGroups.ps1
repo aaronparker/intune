@@ -70,7 +70,6 @@ ForEach ($group in $csvGroups) {
             catch {
                 Write-Warning -Message "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
                 Throw $_
-                Break
             }
         }
     }
@@ -97,7 +96,6 @@ ForEach ($group in $csvGroups) {
         catch {
             Write-Error -Message "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
             Throw $_
-            Break
         }
     }
 }

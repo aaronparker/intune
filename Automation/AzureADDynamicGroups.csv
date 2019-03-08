@@ -1,5 +1,5 @@
 DisplayName,MembershipRule,Description
-Devices-Corporate,"(device.deviceOwnership -eq ""Corporate"")",Corporate-owned devices.
+Devices-Corporate,"(device.deviceOwnership -eq ""Company"")",Corporate-owned devices.
 Devices-Personal,"(device.deviceOwnership -eq ""Personal"")",Personally-owned devices.
 Devices-Disabled,(device.accountEnabled -eq False),Disabled devices.
 Devices-Surface,"(device.deviceModel -startsWith ""Surface"")",Microsoft Surface devices.
