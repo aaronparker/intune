@@ -1,16 +1,3 @@
-# Requires -Version 2
-<#
-    .SYNOPSIS
-        Enable Windows 10 Storage Sense.
-
-    .NOTES
-        Author: Aaron Parker
-        Twitter: @stealthpuppy
-
-    .LINK
-        https://stealthpuppy.com
-#>
-
 Function Set-RegistryValue {
     <#
         .SYNOPSIS
@@ -71,36 +58,3 @@ Function Set-RegistryValue {
         Write-Output $False
     }
 }
-
-
-
-$stampDate = Get-Date
-$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $logFile
-
-# Ensure the StorageSense key exists
-$key = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy"
-
-# Set Storage Sense settings
-# Enable Storage Sense
-Set-RegistryValue -Key $key -Value "01" -Type DWord -Data 1 -Verbose
-
-# Set 'Run Storage Sense' to Every Week
-Set-RegistryValue -Key $key -Value "2048" -Type DWord -Data 7 -Verbose
-
-# Enable 'Delete temporary files that my apps aren't using'
-Set-RegistryValue -Key $key -Value "04" -Type DWord -Data 1 -Verbose
-
-# Set 'Delete files in my recycle bin if they have been there for over' to 60 days
-Set-RegistryValue -Key $key -Value "08" -Type DWord -Data 1 -Verbose
-Set-RegistryValue -Key $key -Value "256" -Type DWord -Data 60 -Verbose
-
-# Set 'Delete files in my Downloads folder if they have been there for over' to 60 days
-Set-RegistryValue -Key $key -Value "32" -Type DWord -Data 1 -Verbose
-Set-RegistryValue -Key $key -Value "512" -Type DWord -Data 60 -Verbose
-
-# Set value that Storage Sense has already notified the user
-Set-RegistryValue -Key $key -Value "StoragePoliciesNotified" -Type DWord -Data 1 -Verbose
-
-Stop-Transcript
