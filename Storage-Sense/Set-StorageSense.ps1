@@ -110,7 +110,7 @@ $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $scrip
 $logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $logFile
 
-If (Test-WindowsVersion -Build "17134" -Test "Higher") {
+If (Test-WindowsVersion -Build "17763" -Test "Higher") {
     Write-Verbose "This version of Windows supports Storage Sense via OMA-URI custom settings. Exiting."
 }
 ELse {
