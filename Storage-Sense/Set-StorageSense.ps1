@@ -41,7 +41,6 @@ Function Test-WindowsVersion {
     }
 }
 
-
 Function Set-RegistryValue {
     <#
         .SYNOPSIS
@@ -103,6 +102,7 @@ Function Set-RegistryValue {
         Write-Output $False
     }
 }
+
 
 #region Actions
 $stampDate = Get-Date
