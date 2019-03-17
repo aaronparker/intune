@@ -1,4 +1,5 @@
 # Apps
+
 Scripts for installing various applications via PowerShell with Intune and Windows 10.
 
 ## Set-ChromeExtensions.ps1
