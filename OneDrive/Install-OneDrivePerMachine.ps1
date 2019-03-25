@@ -19,14 +19,23 @@
 <# 
     .DESCRIPTION 
         Downloads and installs the OneDrive Sync client preview version and installs the OneDrive client per-machine.
+
+    .LINK
+        https://docs.microsoft.com/en-us/onedrive/per-machine-installation
 #> 
 [CmdletBinding()]
 Param (
     [Parameter()]
     [string] $OneDriveUri = "https://go.microsoft.com/fwlink/?linkid=2083517",
+    # URI to the preview OneDrive client
 
     [Parameter()]
-    [string] $OneDriveSetup = $(Join-Path "$env:Temp" "OneDriveSetup.exe")
+    [string] $OneDriveSetup = $(Join-Path "$env:Temp" "OneDriveSetup.exe"),
+    # Location where the OneDrive client will be downloaded to
+
+    [Parameter()]
+    [switch] $Force = [switch]::Present
+    # Force install of the preview client even if the installed client is higher.
 )
 
 #region Functions
@@ -78,7 +87,7 @@ Function Get-FileMetadata {
         # RegEx to grab CN from certificates
         $FindCN = "(?:.*CN=)(.*?)(?:,\ O.*)"
 
-        Write-Verbose "Beginning metadata trawling."
+        Write-Verbose -Message "Beginning metadata trawling."
         $Files = @()
     }
     Process {
@@ -88,12 +97,12 @@ Function Get-FileMetadata {
                 # Get the item to determine whether it's a file or folder
                 If ((Get-Item -Path $Loc).PSIsContainer) {
                     # Target is a folder, so trawl the folder for .exe and .dll files in the target and sub-folders
-                    Write-Verbose "Getting metadata for files in folder: $Loc"
+                    Write-Verbose -Message "Getting metadata for files in folder: $Loc"
                     $items = Get-ChildItem -Path $Loc -Recurse -Include $Include
                 }
                 Else {
                     # Target is a file, so just get metadata for the file
-                    Write-Verbose "Getting metadata for file: $Loc"
+                    Write-Verbose -Message "Getting metadata for file: $Loc"
                     $items = Get-Item -Path $Loc
                 }
 
@@ -115,10 +124,11 @@ Function Get-FileMetadata {
     End {
         # Return the array of file paths and metadata
         $StopWatch.Stop()
-        Write-Verbose "Metadata trawling complete. Script took $($StopWatch.Elapsed.TotalMilliseconds) ms to complete."
+        Write-Verbose -Message "Metadata trawling complete. Script took $($StopWatch.Elapsed.TotalMilliseconds) ms to complete."
         Write-Output ($Files | Sort-Object -Property Path)
     }
 }
+
 Function Invoke-Process {
     <#PSScriptInfo 
         .VERSION 1.4 
@@ -197,11 +207,13 @@ $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $logFile
+$VerbosePreference = "Continue"
 
+# Download and install the OneDrive sync client
 Write-Warning "This script downloads and installs a preview version of the OneDrive sync client."
 try {
     $downloadStatus = $True
-    Write-Verbose "Downloading to $OneDriveSetup"
+    Write-Verbose -Message "Downloading to $OneDriveSetup"
     Invoke-WebRequest -Uri $OneDriveUri -OutFile $OneDriveSetup -UseBasicParsing -Verbose
 }
 catch {
@@ -211,17 +223,25 @@ catch {
 finally {
     If ($downloadStatus) {
         $file = Get-FileMetaData -Path $OneDriveSetup -Verbose
-        Write-Verbose "Successfully downloaded OneDrive version: $($file.FileVersion)"
+        Write-Verbose -Message "Successfully downloaded OneDrive version: $($file.FileVersion)"
+
         $OneDriveRegistry = Get-ItemProperty -Path "HKCU:\Software\Microsoft\OneDrive" -Name "Version"
-        Write-Verbose "Installed OneDrive client is: $($OneDriveRegistry.Version)"
-        If ([System.Version]$OneDriveRegistry.Version -lt [System.Version]$file.FileVersion) {
-            Write-Verbose "Installing OneDrive version: $($file.FileVersion)"
-            Invoke-Process -FilePath $OneDriveSetup -ArgumentList "/allusers" -Verbose
+        Write-Verbose -Message "Installed OneDrive client is: $($OneDriveRegistry.Version)"
+
+        # Only install if the installed version lower than the downloaded version or '-Force $True' is specified
+        If (([System.Version]$OneDriveRegistry.Version -lt [System.Version]$file.FileVersion) -or ($Force.IsPresent)) {
+            Write-Verbose -Message "Installing OneDrive version: $($file.FileVersion)"
+            Invoke-Process -FilePath $OneDriveSetup -ArgumentList "/allusers /silent" -Verbose
         }
         Else {
-            Write-Verbose "Skipping installation."
+            Write-Verbose -Message "Skipping installation."
         }
+
+        # Clean up the downloaded file
         Remove-Item -Path $OneDriveSetup -Force -Verbose
+    }
+    Else {
+        Write-Verbose -Message "Download has failed. Installation skipped."
     }
 }
 
