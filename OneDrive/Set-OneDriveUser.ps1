@@ -1,4 +1,4 @@
-# Requires -Version 2
+#Requires -Version 2
 <#
     .SYNOPSIS
         Enables OneDrive client update and configuration

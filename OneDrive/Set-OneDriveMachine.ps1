@@ -1,4 +1,4 @@
-# Requires -Version 2
+#Requires -Version 2
 <#
     .SYNOPSIS
         Configures the local machine with various tasks / features.
