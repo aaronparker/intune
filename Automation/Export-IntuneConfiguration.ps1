@@ -1,10 +1,20 @@
+#Requires -PSEdition Desktop
+#Requires -Modules Microsoft.Graph.Intune
 <#
-    Export Intune configuration to disk.
-    Ensure the Intune PowerShell SDK module is imported and you have connected to the MSGraph API
+    .SYNOPSIS
+        Export a Microsoft Intune tenant configuration to disk.
+
+    .NOTES
+        Ensure the Intune PowerShell SDK module is imported and you have connected to the MSGraph API.
+
+    .PARAMETER Path
+        A path to where the Intune configuration will be exported. Defaults to the current directory.
+        A sub-folder with the current date/time will be created in $Path.
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()]
+    [Parameter(Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [Alias("PSPath")]
     [string] $Path = $pwd
 )
 
@@ -128,18 +138,10 @@ Function Export-IntuneAssignment {
 
 
 #region Test environment
-$modules = @('AzureADPreview', 'Microsoft.Graph.Intune')
-ForEach ($module in $modules) {
-    If ($Null -eq (Get-Module -Name $module)) {
-        Write-Error "Required module not installed: $module."
-        $moduleErr = $True
-    }
+Try {
+    Get-IntuneDeviceManagement -ErrorAction SilentlyContinue | Out-Null
 }
-If ($moduleErr) {
-    Throw "Failed to find required modules. Please install the AzureAD and Microsoft.Graph.Intune modules."
-    Break
-}
-If ($Null -eq (Get-MSGraphEnvironment).AppId) {
+Catch {
     Throw "Failed to find MSGraph connection. Please sign in first with Connect-MSGraph."
     Break
 }
@@ -148,7 +150,7 @@ If ($Null -eq (Get-MSGraphEnvironment).AppId) {
 
 #region Create folder
 # Create folder below target path with date and time
-$Path = Join-Path -Path (Resolve-Path $pwd) -ChildPath "$((Get-Date -Format "yyyyMMMdd-HHmmss"))"
+$Path = Join-Path -Path (Resolve-Path $Path) -ChildPath "$((Get-Date -Format "yyyyMMMdd-HHmmss"))"
 If ((Test-Path -Path $Path)) {
     Write-Verbose "$Path exists."
 }
