@@ -15,7 +15,7 @@ Function Remove-InvalidFileNameChars {
             Position = 0,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true)]
-        [String]$Name
+        [String] $Name
     )
   
     $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
@@ -29,6 +29,13 @@ Function Export-IntuneConfiguration {
         [Parameter()] $Target,
         [Parameter()] $Path
     )
+
+    # Create $Path if it does not exist
+    If (!(Test-Path -Path $Path)) {
+        Write-Verbose "Export path: $Path"
+        New-Item -Path $Path -ItemType Directory -Force | Out-Null
+    }
+
     ForEach ($config in $Target) {
         If ($config | Get-Member -Name '@odata.type') {
             $type = $config.'@odata.type' -replace '#microsoft.graph.', ''
@@ -56,6 +63,13 @@ Function Export-IntuneAssignment {
         [Parameter()]
         [string] $Path
     )
+
+    # Create $Path if it does not exist
+    If (!(Test-Path -Path $Path)) {
+        Write-Verbose "Export path: $Path"
+        New-Item -Path $Path -ItemType Directory -Force | Out-Null
+    }
+
     ForEach ($item in $Assignment) {
         $assignment = switch -Wildcard ($item.'@odata.type') {
             '#microsoft.graph.*FeaturesConfiguration' {
@@ -79,15 +93,24 @@ Function Export-IntuneAssignment {
             '#microsoft.graph.*App' {
                 Get-IntuneMobileAppAssignment -mobileAppId $item.id
             }
-            <#'#microsoft.graph.androidManagedAppProtection' {
-                Get-IntuneAppProtectionPolicyAndroidAssignment -androidManagedAppProtectionId $item.id -androidManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
+            '#microsoft.graph.deviceEnrollment*Configuration' {
+                Get-IntuneDeviceEnrollmentConfigurationAssignment -deviceEnrollmentConfigurationId $item.id
+            }
+            '#microsoft.graph.deviceAndAppManagementRoleDefinition' {
+                # Get-IntuneRoleAssignment -deviceAndAppManagementRoleAssignmentId $item.id
+            }
+            '#microsoft.graph.iosMobileAppConfiguration' {
+                # Get-IntuneMobileAppConfigurationPolicyAssignment -managedDeviceMobileAppConfigurationAssignmentId $item.id -managedDeviceMobileAppConfigurationId
+            }
+            '#microsoft.graph.androidManagedAppProtection' {
+                # Get-IntuneAppProtectionPolicyAndroidAssignment -androidManagedAppProtectionId $item.id -androidManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
             }
             '#microsoft.graph.iosManagedAppProtection' {
-                Get-IntuneAppProtectionPolicyIosAssignment -iosManagedAppProtectionId $item.id -iosManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
-            }#>    
+                # Get-IntuneAppProtectionPolicyIosAssignment -iosManagedAppProtectionId $item.id -iosManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
+            }
             Default {
                 If ($Null -eq $item.'@odata.type') { $type = $item.'deviceCategoryODataType' } Else { $type = $item.'@odata.type' }
-                Write-Warning -Message "OData object passed to Export-IntuneAssignment was not an understood: $type"
+                Write-Warning -Message "OData passed to $($MyInvocation.MyCommand) was not an understood type: $type"
             }
         }
         If ($Null -ne $assignment) {
@@ -104,8 +127,8 @@ Function Export-IntuneAssignment {
 #endregion
 
 
-#region Required modules
-$modules = @('AzureADPreview', 'Microsoft.Graph.Intune', 'WindowsAutoPilotIntune')
+#region Test environment
+$modules = @('AzureADPreview', 'Microsoft.Graph.Intune')
 ForEach ($module in $modules) {
     If ($Null -eq (Get-Module -Name $module)) {
         Write-Error "Required module not installed: $module."
@@ -113,7 +136,11 @@ ForEach ($module in $modules) {
     }
 }
 If ($moduleErr) {
-    Throw "Failed to find required modules."
+    Throw "Failed to find required modules. Please install the AzureAD and Microsoft.Graph.Intune modules."
+    Break
+}
+If ($Null -eq (Get-MSGraphEnvironment).AppId) {
+    Throw "Failed to find MSGraph connection. Please sign in first with Connect-MSGraph."
     Break
 }
 #endregion
@@ -132,8 +159,8 @@ Else {
 #endregion
 
 
-#region Export
-# Export Intune details out to JSON files
+#region Export Intune objects to local configuration files
+# Export configurations
 $objects = @('Get-IntuneDeviceConfigurationPolicy', `
         'Get-IntuneDeviceCompliancePolicy', `
         'Get-IntuneDeviceEnrollmentConfiguration', `
@@ -141,12 +168,30 @@ $objects = @('Get-IntuneDeviceConfigurationPolicy', `
         'Get-IntuneWindowsInformationProtectionPolicy', `
         'Get-IntuneAppProtectionPolicy', `
         'Get-IntuneMobileApp', `
-        'Get-IntuneRoleAssignment', `
+        'Get-IntuneRoleDefinition', `
         'Get-IntuneVppToken', `
-        'Get-IntuneApplePushNotificationCertificate')
+        'Get-IntuneManagedEBook', `
+        'Get-IntuneRoleDefinition')
 ForEach ($object in $objects) {
     $items = Invoke-Expression $object
     Export-IntuneConfiguration -Target $items -Path $Path
+}
+
+# Export assignments
+$objects = @('Get-IntuneDeviceConfigurationPolicy', `
+        'Get-IntuneDeviceCompliancePolicy', `
+        'Get-IntuneWindowsInformationProtectionPolicy', `
+        'Get-IntuneMdmWindowsInformationProtectionPolicy', `
+        'Get-IntuneAppProtectionPolicy', `
+        # 'Get-IntuneAppProtectionPolicyAndroidApp', `
+        'Get-IntuneMobileApp', `
+        # 'Get-IntuneMobileAppConfigurationPolicy', `
+        'Get-IntuneManagedEBook', `
+        'Get-IntuneDeviceEnrollmentConfiguration', `
+        # 'Get-IntuneAppConfigurationPolicyTargeted', `
+        'Get-IntuneRoleDefinition')
+ForEach ($object in $objects) {
+    $items = Invoke-Expression $object
     Export-IntuneAssignment -Assignment $items -Path $Path
 }
 #endregion
