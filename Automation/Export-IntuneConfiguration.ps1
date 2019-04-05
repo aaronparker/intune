@@ -14,6 +14,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [ValidateScript( {If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
     [Alias("PSPath")]
     [string] $Path = $pwd
 )

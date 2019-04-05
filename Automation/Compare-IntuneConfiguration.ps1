@@ -1,12 +1,26 @@
 <#
-    Compare folder containing exported Intune configurations.
+    .SYNOPSIS
+        Compare folders containing exported Microsoft Intune configurations and display differences.
+
+    .NOTES
+        Export a Microsoft Intune tenant configuration with Export-IntuneConfiguration.ps1.
+        This script will expect configuration file names in both folder to match.
+
+    .PARAMETER PreviousConfigurationPath
+        A path to where the first Intune configuration has been exported.
+
+    .PARAMETER NewConfigurationPath
+        A path to where a second Intune configuration has been exported. Defaults to the current directory.
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()]
+    [Parameter(Position = 0)]
+    [ValidateScript( {If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
     [string] $PreviousConfigurationPath,
 
-    [Parameter()]
+    [Parameter(Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [ValidateScript( {If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
+    [Alias("PSPath")]
     [string] $NewConfigurationPath = $pwd
 )
 
@@ -101,8 +115,11 @@ Function Compare-IntuneConfig {
 $PreviousConfigurationPath = Resolve-Path $PreviousConfigurationPath
 $NewConfigurationPath = Resolve-Path $NewConfigurationPath
 
+# Return files from each target folder
 $previousConfigurations = Get-ChildItem -Path $PreviousConfigurationPath -Recurse -Include *.json
 $newConfigurations = Get-ChildItem -Path $NewConfigurationPath -Recurse -Include *.json
+
+# Compare configurations
 ForEach ($prevFile in $previousConfigurations) {
     $newFile = $newConfigurations | Where-Object { $_.Name -eq $prevFile.Name }
     Write-Verbose "Comparing $prevFile with $newFile"
