@@ -23,7 +23,7 @@ Function Remove-InvalidFileNameChars {
     Write-Output ($Name -replace $re)
 }
 
-Function Export-Configuration {
+Function Export-IntuneConfiguration {
     [CmdletBinding()]
     Param (
         [Parameter()] $Target,
@@ -46,9 +46,65 @@ Function Export-Configuration {
         $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
     }
 }
+
+Function Export-IntuneAssignment {
+    [CmdletBinding()]
+    Param (
+        [Parameter()]
+        $Assignment,
+
+        [Parameter()]
+        [string] $Path
+    )
+    ForEach ($item in $Assignment) {
+        $assignment = switch -Wildcard ($item.'@odata.type') {
+            '#microsoft.graph.*FeaturesConfiguration' {
+                Get-IntuneDeviceConfigurationPolicyAssignment -deviceConfigurationId $item.id
+            }
+            '#microsoft.graph.*UpgradeConfiguration' {
+                Get-IntuneDeviceConfigurationPolicyAssignment -deviceConfigurationId $item.id
+            }
+            '#microsoft.graph.*GeneralConfiguration' {
+                Get-IntuneDeviceConfigurationPolicyAssignment -deviceConfigurationId $item.id
+            }
+            '#microsoft.graph.*DeviceConfiguration' {
+                Get-IntuneDeviceConfigurationPolicyAssignment -deviceConfigurationId $item.id
+            }
+            '#microsoft.graph.*CustomConfiguration' {
+                Get-IntuneDeviceConfigurationPolicyAssignment -deviceConfigurationId $item.id
+            }
+            '#microsoft.graph.*CompliancePolicy' {
+                Get-IntuneDeviceCompliancePolicyAssignment -deviceCompliancePolicyId $item.id
+            }
+            '#microsoft.graph.*App' {
+                Get-IntuneMobileAppAssignment -mobileAppId $item.id
+            }
+            <#'#microsoft.graph.androidManagedAppProtection' {
+                Get-IntuneAppProtectionPolicyAndroidAssignment -androidManagedAppProtectionId $item.id -androidManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
+            }
+            '#microsoft.graph.iosManagedAppProtection' {
+                Get-IntuneAppProtectionPolicyIosAssignment -iosManagedAppProtectionId $item.id -iosManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
+            }#>    
+            Default {
+                If ($Null -eq $item.'@odata.type') { $type = $item.'deviceCategoryODataType' } Else { $type = $item.'@odata.type' }
+                Write-Warning -Message "OData object passed to Export-IntuneAssignment was not an understood: $type"
+            }
+        }
+        If ($Null -ne $assignment) {
+            # Fix filename, remove invalid chars
+            $fileName = "$($item.displayName -replace '\s','')" | Remove-InvalidFileNameChars
+            $fileName = "Assignments-$($fileName.TrimEnd("-"))-$($item.'@odata.type'.Split(".") | Select-Object -Last 1).json"
+
+            # Export the configuration object to JSON
+            Write-Verbose -Message "Export assignment: $fileName."
+            $assignment | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
+        }
+    }
+}
 #endregion
 
-# Required modules
+
+#region Required modules
 $modules = @('AzureADPreview', 'Microsoft.Graph.Intune', 'WindowsAutoPilotIntune')
 ForEach ($module in $modules) {
     If ($Null -eq (Get-Module -Name $module)) {
@@ -60,37 +116,37 @@ If ($moduleErr) {
     Throw "Failed to find required modules."
     Break
 }
+#endregion
 
-# Create fodler below target path with date and time
+
+#region Create folder
+# Create folder below target path with date and time
 $Path = Join-Path -Path (Resolve-Path $pwd) -ChildPath "$((Get-Date -Format "yyyyMMMdd-HHmmss"))"
 If ((Test-Path -Path $Path)) {
     Write-Verbose "$Path exists."
 }
 Else {
-    Write-Verbose "Creating: $Path"
+    Write-Verbose "Export path: $Path"
     New-Item -Path $Path -ItemType Directory -Force | Out-Null
 }
-
-# Get device policies and write out to JSON files
-Export-Configuration -Target (Get-IntuneDeviceConfigurationPolicy) -Path $Path
-Export-Configuration -Target (Get-IntuneDeviceCompliancePolicy) -Path $Path
-Export-Configuration -Target (Get-IntuneDeviceEnrollmentConfiguration) -Path $Path
-Export-Configuration -Target (Get-IntuneDeviceCategory) -Path $Path
-Export-Configuration -Target (Get-IntuneWindowsInformationProtectionPolicy) -Path $Path
-Export-Configuration -Target (Get-IntuneAppProtectionPolicy) -Path $Path
-Export-Configuration -Target (Get-IntuneMobileApp) -Path $Path
-Export-Configuration -Target (Get-IntuneRoleAssignment) -Path $Path
-Export-Configuration -Target (Get-IntuneVppToken) -Path $Path
-Export-Configuration -Target (Get-IntuneApplePushNotificationCertificate) -Path $Path
+#endregion
 
 
-$compliancePolicies = Get-IntuneDeviceCompliancePolicy
-ForEach ($policy in $compliancePolicies) {
-    $assignment = Get-IntuneDeviceCompliancePolicyAssignment -deviceCompliancePolicyId $policy.id
-    
-    $fileName = "$($policy.displayName -replace '\s','')" | Remove-InvalidFileNameChars
-    $fileName = "Assignments-$($fileName.TrimEnd("-")).json"
-
-    Write-Verbose -Message "Export config: $fileName."
-    $assignment | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
+#region Export
+# Export Intune details out to JSON files
+$objects = @('Get-IntuneDeviceConfigurationPolicy', `
+        'Get-IntuneDeviceCompliancePolicy', `
+        'Get-IntuneDeviceEnrollmentConfiguration', `
+        'Get-IntuneDeviceCategory', `
+        'Get-IntuneWindowsInformationProtectionPolicy', `
+        'Get-IntuneAppProtectionPolicy', `
+        'Get-IntuneMobileApp', `
+        'Get-IntuneRoleAssignment', `
+        'Get-IntuneVppToken', `
+        'Get-IntuneApplePushNotificationCertificate')
+ForEach ($object in $objects) {
+    $items = Invoke-Expression $object
+    Export-IntuneConfiguration -Target $items -Path $Path
+    Export-IntuneAssignment -Assignment $items -Path $Path
 }
+#endregion
