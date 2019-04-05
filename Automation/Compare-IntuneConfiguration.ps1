@@ -31,6 +31,7 @@ Function Compare-IntuneConfig {
         .NOTES
             Author: John Seerden
             Link: https://github.com/jseerden/IntuneBackupAndRestore/blob/master/IntuneBackupAndRestore/Public/Compare-IntuneBackupFile.ps1
+            Updates: Aaron Parker, @stealthpuppy
     #>
     [CmdletBinding()]
     Param (
