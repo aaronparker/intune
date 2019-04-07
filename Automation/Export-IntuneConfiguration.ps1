@@ -36,8 +36,14 @@ Function Remove-InvalidFileNameChars {
 Function Export-IntuneConfiguration {
     [CmdletBinding()]
     Param (
-        [Parameter()] $Target,
-        [Parameter()] $Path
+        [Parameter()]
+        $Target,
+
+        [Parameter()]
+        [string] $Path,
+
+        [Parameter()]
+        [string] $Seperator = "_"
     )
 
     # Create $Path if it does not exist
@@ -46,21 +52,25 @@ Function Export-IntuneConfiguration {
         New-Item -Path $Path -ItemType Directory -Force | Out-Null
     }
 
-    ForEach ($config in $Target) {
-        If ($config | Get-Member -Name '@odata.type') {
-            $type = $config.'@odata.type' -replace '#microsoft.graph.', ''
+    ForEach ($item in $Target) {
+        If ($item | Get-Member -Name '@odata.type') {
+            $Type = $item.'@odata.type'.Split(".") | Select-Object -Last 1
         }
-        ElseIf ($config | Get-Member -Name 'deviceCategoryODataType') {
-            $type = $config.deviceCategoryODataType -replace 'microsoft.graph.', ''
+        ElseIf ($item | Get-Member -Name 'deviceCategoryODataType') {
+            $Type = $item.deviceCategoryODataType.Split(".") | Select-Object -Last 1
+        }
+        Else {
+            Write-Warning -Message "OData passed to $($MyInvocation.MyCommand) was not understood: [$($item.'@odata.type')] for [$($item.DisplayName)]"
+            $Type = "unknownType"
         }
 
         # Fix filename, remove invalid chars
-        $fileName = "$($type)_$($config.displayName -replace '\s','')" | Remove-InvalidFileNameChars
-        $fileName = "$($fileName.TrimEnd("-")).json"
+        $fileName = "$($item.displayName -replace '\s','')" | Remove-InvalidFileNameChars
+        $fileName = "$Type$Seperator$($fileName.TrimEnd("-")).json"
 
         # Export the configuration object to JSON
         Write-Verbose -Message "Export config: $fileName."
-        $config | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
+        $item | ConvertTo-Json | Add-Content -Path (Join-Path $Path $fileName)
     }
 }
 
@@ -71,7 +81,10 @@ Function Export-IntuneAssignment {
         $Assignment,
 
         [Parameter()]
-        [string] $Path
+        [string] $Path,
+
+        [Parameter()]
+        [string] $Seperator = "_"
     )
 
     # Create $Path if it does not exist
@@ -122,14 +135,23 @@ Function Export-IntuneAssignment {
                 # Get-IntuneAppProtectionPolicyIosAssignment -iosManagedAppProtectionId $item.id -iosManagedAppProtectionODataType $item.'@odata.type'.Trim("#")
             }
             Default {
-                If ($Null -eq $item.'@odata.type') { $type = $item.'deviceCategoryODataType' } Else { $type = $item.'@odata.type' }
-                Write-Warning -Message "OData passed to $($MyInvocation.MyCommand) was not an understood type: $type"
+                Write-Warning -Message "OData passed to $($MyInvocation.MyCommand) was not understood: [$($item.'@odata.type')] for [$($item.DisplayName)]"
             }
         }
         If ($Null -ne $assignment) {
+            If ($item | Get-Member -Name '@odata.type') {
+                $Type = $item.'@odata.type'.Split(".") | Select-Object -Last 1
+            }
+            ElseIf ($item | Get-Member -Name 'deviceCategoryODataType') {
+                $Type = $item.deviceCategoryODataType.Split(".") | Select-Object -Last 1
+            }
+            Else {
+                $Type = "unknownType"
+            }
+
             # Fix filename, remove invalid chars
             $fileName = "$($item.displayName -replace '\s','')" | Remove-InvalidFileNameChars
-            $fileName = "Assignments-$($fileName.TrimEnd("-"))-$($item.'@odata.type'.Split(".") | Select-Object -Last 1).json"
+            $fileName = "Assignments$Seperator$Type$Seperator$($fileName.TrimEnd("-")).json"
 
             # Export the configuration object to JSON
             Write-Verbose -Message "Export assignment: $fileName."

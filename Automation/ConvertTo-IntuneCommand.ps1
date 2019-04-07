@@ -29,5 +29,8 @@ ForEach($property in $values.PSObject.Properties.Name) {
     }
 }
 
+# Write command line to pipeline
+# ($params.Keys | ForEach { "$_ $($params[$_])" }) -join " -"
+
 # Create the configuration with New-IntuneDeviceConfigurationPolicy
 New-IntuneDeviceConfigurationPolicy @params
