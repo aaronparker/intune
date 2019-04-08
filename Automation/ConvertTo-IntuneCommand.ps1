@@ -22,15 +22,12 @@ $values.displayName = "Test-Win10-Corp-EndpointProtection"
 $values | Add-Member -NotePropertyName "ODataType" -NotePropertyValue $configs[0]."@odata.type"
 
 # Convert the PSCustomObject to a hashtable 
-$params = @{}
-ForEach($property in $values.PSObject.Properties.Name) {
+$params = @{ }
+ForEach ($property in $values.PSObject.Properties.Name) {
     If ($Null -ne $values.$property) {
         $params[$property] = $values.$property
     }
 }
-
-# Write command line to pipeline
-# ($params.Keys | ForEach { "$_ $($params[$_])" }) -join " -"
 
 # Create the configuration with New-IntuneDeviceConfigurationPolicy
 New-IntuneDeviceConfigurationPolicy @params
