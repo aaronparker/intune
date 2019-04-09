@@ -10,12 +10,12 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [string] $FilePath = $(Join-Path (Resolve-Path $pwd) "IntuneConfiguration.xlsx")
+    [string] $FilePath = $(Join-Path (Resolve-Path $pwd) "IntuneConfiguration-$(Get-Date -Format "yyyyMMMdd-HHmmss").xlsx")
 )
 
 # Generate Excel spreadsheet
 # Import-Module PSWriteExcel -Force -Verbose
-$Excel = New-ExcelDocument -Verbose
+$Excel = New-ExcelDocument
 
 # Read Intune device configuration policies
 $configs = Get-IntuneDeviceConfigurationPolicy

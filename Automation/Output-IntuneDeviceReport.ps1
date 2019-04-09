@@ -1,6 +1,5 @@
 #Requires -PSEdition Desktop
-#Requires -Modules Microsoft.Graph.Intune, PSWriteExcel
-#Requires -RunAsAdministrator
+#Requires -Modules Microsoft.Graph.Intune
 <#
     .SYNOPSIS
         Outputs configuration objects from an Intune tenant into an Excel workbook
@@ -16,9 +15,9 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -ErrorAction Silen
 If ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne "Trusted" ) {
     Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 }
-$modules = @('Microsoft.Graph.Intune', 'PSWriteExcel')
+$modules = @('PSWriteExcel')
 ForEach ($module in $modules) {
-    Install-Module -Name $module
+    Install-Module -Name $module -Scope CurrentUser
     Import-Module -Name $module
 }
 
