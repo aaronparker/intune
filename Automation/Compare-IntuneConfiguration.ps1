@@ -15,11 +15,11 @@
 [CmdletBinding()]
 Param (
     [Parameter(Position = 0)]
-    [ValidateScript( {If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
+    [ValidateScript( { If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
     [string] $PreviousConfigurationPath,
 
     [Parameter(Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-    [ValidateScript( {If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
+    [ValidateScript( { If (Test-Path $_ -PathType 'Container') { $True } Else { Throw "Cannot find path $_" } })]
     [Alias("PSPath")]
     [string] $NewConfigurationPath = $pwd
 )
@@ -85,7 +85,7 @@ Function Compare-IntuneConfig {
         $compareBackup = Compare-Object -ReferenceObject $backupFile -DifferenceObject $latestBackupFile -Property $latestBackupFileProperty
         If ($compareBackup.SideIndicator) {
             # If the property exists in both Intune configuration files
-            If ($latestBackupFileProperty -notmatch [RegEx]"PSParentPath|PSPath") {
+            If ($latestBackupFileProperty -notmatch [RegEx]"PSParentPath|PSPath|version") {
                 If ($backupFile.$latestBackupFileProperty) {
                     [PSCustomObject][Ordered]@{
                         'Config'   = [io.path]::GetFileNameWithoutExtension($DifferenceFilePath)

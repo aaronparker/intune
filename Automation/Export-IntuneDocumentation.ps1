@@ -14,12 +14,13 @@ Param (
 )
 
 # Generate Excel spreadsheet
-# Import-Module PSWriteExcel -Force -Verbose
+Import-Module PSWriteExcel
 $Excel = New-ExcelDocument
 
 # Read Intune device configuration policies
 $configs = Get-IntuneDeviceConfigurationPolicy
 
+# 
 ForEach ($config in $configs) {
 
     # Convert the PSCustomObject to a hashtable 
@@ -33,7 +34,7 @@ ForEach ($config in $configs) {
     # Generate HTML view
     # Out-HtmlView -Table $params -Title $params.DisplayName
 
-    $table = $params.GetEnumerator() | Sort Name | Select Name, Value
+    $table = $params.GetEnumerator() | Sort Name | Select-Object -Property Name, Value
 
     $ExcelWorkSheet = Add-ExcelWorkSheet -ExcelDocument $Excel -WorksheetName $params.displayName -Supress $False -Option 'Replace'
     Add-ExcelWorksheetData -ExcelWorksheet $ExcelWorkSheet -DataTable $table -AutoFit -Supress $True -FreezeTopRow -TableStyle Light9
