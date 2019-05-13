@@ -39,9 +39,13 @@
         Enables and configures the UE-V service on an Intune managed Windows 10 PC
 
     .DESCRIPTION
-        
+        Enables and configures the UE-V service on a Windows 10 PC. Downloads a set of templates from a target Azure blog storage URI and registers inbox and downloaded templates.
 
-    .PARAMETER Redirections
+    .PARAMETER Uri
+        Specifies the Uniform Resource Identifier (URI) of the Azure blog storage resource that hosts the UE-V templates to download.
+
+    .PARAMETER Templates
+        An array of the in-box templates to activate on the UE-V client.
 
     .NOTES
         Author: Aaron Parker
@@ -57,7 +61,11 @@
 [OutputType([String])]
 Param (
     [Parameter(Mandatory = $false)]
-    [string] $Uri
+    [string] $Uri = "https://stealthpuppy.blob.core.windows.net/uevtemplates/?comp=list",
+
+    [Parameter(Mandatory = $false)]
+    [string[]] $Templates = @("MicrosoftNotepad.xml", "MicrosoftOffice2016Win64.xml", "MicrosoftOutlook2016CAWin64.xml", `
+            "MicrosoftSkypeForBusiness2016Win64.xml", "MicrosoftWordpad.xml")
 )
 
 # Configure
@@ -176,15 +184,15 @@ If (Test-Windows10Enterprise) {
     If ($status.UevEnabled -eq $True) {
         $UevParams = @{
             Computer                            = $True
-            EnableDontSyncWindows8AppSettings   = $True
-            EnableSyncUnlistedWindows8Apps      = $True
-            EnableSettingsImportNotify          = $True
             DisableSyncProviderPing             = $True
-            SettingsStoragePath                 = $settingsStoragePath
-            EnableSync                          = $True
-            SyncMethod                          = "External"
-            EnableWaitForSyncOnApplicationStart = $True
             DisableWaitForSyncOnLogon           = $True
+            EnableDontSyncWindows8AppSettings   = $True
+            EnableSettingsImportNotify          = $True
+            EnableSync                          = $True
+            EnableSyncUnlistedWindows8Apps      = $True
+            EnableWaitForSyncOnApplicationStart = $True
+            SettingsStoragePath                 = $settingsStoragePath
+            SyncMethod                          = "External"
             WaitForSyncTimeoutInMilliseconds    = "2000"
         }
         Set-UevConfiguration @UevParams
@@ -197,21 +205,21 @@ If (Test-Windows10Enterprise) {
     If (Test-Path -Path $inboxTemplatesSrc) {
     
         # Retrieve the list of templates from the Azure Storage account
-        $srcTemplates = Get-AzureBlobItems -Uri "https://stealthpuppy.blob.core.windows.net/uevtemplates/?comp=list"
+        $srcTemplates = Get-AzureBlobItems -Uri $Uri
 
         # Download each template to the target path
         ForEach ($template in $srcTemplates) {
-            # If (Test-Path -Path "$inboxTemplatesSrc\$(Split-Path -Path $template -Leaf)") { Remove-Item -Path "$inboxTemplatesSrc\$(Split-Path -Path $template -Leaf)" -Force }
-            Invoke-WebRequest -Uri $template.Url -OutFile "$inboxTemplatesSrc\$(Split-Path -Path $template.Url -Leaf)" -UseBasicParsing -Headers @{ "x-ms-version" = "2015-02-21" }
+            $target = "$inboxTemplatesSrc\$(Split-Path -Path $template.Url -Leaf)"
+            If (Test-Path -Path $target) { Remove-Item -Path $target -Force }
+            Invoke-WebRequest -Uri $template.Url -OutFile $target -UseBasicParsing -Headers @{ "x-ms-version" = "2015-02-21" }
+            $Templates += $(Split-Path -Path $template.Url -Leaf)
         }
 
         # Unregister existing templates
         Get-UevTemplate | Unregister-UevTemplate -ErrorAction SilentlyContinue
 
-        # Register specified templates [Need to make building this list more robust]
-        $templates = @("AdobeReaderDC.xml", "MicrosoftNotepad.xml", "MicrosoftOffice2016Win64.xml", `
-                "MicrosoftOutlook2016CAWin64.xml", "MicrosoftSkypeForBusiness2016Win64.xml", "MicrosoftWordpad.xml")
-        ForEach ($template in $templates) {
+        # Register specified templates
+        ForEach ($template in $Templates) {
             Register-UevTemplate -Path "$inboxTemplatesSrc\$template"
         }
     }
