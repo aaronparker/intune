@@ -102,7 +102,7 @@ Function Get-AzureBlobItems {
     )
 
     # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
-    Try { $list = Invoke-WebRequest -Uri $Uri -ErrorAction Stop } Catch [Exception] { Write-Host $_; Break }
+    Try { $list = Invoke-WebRequest -Uri $Uri -UseBasicParsing -ErrorAction Stop } Catch [Exception] { Write-Host $_; Break }
     [xml] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
 
     # Build an object with file properties to return on the pipeline
@@ -192,7 +192,7 @@ If (Test-Path -Path $inboxTemplatesSrc) {
     # Unregister existing templates
     Get-UevTemplate | Unregister-UevTemplate -ErrorAction SilentlyContinue
 
-    # Register specified templates [Need to make this list more robust]
+    # Register specified templates [Need to make building this list more robust]
     $templates = @("AdobeReaderDC.xml", "MicrosoftNotepad.xml", "MicrosoftOffice2016Win64.xml", `
             "MicrosoftOutlook2016CAWin64.xml", "MicrosoftSkypeForBusiness2016Win64.xml", "MicrosoftWordpad.xml")
     ForEach ($template in $templates) {
