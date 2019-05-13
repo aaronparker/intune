@@ -166,7 +166,8 @@ If ($status.UevEnabled -eq $True) {
         EnableSync                          = $True
         SyncMethod                          = "External"
         EnableWaitForSyncOnApplicationStart = $True
-        EnableWaitForSyncOnLogon            = $False
+        DisableWaitForSyncOnLogon           = $True
+        WaitForSyncTimeoutInMilliseconds    = "2000"
     }
     Set-UevConfiguration @UevParams
 }
