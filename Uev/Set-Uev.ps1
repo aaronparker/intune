@@ -163,13 +163,10 @@ If ($status.UevEnabled -eq $True) {
         EnableSettingsImportNotify          = $True
         DisableSyncProviderPing             = $True
         SettingsStoragePath                 = $settingsStoragePath
-        # SettingsTemplateCatalogPath        = ""
         EnableSync                          = $True
         SyncMethod                          = "External"
-        EnableWaitForSyncOnApplicationStart = $False
+        EnableWaitForSyncOnApplicationStart = $True
         EnableWaitForSyncOnLogon            = $False
-        EnableFirstUseNotification          = $True
-        EnableTrayIcon                      = $True
     }
     Set-UevConfiguration @UevParams
 }
