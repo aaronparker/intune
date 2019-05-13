@@ -57,7 +57,7 @@
     .EXAMPLE
         Set-Uev.ps1
 #>
-[CmdletBinding(SupportsShouldProcess = $True, HelpURI = "")]
+[CmdletBinding(SupportsShouldProcess = $True, HelpURI = "https://github.com/aaronparker/Intune-Scripts/tree/master/Uev")]
 [OutputType([String])]
 Param (
     [Parameter(Mandatory = $false)]
@@ -72,7 +72,7 @@ Param (
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 #region Functions
-Function Get-AzureBlobItems {
+Function Get-AzureBlobItem {
     <#
         .SYNOPSIS
             Returns an array of items and properties from an Azure blog storage URL.
@@ -180,16 +180,17 @@ If (Test-Windows10Enterprise) {
         Write-Warning "OneDrive path not found."
     }
 
-    # Set the UEV settings
+    # Set the UEV settings. These settings will work for UEV in OneDrive with Enterprise State Roaming enabled
+    # https://docs.microsoft.com/en-us/azure/active-directory/devices/enterprise-state-roaming-faqs
     If ($status.UevEnabled -eq $True) {
         $UevParams = @{
             Computer                            = $True
             DisableSyncProviderPing             = $True
             DisableWaitForSyncOnLogon           = $True
+            DisableSyncUnlistedWindows8Apps     = $True
             EnableDontSyncWindows8AppSettings   = $True
             EnableSettingsImportNotify          = $True
             EnableSync                          = $True
-            EnableSyncUnlistedWindows8Apps      = $True
             EnableWaitForSyncOnApplicationStart = $True
             SettingsStoragePath                 = $settingsStoragePath
             SyncMethod                          = "External"
@@ -205,7 +206,7 @@ If (Test-Windows10Enterprise) {
     If (Test-Path -Path $inboxTemplatesSrc) {
     
         # Retrieve the list of templates from the Azure Storage account
-        $srcTemplates = Get-AzureBlobItems -Uri $Uri
+        $srcTemplates = Get-AzureBlobItem -Uri $Uri
 
         # Download each template to the target path
         ForEach ($template in $srcTemplates) {
