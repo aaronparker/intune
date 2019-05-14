@@ -64,8 +64,8 @@ Param (
     [string] $Uri = "https://stealthpuppy.blob.core.windows.net/uevtemplates/?comp=list",
 
     [Parameter(Mandatory = $false)]
-    [string[]] $Templates = @("MicrosoftNotepad.xml", "MicrosoftOffice2016Win64.xml", "MicrosoftOutlook2016CAWin64.xml", `
-            "MicrosoftSkypeForBusiness2016Win64.xml", "MicrosoftWordpad.xml")
+    # Inbox templates to enable. Templates downloaded from $Uri will be added to this list
+    [string[]] $Templates = @("MicrosoftNotepad.xml", "MicrosoftWordpad.xml", "MicrosoftInternetExplorer2013.xml")
 )
 
 # Configure
@@ -140,6 +140,10 @@ Function Test-Windows10Enterprise {
         Write-Output $False
     }
 }
+
+Function Get-RandomString {
+    -join ((65..90) + (97..122) | Get-Random -Count 8 | ForEach-Object {[char]$_})
+}
 #endregion
 
 # If running Windows 10 Enterprise
@@ -201,6 +205,8 @@ If (Test-Windows10Enterprise) {
 
     # Templates local target path
     $inboxTemplatesSrc = "$env:ProgramData\Microsoft\UEV\InboxTemplates"
+    $templatesTemp = Join-Path (Resolve-Path -Path $env:Temp) (Get-RandomString)
+    New-Item -Path $templatesTemp -ItemType Directory -Force
 
     # Copy the UEV templates from an Azure Storage account
     If (Test-Path -Path $inboxTemplatesSrc) {
@@ -208,12 +214,25 @@ If (Test-Windows10Enterprise) {
         # Retrieve the list of templates from the Azure Storage account
         $srcTemplates = Get-AzureBlobItem -Uri $Uri
 
-        # Download each template to the target path
+        # Download each template to the target path and track success
         ForEach ($template in $srcTemplates) {
-            $target = "$inboxTemplatesSrc\$(Split-Path -Path $template.Url -Leaf)"
-            If (Test-Path -Path $target) { Remove-Item -Path $target -Force }
-            Invoke-WebRequest -Uri $template.Url -OutFile $target -UseBasicParsing -Headers @{ "x-ms-version" = "2015-02-21" }
-            $Templates += $(Split-Path -Path $template.Url -Leaf)
+            Try {
+                $target = "$templatesTemp\$(Split-Path -Path $template.Url -Leaf)"
+                Invoke-WebRequest -Uri $template.Url -OutFile $target -UseBasicParsing `
+                    -Headers @{ "x-ms-version" = "2015-02-21" } -ErrorAction SilentlyContinue
+            }
+            Catch {
+                $failure = $True
+            }
+            If (!($failure)) {
+                $downloadedTemplates += $target
+                $Templates += $(Split-Path -Path $template.Url -Leaf)
+            }            
+        }
+
+        # Move downloaded templates to the template store
+        ForEach ($template in $downloadedTemplates) {
+            Move-Item -Path $template -Destination $inboxTemplatesSrc -Force
         }
 
         # Unregister existing templates
