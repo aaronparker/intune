@@ -33,9 +33,6 @@ Function Get-AzureBlobItem {
             Author: Aaron Parker
             Twitter: @stealthpuppy
 
-        .LINK
-            https://stealthpuppy.com
-
         .PARAMETER Url
             The Azure blob storage container URL. The container must be enabled for anonymous read access.
             The URL must include the List Container request URI. See https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2 for more information.
@@ -45,32 +42,50 @@ Function Get-AzureBlobItem {
 
             Description:
             Returns the list of files from the supplied URL, with Name, URL, Size and Last Modifed properties for each item.
-
-        .OUTPUTS
-            Returns System.Array
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
+    [OutputType([System.Management.Automation.PSObject])]
     Param (
         [Parameter(ValueFromPipeline = $True, Mandatory = $True, HelpMessage = "Azure blob storage URL with List Containers request URI '?comp=list'.")]
         [ValidatePattern("^(http|https)://")]
-        [string] $Uri
+        [System.String] $Uri
     )
 
     # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
-    Try { $list = Invoke-WebRequest -Uri $Uri -UseBasicParsing -ErrorAction Stop } Catch [Exception] { Write-Warning $_; Break }
-    [xml] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
-
-    # Build an object with file properties to return on the pipeline
-    $output = @()
-    ForEach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $Xml).Node) {
-        $item = New-Object -TypeName PSObject
-        $item | Add-Member -Type NoteProperty -Name 'Name' -Value ($node | Select-Object -ExpandProperty Name)
-        $item | Add-Member -Type NoteProperty -Name 'Url' -Value ($node | Select-Object -ExpandProperty Url)
-        $item | Add-Member -Type NoteProperty -Name 'Size' -Value ($node | Select-Object -ExpandProperty Size)
-        $item | Add-Member -Type NoteProperty -Name 'LastModified' -Value ($node | Select-Object -ExpandProperty LastModified)
-        $output += $item
+    try {
+        $iwrParams = @{
+            Uri             = $Uri
+            UseBasicParsing = $True
+            ContentType     = "application/xml"
+            ErrorAction     = "Stop"
+        }
+        $list = Invoke-WebRequest @iwrParams
     }
-    Write-Output $output
+    catch [System.Net.WebException] {
+        Write-Warning -Message ([string]::Format("Error : {0}", $_.Exception.Message))
+    }
+    catch [System.Exception] {
+        Write-Warning -Message "$($MyInvocation.MyCommand): failed to download: $Uri."
+        Throw $_.Exception.Message
+    }
+    If ($Null -ne $list) {
+        [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
+
+        # Build an object with file properties to return on the pipeline
+        $fileList = New-Object -TypeName System.Collections.ArrayList
+        ForEach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
+            $PSObject = [PSCustomObject] @{
+                Name         = ($node | Select-Object -ExpandProperty Name)
+                Url          = ($node | Select-Object -ExpandProperty Url)
+                Size         = ($node | Select-Object -ExpandProperty Size)
+                LastModified = ($node | Select-Object -ExpandProperty LastModified)
+            }
+            $fileList.Add($PSObject) | Out-Null
+        }
+        If ($Null -ne $fileList) {
+            Write-Output -InputObject $fileList
+        }
+    }
 }
 #endregion
 
@@ -87,9 +102,15 @@ If (!(Test-Path -Path $Target)) {
 
 # Retrieve the list of scripts from the Azure Storage account and save locally
 $script = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Name -eq $Script } | Select-Object -First 1
-$targetScript = Join-Path $Target $script.Name
-Invoke-WebRequest -Uri $script.Url -OutFile $targetScript -UseBasicParsing `
-    -Headers @{ "x-ms-version" = "2015-02-21" } -ErrorAction SilentlyContinue
+$targetScript = Join-Path -Path $Target -ChildPath $script.Name
+$iwrParams = @{
+    Uri             = $script.Url
+    OutFile         = $targetScript
+    UseBasicParsing = $True
+    Headers         = @{ "x-ms-version" = "2017-11-09" }
+    ErrorAction     = "SilentlyContinue"
+}
+Invoke-WebRequest @iwrParams
 If (Test-Path -Path $targetScript) { Write-Verbose "$targetScript downloaded successfully." }
 $Arguments = "$Arguments $targetScript"
 
@@ -112,10 +133,10 @@ Else {
     Write-Verbose "Creating scheduled task."
     # Build a new task object
     $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
-    $trigger = New-ScheduledTaskTrigger -Daily -At 1pm
+    $trigger = New-ScheduledTaskTrigger -Daily -At "1pm"
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden `
-        -DontStopIfGoingOnBatteries -Compatibility Win8 -RunOnlyIfNetworkAvailable
-    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+        -DontStopIfGoingOnBatteries -Compatibility "Win8" -RunOnlyIfNetworkAvailable
+    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType "ServiceAccount" -RunLevel "Highest"
     $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 
     # No task object exists, so register the new task
