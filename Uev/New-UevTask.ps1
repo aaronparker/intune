@@ -87,6 +87,21 @@ Function Get-AzureBlobItem {
         }
     }
 }
+
+Function Test-Windows10Enterprise {
+    Try {
+        $edition = Get-WindowsEdition -Online -ErrorAction SilentlyContinue
+    }
+    Catch {
+        Write-Error "$($MyInvocation.MyCommand): Failed to run Get-WindowsEdition. Defaulting to False."
+    }
+    If ($edition.Edition -eq "Enterprise") {
+        Write-Output -InputObject $True
+    }
+    Else {
+        Write-Output -InputObject $False
+    }
+}
 #endregion
 
 $stampDate = Get-Date
@@ -94,54 +109,68 @@ $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $scrip
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
-# If local path for script doesn't exist, create it
-If (!(Test-Path -Path $Target)) { 
-    Write-Verbose "Creating folder: $templatesTemp."
-    New-Item -Path $Target -Type Directory -Force | Out-Null
-}
+# If running Windows 10 Enterprise
+If (Test-Windows10Enterprise) {
 
-# Retrieve the list of scripts from the Azure Storage account and save locally
-$script = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Name -eq $Script } | Select-Object -First 1
-$targetScript = Join-Path -Path $Target -ChildPath $script.Name
-$iwrParams = @{
-    Uri             = $script.Url
-    OutFile         = $targetScript
-    UseBasicParsing = $True
-    Headers         = @{ "x-ms-version" = "2017-11-09" }
-    ErrorAction     = "SilentlyContinue"
-}
-Invoke-WebRequest @iwrParams
-If (Test-Path -Path $targetScript) { Write-Verbose "$targetScript downloaded successfully." }
-$Arguments = "$Arguments $targetScript"
+    # If local path for script doesn't exist, create it
+    If (!(Test-Path -Path $Target)) { 
+        Write-Verbose -Message "Creating folder: $templatesTemp."
+        New-Item -Path $Target -Type Directory -Force | Out-Null
+    }
 
-# Get an existing local task if it exists
-If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { 
+    # Retrieve the list of scripts from the Azure Storage account and save locally
+    $script = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Name -eq $Script } | Select-Object -First 1
+    $targetScript = Join-Path -Path $Target -ChildPath $script.Name
+    $iwrParams = @{
+        Uri             = $script.Url
+        OutFile         = $targetScript
+        UseBasicParsing = $True
+        Headers         = @{ "x-ms-version" = "2017-11-09" }
+        ErrorAction     = "SilentlyContinue"
+    }
+    Invoke-WebRequest @iwrParams
 
-    Write-Verbose "Scheduled task exists."
-    # If the task Action differs from what we have above, update the values and save the task
-    If (!(($Task.Actions[0].Execute -eq $Execute) -and ($Task.Actions[0].Arguments -eq $Arguments))) {
-        Write-Verbose "Updating scheduled task."
-        $Task.Actions[0].Execute = $Execute
-        $Task.Actions[0].Arguments = $Arguments
-        $Task | Set-ScheduledTask -Verbose
+    # Create the scheduled task
+    If (Test-Path -Path $targetScript) {
+        Write-Verbose -Message "$targetScript downloaded successfully."
+        $Arguments = "$Arguments $targetScript"
+
+        # Get an existing local task if it exists
+        If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
+
+            Write-Verbose -Message "Scheduled task exists."
+            # If the task Action differs from what we have above, update the values and save the task
+            If (!(($Task.Actions[0].Execute -eq $Execute) -and ($Task.Actions[0].Arguments -eq $Arguments))) {
+                Write-Verbose -Message "Updating scheduled task."
+                $Task.Actions[0].Execute = $Execute
+                $Task.Actions[0].Arguments = $Arguments
+                $Task | Set-ScheduledTask -Verbose
+            }
+            Else {
+                Write-Verbose -Message "Existing task action is OK, no change required."
+            }
+        }
+        Else {
+            Write-Verbose -Message "Creating scheduled task."
+            # Build a new task object
+            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
+            $trigger = New-ScheduledTaskTrigger -Daily -At "1pm"
+            $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden `
+                -DontStopIfGoingOnBatteries -Compatibility "Win8" -RunOnlyIfNetworkAvailable
+            $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType "ServiceAccount" -RunLevel "Highest"
+            $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
+
+            # No task object exists, so register the new task
+            Write-Verbose -Message "Registering new task $TaskName."
+            Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -TaskPath "\Microsoft\UE-V" -Verbose
+        }
     }
     Else {
-        Write-Verbose "Existing task action is OK, no change required."
+        Throw "Failed to download $Script."
     }
 }
 Else {
-    Write-Verbose "Creating scheduled task."
-    # Build a new task object
-    $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
-    $trigger = New-ScheduledTaskTrigger -Daily -At "1pm"
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden `
-        -DontStopIfGoingOnBatteries -Compatibility "Win8" -RunOnlyIfNetworkAvailable
-    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType "ServiceAccount" -RunLevel "Highest"
-    $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
-
-    # No task object exists, so register the new task
-    Write-Verbose "Registering new task $TaskName."
-    Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -TaskPath "\Microsoft\UE-V" -Verbose
+    Write-Verbose -Message "Not running Windows 10 Enterprise. Exiting."
 }
 
 Stop-Transcript
