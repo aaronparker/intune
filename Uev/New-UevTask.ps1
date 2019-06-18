@@ -3,9 +3,7 @@
 #Requires -RunAsAdministrator
 <#
     .SYNOPSIS
-        Creates a scheduled task to enable folder redirection at user login.
-        Enable folder redirection on Windows 10 Azure AD joined PCs.
-        Downloads the folder redirection script from a URL locally and creates the schedule task.
+        Creates a scheduled task to enable User Experience Virtualization and downloads UE-V templates.
 #>
 [CmdletBinding(SupportsShouldProcess = $True, HelpURI = "https://github.com/aaronparker/Intune-Scripts/tree/master/Uev")]
 Param (
@@ -15,6 +13,12 @@ Param (
     [Parameter()] $Execute = "powershell",
     [Parameter()] $Target = "$env:ProgramData\Intune-Scripts",
     [Parameter()] $Arguments = "-NoLogo -NonInteractive -WindowStyle Hidden -ExecutionPolicy RemoteSigned -File ",
+    [Parameter()] $Time = "1pm",
+    [Parameter()] $UserID = "NT AUTHORITY\SYSTEM",
+    [Parameter()] $TaskPath = "\Microsoft\UE-V",
+    [Parameter()] $LogonType = "ServiceAccount",
+    [Parameter()] $RunLevel = "Highest",
+    [Parameter()] $Description = "Enables the User Experience Virtualization service and downloads and registers a set of UE-V templates.",
     [Parameter()] $VerbosePreference = "Continue"
 )
 
@@ -144,6 +148,7 @@ If (Test-Windows10Enterprise) {
                 Write-Verbose -Message "Updating scheduled task."
                 $Task.Actions[0].Execute = $Execute
                 $Task.Actions[0].Arguments = $Arguments
+                $Task.Description = $Description
                 $Task | Set-ScheduledTask -Verbose
             }
             Else {
@@ -154,15 +159,23 @@ If (Test-Windows10Enterprise) {
             Write-Verbose -Message "Creating scheduled task."
             # Build a new task object
             $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments
-            $trigger = New-ScheduledTaskTrigger -Daily -At "1pm"
+            $trigger = New-ScheduledTaskTrigger -Daily -At $Time
             $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Hidden `
                 -DontStopIfGoingOnBatteries -Compatibility "Win8" -RunOnlyIfNetworkAvailable
-            $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType "ServiceAccount" -RunLevel "Highest"
+            $principal = New-ScheduledTaskPrincipal -UserID $UserID -LogonType $LogonType -RunLevel $RunLevel
             $newTask = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 
             # No task object exists, so register the new task
             Write-Verbose -Message "Registering new task $TaskName."
-            Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -TaskPath "\Microsoft\UE-V" -Verbose
+            Register-ScheduledTask -InputObject $newTask -TaskName $TaskName -TaskPath $TaskPath -Verbose `
+                -Description $Description
+        }
+
+        # Start the task to enable UE-V and download the templates
+        Get-ScheduledTask -TaskName $TaskName | Start-ScheduledTask
+        $status = Get-UevStatus
+        If (($status.UevEnabled -eq $True) -and ($status.UevRebootRequired -eq $True)) {
+            Write-Verbose -Message "UE-V service enabled. Reboot required."
         }
     }
     Else {
