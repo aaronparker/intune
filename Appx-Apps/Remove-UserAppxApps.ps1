@@ -52,10 +52,10 @@ Param (
     [Parameter(Mandatory = $false, ParameterSetName = "Blacklist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify whether the operation is a blacklist or whitelist.")]
     [ValidateSet('Blacklist', 'Whitelist')]
-    [string] $Operation = "Blacklist",
+    [System.String] $Operation = "Blacklist",
 
     [Parameter(Mandatory = $false, ParameterSetName = "Blacklist", HelpMessage = "Specify an AppX package or packages to remove.")]
-    [array] $Blacklist = ( "Microsoft.3DBuilder_8wekyb3d8bbwe", `
+    [System.String[]] $Blacklist = ( "Microsoft.3DBuilder_8wekyb3d8bbwe", `
             "Microsoft.BingFinance_8wekyb3d8bbwe", `
             "Microsoft.BingSports_8wekyb3d8bbwe", `
             "Microsoft.ConnectivityStore_8wekyb3d8bbwe", `
@@ -78,7 +78,7 @@ Param (
             "7EE7776C.LinkedInforWindows_w1wdnht996qgy" ),
         
     [Parameter(Mandatory = $false, ParameterSetName = "Whitelist", HelpMessage = "Specify an AppX package or packages to keep, removing all others.")]
-    [array] $Whitelist = ( "Microsoft.BingWeather_8wekyb3d8bbwe", `
+    [System.String[]] $Whitelist = ( "Microsoft.BingWeather_8wekyb3d8bbwe", `
             "Microsoft.Office.OneNote_8wekyb3d8bbwe", `
             "Microsoft.People_8wekyb3d8bbwe", `
             "Microsoft.Windows.Photos_8wekyb3d8bbwe", `
@@ -99,63 +99,55 @@ Param (
             "Microsoft.StorePurchaseApp_8wekyb3d8bbwe", `
             "Microsoft.Wallet_8wekyb3d8bbwe" )
 )
-Begin {
-    # A set of apps that we'll never try to remove
-    [array] $protectList = ( "Microsoft.WindowsStore_8wekyb3d8bbwe", `
-            "Microsoft.MicrosoftEdge_8wekyb3d8bbwe", `
-            "Microsoft.Windows.Cortana_cw5n1h2txyewy", `
-            "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe", `
-            "Microsoft.StorePurchaseApp_8wekyb3d8bbwe", `
-            "Microsoft.Wallet_8wekyb3d8bbwe" )
-}
-Process {
-    # Start logging
-    $stampDate = Get-Date
-    $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-    $logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
-    Start-Transcript -Path $LogFile
 
-    Switch ($Operation) {
+# A set of apps that we'll never try to remove
+[System.String[]] $protectList = ( "Microsoft.WindowsStore_8wekyb3d8bbwe", `
+        "Microsoft.MicrosoftEdge_8wekyb3d8bbwe", `
+        "Microsoft.Windows.Cortana_cw5n1h2txyewy", `
+        "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe", `
+        "Microsoft.StorePurchaseApp_8wekyb3d8bbwe", `
+        "Microsoft.Wallet_8wekyb3d8bbwe" )
 
-        "Blacklist" {
-            # Filter list if it contains apps from the $protectList
-            $apps = Compare-Object -ReferenceObject $Blacklist -DifferenceObject $protectList -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
-        }
+# Start logging
+$stampDate = Get-Date
+$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
+$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+Start-Transcript -Path $LogFile
 
-        "Whitelist" {
-            # Get packages from the current system and filter out the whitelisted apps
-            $allPackages = @()
-            $packages = Get-AppxProvisionedPackage -Online | Select-Object DisplayName
-            ForEach ( $package in $packages) {
-                $allPackages += Get-AppxPackage -AllUsers -Name $package.DisplayName | Select-Object PackageFamilyName
-            }
-            $apps = Compare-Object -ReferenceObject $allPackages.PackageFamilyName -DifferenceObject $Whitelist -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
-
-            # Ensure the list does not contain a system app
-            $systemApps = Get-AppxPackage -AllUsers | Where-Object { $_.InstallLocation -like "$env:SystemRoot\SystemApps*" -or $_.IsFramework -eq $True } | Select-Object PackageFamilyName
-            $apps = Compare-Object -ReferenceObject $apps -DifferenceObject $systemApps.PackageFamilyName -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
-
-            # Ensure the list does not contain an app from the $protectList
-            $apps = Compare-Object -ReferenceObject $apps -DifferenceObject $protectList -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
-        }
+Switch ($Operation) {
+    "Blacklist" {
+        # Filter list if it contains apps from the $protectList
+        $apps = Compare-Object -ReferenceObject $Blacklist -DifferenceObject $protectList -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
     }
+    "Whitelist" {
+        # Get packages from the current system and filter out the whitelisted apps
+        $allPackages = @()
+        $packages = Get-AppxProvisionedPackage -Online | Select-Object DisplayName
+        ForEach ( $package in $packages) {
+            $allPackages += Get-AppxPackage -AllUsers -Name $package.DisplayName | Select-Object PackageFamilyName
+        }
+        $apps = Compare-Object -ReferenceObject $allPackages.PackageFamilyName -DifferenceObject $Whitelist -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
 
-    # Remove the apps; Walk through each package in the array
-    $output = @()
-    ForEach ( $app in $apps ) {
-                
-        # Get the AppX package object by passing the string to the left of the underscore
-        # to Get-AppxPackage and passing the resulting package object to Remove-AppxPackage
-        $package = Get-AppxPackage -Name (($app -split "_")[0])
-        If ($package) {
-            $package | Remove-AppxPackage -Verbose
-            $item = New-Object PSObject
-            $item | Add-Member -type NoteProperty -Name 'RemovedPackage' -Value $app
-            $output += $item
-        }            
+        # Ensure the list does not contain a system app
+        $systemApps = Get-AppxPackage -AllUsers | Where-Object { $_.InstallLocation -like "$env:SystemRoot\SystemApps*" -or $_.IsFramework -eq $True } | Select-Object PackageFamilyName
+        $apps = Compare-Object -ReferenceObject $apps -DifferenceObject $systemApps.PackageFamilyName -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
+
+        # Ensure the list does not contain an app from the $protectList
+        $apps = Compare-Object -ReferenceObject $apps -DifferenceObject $protectList -PassThru | Where-Object { $_.SideIndicator -eq "<=" }
     }
 }
-End {
-    Write-Output $output
-    Stop-Transcript
+
+# Remove the apps; Walk through each package in the array
+ForEach ($app in $apps) {
+    # Get the AppX package object by passing the string to the left of the underscore
+    # to Get-AppxPackage and passing the resulting package object to Remove-AppxPackage
+    $package = Get-AppxPackage -Name (($app -split "_")[0])
+    If ($package) {
+        $package | Remove-AppxPackage -Verbose
+        $item = New-Object PSObject
+        $item | Add-Member -type NoteProperty -Name 'RemovedPackage' -Value $app
+        Write-Output -InputObject $item
+    }            
 }
+
+Stop-Transcript
