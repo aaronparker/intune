@@ -9,6 +9,7 @@ Param (
     [Parameter()] $VerbosePreference = "Continue"
 )
 
+# Start log file
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
 $logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
@@ -91,5 +92,5 @@ Else {
     New-JsonConfig | Set-JsonFile -Path $Target
 }
 
-# Stop the log file
+# Stop log file
 Stop-Transcript
