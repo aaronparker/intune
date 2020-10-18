@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadContent</key>
+			<dict>
+				<key>com.microsoft.Edge</key>
+				<dict>
+					<key>Forced</key>
+					<array>
+						<dict>
+							<key>mcx_preference_settings</key>
+							<dict>
+								<key>AdsSettingForIntrusiveAdsSites</key>
+								<integer>2</integer>
+								<key>ConfigureDoNotTrack</key>
+								<true/>
+								<key>DefaultBrowserSettingEnabled</key>
+								<true/>
+								<key>DownloadRestrictions</key>
+								<integer>1</integer>
+								<key>FamilySafetySettingsEnabled</key>
+								<false/>
+								<key>ForceSync</key>
+								<true/>
+								<key>HideFirstRunExperience</key>
+								<true/>
+								<key>HomepageIsNewTabPage</key>
+								<true/>
+								<key>NewTabPageSetFeedType</key>
+								<integer>1</integer>
+								<key>PasswordMonitorAllowed</key>
+								<true/>
+								<key>PasswordProtectionWarningTrigger</key>
+								<true/>
+								<key>PreventSmartScreenPromptOverride</key>
+								<true/>
+								<key>PreventSmartScreenPromptOverrideForFiles</key>
+								<true/>
+								<key>RestoreOnStartup</key>
+								<integer>1</integer>
+								<key>ShowHomeButton</key>
+								<true/>
+								<key>SmartScreenEnabled</key>
+								<true/>
+								<key>SmartScreenForTrustedDownloadsEnabled</key>
+								<true/>
+								<key>SmartScreenPuaEnabled</key>
+								<true/>
+								<key>TrackingPrevention</key>
+								<integer>2</integer>
+							</dict>
+						</dict>
+					</array>
+				</dict>
+			</dict>
+			<key>PayloadEnabled</key>
+			<true/>
+			<key>PayloadIdentifier</key>
+			<string>MCXToProfile.5fa78aaf-7234-4aa8-ac61-ef797933103b.alacarte.customsettings.48b77266-df55-4446-a6a7-332b65a6704d</string>
+			<key>PayloadType</key>
+			<string>com.apple.ManagedClient.preferences</string>
+			<key>PayloadUUID</key>
+			<string>48b77266-df55-4446-a6a7-332b65a6704d</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Included custom settings:
+com.microsoft.Edge
+</string>
+	<key>PayloadDisplayName</key>
+	<string>MCXToProfile: com.microsoft.Edge</string>
+	<key>PayloadIdentifier</key>
+	<string>com.Microsoft.Edge</string>
+	<key>PayloadOrganization</key>
+	<string></string>
+	<key>PayloadRemovalDisallowed</key>
+	<true/>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>5fa78aaf-7234-4aa8-ac61-ef797933103b</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
