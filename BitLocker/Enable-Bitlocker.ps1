@@ -49,7 +49,7 @@ try {
     $bdeStartingStatus = Get-BitLockerVolume $OSDrive
 
     # Evaluate the Volume Status to see what we need to do...
-    $bdeProtect = Get-BitLockerVolume $OSDrive | Select-Object -Property VolumeStatus
+    $bdeProtect = Get-BitLockerVolume $OSDrive | Select-Object -Property VolumeStatus, KeyProtector
     # Account for an uncrypted drive 
     if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
         Write-Verbose " Enabling BitLocker due to FullyDecrypted status or KeyProtector count less than 1"
@@ -98,7 +98,7 @@ try {
         Write-Verbose " Saving key protector to AAD for self-service recovery by manually posting it to:"
         Write-Verbose "                     https://enterpriseregistration.windows.net/manage/$tenant/device/$($id)?api-version=1.0"
 				    # Get the BitLocker key information from WMI
-        (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Where-Object {$_.KeyProtectorType -eq 'RecoveryPassword'} | ForEach-Object {
+        (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' } | ForEach-Object {
             $key = $_
             Write-Verbose "kid : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
             $body = "{""key"":""$($key.RecoveryPassword)"",""kid"":""$($key.KeyProtectorId.replace('{','').Replace('}',''))"",""vol"":""OSV""}"
