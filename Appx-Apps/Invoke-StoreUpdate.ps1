@@ -11,7 +11,7 @@
         .LINK
             http://stealthpuppy.com
     #>
-[CmdletBinding(DefaultParameterSetName = "Blacklist")]
+[CmdletBinding()]
 Param ()
 
 # Start logging
