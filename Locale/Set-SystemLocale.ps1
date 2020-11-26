@@ -41,7 +41,7 @@ Switch ($Locale) {
     Default {
         # Australia
         $GeoId = 12
-        $Timezone = "AUS Eastern Standard Time"
+        $Timezone = "AUS Eastern Standard Time"  #"Cen. Australia Standard Time"
         $LanguageId = "0c09:00000409"
     }
 }
@@ -82,7 +82,8 @@ try {
     Set-WinSystemLocale -SystemLocale $Locale
     Set-WinUserLanguageList -LanguageList $Locale -Force
     Set-WinHomeLocation -GeoId $GeoId
-    Set-TimeZone -Id $Timezone -Verbose
+    Set-TimeZone -Id $Timezone
+    Set-Culture -CultureInfo $Locale
 }
 catch {
     Write-Error -Message $_.Exception.Message
