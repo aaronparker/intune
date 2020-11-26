@@ -77,25 +77,35 @@ $languageXml = @"
 #endregion
     
 # Set regional settings
-Import-Module -Name "International"
-Set-WinUserLanguageList -LanguageList $Locale -Force
-Set-WinHomeLocation -GeoId $GeoId
-Set-TimeZone -Id $Timezone -Verbose
-        
+try {
+    Import-Module -Name "International"
+    Set-WinUserLanguageList -LanguageList $Locale -Force
+    Set-WinHomeLocation -GeoId $GeoId
+    Set-TimeZone -Id $Timezone -Verbose
+}
+catch {
+    Write-Error -Message $_.Exception.Message
+    Exit 1
+}
+
 try {
     If (!(Test-Path -Path $Path)) { New-Item -Path $Path -ItemType "Directory" }
     $OutFile = Join-Path -Path $Path -ChildPath "language.xml"
     Out-File -FilePath $OutFile -InputObject $languageXml -Encoding ascii
 }
 catch {
-    Throw "Failed to create language file."
-    Break
+    Write-Error -Message $_.Exception.Message
+    Exit 1
 }
     
 try {
     & $env:SystemRoot\System32\control.exe "intl.cpl,,/f:$OutFile"
 }
 catch {
-    Throw "Failed to set regional settings."
+    Write-Error -Message $_.Exception.Message
+    Exit 1
 }
-    
+
+# All settings are good exit cleanly
+Write-Host "Set regional settings to $Locale and $Timezone."
+Exit 0
