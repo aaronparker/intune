@@ -4,7 +4,7 @@
         Use with Proactive Remediations or PowerShell scripts
  
     .NOTES
- 	    NAME: Get-SystemLocale.ps1
+ 	    NAME: Detect-SystemLocale.ps1
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
