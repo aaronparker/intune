@@ -60,7 +60,9 @@ catch {
 }
 
 # All settings are good exit cleanly
+# Output all shortcuts in a list with line breaks in a single output
 ForEach ($Shortcut in $Shortcuts) {
-    Write-Host "Removed shortcut: [$($Shortcut.FullName)]."
+    $Output += "$($Shortcut.FullName)`n"
 }
+Write-Host "Removed shortcuts:`n$Output"
 Exit 0

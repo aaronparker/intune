@@ -51,11 +51,12 @@ catch {
 }    
 
 # If $Shortcuts > 1
+# Output all shortcuts in a list with line breaks in a single output
 If ($Shortcuts.Count -ge 1) {
     ForEach ($Shortcut in $Shortcuts) {
-        Write-Host "Found shortcut: [$($Shortcut.FullName)]."
+        $Output += "$($Shortcut.FullName)`n"
     }
-    Exit 1
+    Write-Host "Found shortcuts:`n$Output"
 }
     
 # All settings are good exit cleanly
