@@ -45,7 +45,7 @@ try {
     $Shortcuts = Get-ChildItem -Path $PublicDesktop -Filter $FileTypes
 }
 catch {
-    Write-Host "Failed when enumerating shortcuts at: [$PublicDesktop]."
+    Write-Host "Failed when enumerating shortcuts at: $PublicDesktop."
     Write-Host $_.Exception.Message
     Exit 1
 }    
@@ -54,7 +54,7 @@ try {
     If ($Shortcuts.Count -ge 1) { $Shortcuts | Remove-Item -Force -ErrorAction "SilentlyContinue" }
 }
 catch {
-    Write-Host "Failed when deleting shortcuts at: [$PublicDesktop]."
+    Write-Host "Failed when deleting shortcuts at: $PublicDesktop."
     Write-Host $_.Exception.Message
     Exit 1
 }

@@ -45,7 +45,7 @@ try {
     $Shortcuts = Get-ChildItem -Path $PublicDesktop -Filter $FileTypes
 }
 catch {
-    Write-Host "Failed when enumerating shortcuts at: [$PublicDesktop]."
+    Write-Host "Failed when enumerating shortcuts at: $PublicDesktop."
     Write-Host $_.Exception.Message
     Exit 1
 }    
@@ -57,8 +57,9 @@ If ($Shortcuts.Count -ge 1) {
         $Output += "$($Shortcut.FullName)`n"
     }
     Write-Host "Found shortcuts:`n$Output"
+    Exit 1
 }
     
 # All settings are good exit cleanly
-Write-Host "No shortcuts found at: [$PublicDesktop]."
+Write-Host "No shortcuts found at: $PublicDesktop."
 Exit 0
