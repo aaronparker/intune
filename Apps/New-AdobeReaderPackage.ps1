@@ -2,6 +2,13 @@
 <#
     .SYNOPSIS
         Packages Adobe Reader for Intune deployment.
+
+    .NOTES
+        Use the following when importing the package into Intune:
+        
+        Install: C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy RemoteSigned -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1
+        Uninstall: MsiExec.exe /X "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}" /QB-
+        MSI detection: {AC76BA86-7AD7-1033-7B44-AC0F074E4100}
 #>
 [CmdletBinding()]
 Param (
