@@ -57,12 +57,13 @@ If ($Reader) {
     # Build the installation script
     $Installers = Get-ChildItem -Path $PackagePath -Filter "*.exe"
     ForEach ($exe in $Installers) {
-        "Start-Process -FilePath $exe -ArgumentList '$($res.Install.Physical.Arguments)' -Wait" | Add-Content -Path "$PackagePath\$ScriptName"
+        "`$r = Start-Process -FilePath $exe -ArgumentList '$($res.Install.Physical.Arguments)' -Wait -PassThru" | Add-Content -Path "$PackagePath\$ScriptName"
     }
     $Updates = Get-ChildItem -Path $PackagePath -Filter "*.msp"
     ForEach ($msp in $Updates) {
         "Start-Process -FilePath '$env:SystemRoot\System32\msiexec.exe' -ArgumentList '/update $msp /quiet /qn' -Wait" | Add-Content -Path "$PackagePath\$ScriptName"
     }
+    "Return `$r.ExitCode" | Add-Content -Path "$PackagePath\$ScriptName"
 
     # Download the Intune Win32 wrapper
     $wrapperUrl = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
