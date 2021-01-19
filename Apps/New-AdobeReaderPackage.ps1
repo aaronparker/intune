@@ -32,7 +32,7 @@ If (!(Test-Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Director
 
 # Download Reader installer and updates with Evergreen
 Write-Information -MessageData "Getting Adobe Acrobat Reader DC version via Evergreen."
-$Reader = Get-AdobeAcrobatReaderDC | Where-Object { $_.Platform -eq "Windows" -and ($_.Language -eq "English" -or $_.Language -eq "Neutral") }
+$Reader = Get-AdobeAcrobatReaderDC | Where-Object { $_.Language -eq "English" -or $_.Language -eq "Neutral" }
 
 If ($Reader) {
 
