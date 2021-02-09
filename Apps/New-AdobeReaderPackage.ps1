@@ -1,10 +1,13 @@
-#Requires -Modules Evergreen, IntuneWin32App
+#Requires -Modules Evergreen, IntuneWin32App, PSIntuneAuth, AzureAD
 <#
     .SYNOPSIS
         Packages the latest Adobe Acrobat Reader DC (US English) for Intune deployment.
         Uploads the mew package into the target Intune tenant.
 
     .NOTES
+        For details on IntuneWin32App go here: https://github.com/MSEndpointMgr/IntuneWin32App/blob/master/README.md
+        For details on Evergreen go here: https://stealthpuppy.com/Evergreen
+    
         Use the following when importing the package into Intune:
         
         Install: C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy RemoteSigned -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1
@@ -28,9 +31,7 @@ Param (
 # Variables
 $ProgressPreference = "SilentlyContinue"
 $InformationPreference = "Continue"
-$Description = "The leading PDF viewer to print, sign, and annotate PDFs"
-$ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
-
+Write-Warning -Message "Ensure you have authenticated with 'Connect-MSIntuneGraph -TenantName $TenantName' first."
 
 # Download Reader installer and updates with Evergreen
 Write-Information -MessageData "Getting Adobe Acrobat Reader DC version via Evergreen."
@@ -59,8 +60,8 @@ If ($Reader) {
             Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
             If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
         }
-        catch {
-            Throw "Failed to download Adobe Reader installer."
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
             Break
         }
     }
@@ -74,8 +75,8 @@ If ($Reader) {
                 Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
                 If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
             }
-            catch {
-                Throw "Failed to download Adobe Reader update patch."
+            catch [System.Exception] {
+                Write-Warning -Message "Failed to download Adobe Reader update patch with: $($_.Exception.Message)"
                 Break
             }
         }
@@ -88,21 +89,33 @@ If ($Reader) {
 
     #region Get resource strings and write out a script that will install Reader
     $res = Export-EvergreenFunctionStrings -AppName "AdobeAcrobatReaderDC"
-    "# $($res.Name)" | Set-Content -Path "$PackagePath\$ScriptName" -Force
-    "`$InstallFolder = Resolve-Path -Path `$PWD" | Add-Content -Path "$PackagePath\$ScriptName"
-
+    
     # Build the installation script
+    Remove-Variable -Name "ScriptContent" -ErrorAction "SilentlyContinue"
     [System.String] $ScriptContent
+    $ScriptContent += "# $($res.Name)"
+    $ScriptContent += "`n"
+    $ScriptContent += "`$InstallFolder = Resolve-Path -Path `$PWD"
+    $ScriptContent += "`n"
     $Installers = Get-ChildItem -Path $PackagePath -Filter "*.exe"
     ForEach ($exe in $Installers) {
         $ScriptContent += "`$r = Start-Process -FilePath `"`$InstallFolder\$exe`" -ArgumentList `"$($res.Install.Physical.Arguments)`" -Wait -PassThru"
+        $ScriptContent += "`n"
     }
     $Updates = Get-ChildItem -Path $PackagePath -Filter "*.msp"
     ForEach ($msp in $Updates) {
         $ScriptContent += "Start-Process -FilePath `"$env:SystemRoot\System32\msiexec.exe`" -ArgumentList `"/update $msp /quiet /qn-`" -Wait"
+        $ScriptContent += "`n"
     }
     $ScriptContent += "Return `$r.ExitCode"
-    $ScriptContent | Out-File -Path "$PackagePath\$ScriptName" -Encoding "Utf8" -Force
+    $ScriptContent += "`n"
+    try {
+        $ScriptContent | Out-File -FilePath "$PackagePath\$ScriptName" -Encoding "Utf8" -NoNewline -Force
+    }
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to write install script $PackagePath\$ScriptName with: $($_.Exception.Message)"
+        Break
+    }
     #endregion
 
 
@@ -113,8 +126,8 @@ If ($Reader) {
     try {
         Invoke-WebRequest -Uri $wrapperUrl -OutFile $wrapperBin -UseBasicParsing
     }
-    catch {
-        Throw "Failed to Microsoft Win32 Content Prep Tool."
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to Microsoft Win32 Content Prep Tool with: $($_.Exception.Message)"
         Break
     }
 
@@ -123,31 +136,30 @@ If ($Reader) {
         $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
         Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $exe -o $PackageOutput -q" -Wait -NoNewWindow
     }
-    catch {
-        Throw "Failed to convert to an Intunewin package."
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to convert to an Intunewin package with: $($_.Exception.Message)"
         Break
     }
-    $IntuneWinFile = Get-ChildItem -Path $PackageOutput -Filter "*.intunewin"
+    try {
+        $IntuneWinFile = Get-ChildItem -Path $PackageOutput -Filter "*.intunewin" -ErrorAction "SilentlyContinue"
+    }
+    catch {
+        Write-Warning -Message "Failed to find an Intunewin package in $PackageOutput with: $($_.Exception.Message)"
+        Break
+    }
     Write-Information -MessageData "Found package: $($IntuneWinFile.FullName)."
     #endregion
 
 
-    # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-    $params = @{
-        MSI                       = $true
-        MSIProductCode            = $ProductCode
-        MSIProductVersionOperator = "greaterThanOrEqual"
-        MSIProductVersion         = $Installer.Version
-    }
-    $DetectionRule = New-IntuneWin32AppDetectionRule @params
-
-    # Create custom requirement rule
-    $params = @{
-        Architecture                    = "All"
-        MinimumSupportedOperatingSystem = "1607"
-    }
-    $RequirementRule = New-IntuneWin32AppRequirementRule @params
-
+    #region Upload intunewin file and create the Intune app
+    # Variables for the package
+    $Description = "The leading PDF viewer to print, sign, and annotate PDFs"
+    $ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
+    $Publisher = "Adobe"
+    $DisplayName = "Adobe Reader DC" + " " + $Installer.Version
+    #$InstallCommandLine = "$($AdobeReaderSetup.FileName) /sAll /rs /rps /l"
+    $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1"
+    $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
 
     # Convert image file to icon
     $ImageSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Adobe-AcrobatReader.png"
@@ -155,45 +167,92 @@ If ($Reader) {
     try {
         Invoke-WebRequest -Uri $ImageSource -OutFile $ImageFile -UseBasicParsing
     }
-    catch {
-        Throw "Failed to download: $ImageSource."
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to download: $ImageSource with: $($_.Exception.Message)"
         Break
     }
     If (Test-Path -Path $ImageFile) {
         $Icon = New-IntuneWin32AppIcon -FilePath $ImageFile
     }
+    Else {
+        Write-Warning -Message "Cannot find the icon file."
+        Break
+    }
+
+    # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
+    If ($Null -eq $ProductCode -or $Null -eq $Installer.Version) {
+        $params = @{
+            ProductCode            = $ProductCode
+            ProductVersionOperator = "greaterThanOrEqual"
+            ProductVersion         = $Installer.Version
+        }
+        $DetectionRule = New-IntuneWin32AppDetectionRuleMSI @params
+    }
+    Else {
+        Write-Warning -Message "Cannot create the detection rule - check ProductCode and version number."
+        Break
+    }
+    
+    # Create custom requirement rule
+    $params = @{
+        Architecture                    = "All"
+        MinimumSupportedOperatingSystem = "1607"
+    }
+    $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
     # Add new EXE Win32 app
-    $DisplayName = "Adobe Reader DC" + " " + $Installer.Version
-    $InstallCommandLine = "$($AdobeReaderSetup.FileName) /sAll /rs /rps /l"
-    $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
-    $params = @{
-        TenantName           = $TenantName
-        FilePath             = $IntuneWinFile.FullName
-        DisplayName          = $DisplayName
-        Description          = $Description
-        Publisher            = $Publisher
-        InstallExperience    = "system"
-        RestartBehavior      = "suppress"
-        DetectionRule        = $DetectionRule
-        RequirementRule      = $RequirementRule
-        InstallCommandLine   = $InstallCommandLine
-        UninstallCommandLine = $UninstallCommandLine
-        Icon                 = $Icon
-        Verbose              = $true
+    # Requires a connection via Connect-MSIntuneGraph first
+    try {
+        $params = @{
+            FilePath                 = $IntuneWinFile.FullName
+            DisplayName              = $DisplayName
+            Description              = $Description
+            Publisher                = $Publisher
+            InformationURL           = "https://helpx.adobe.com/au/reader/faq.html"
+            PrivacyURL               = "https://www.adobe.com/au/privacy/policy.html"
+            CompanyPortalFeaturedApp = $false
+            InstallExperience        = "system"
+            RestartBehavior          = "suppress"
+            DetectionRule            = $DetectionRule
+            RequirementRule          = $RequirementRule
+            InstallCommandLine       = $InstallCommandLine
+            UninstallCommandLine     = $UninstallCommandLine
+            Icon                     = $Icon
+            Verbose                  = $true
+        }
+        $App = Add-IntuneWin32App @params
     }
-    Add-IntuneWin32App @params
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
+        Break
+    }
 
     # Create an available assignment for all users
-    $params = @{
-        TenantName  = $TenantName
-        DisplayName = $DisplayName
-        Target      = "AllUsers"
-        Intent      = "available"
-        Verbose     = $true
+    If ($Null -ne $App) {
+        try {
+            $params = @{
+                Id                           = $App.Id
+                Intent                       = "available"
+                Notification                 = "showAll"
+                DeliveryOptimizationPriority = "foreground"
+                #AvailableTime                = ""
+                #DeadlineTime                 = ""
+                #UseLocalTime                 = $true
+                #EnableRestartGracePeriod     = $true
+                #RestartGracePeriod           = 360
+                #RestartCountDownDisplay      = 20
+                #RestartNotificationSnooze    = 60
+                Verbose                      = $true
+            }
+            Add-IntuneWin32AppAssignmentAllUsers @params
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+            Break
+        }
     }
-    Add-IntuneWin32AppAssignment @params
+    #endregion
 }
 Else {
-    Write-Information -MessageData "Failed to retreive Adobe Reader from Evergreen."
+    Write-Information -MessageData "Failed to retrieve Adobe Reader from Evergreen."
 }
