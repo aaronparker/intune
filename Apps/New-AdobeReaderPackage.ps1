@@ -31,7 +31,28 @@ Param (
 # Variables
 $ProgressPreference = "SilentlyContinue"
 $InformationPreference = "Continue"
-Write-Warning -Message "Ensure you have authenticated with 'Connect-MSIntuneGraph -TenantName $TenantName' first."
+
+
+# Check if token has expired and if, request a new
+Write-Information -MessageData "Checking for existing authentication token."
+If ($Null -ne $Global:AuthToken) {
+    $UTCDateTime = (Get-Date).ToUniversalTime()
+    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.datetime - $UTCDateTime).Minutes
+    Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
+
+    If ($TokenExpireMins -le 0) {
+        Write-Information -MessageData "Existing token found but has expired, requesting a new token."
+        $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName
+    }
+    Else {
+        Write-Information -MessageData "Existing authentication token has not expired, will not request a new token."
+    }        
+}
+Else {
+    Write-Information -MessageData "Authentication token does not exist, requesting a new token."
+    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
+}
+
 
 # Download Reader installer and updates with Evergreen
 Write-Information -MessageData "Getting Adobe Acrobat Reader DC version via Evergreen."
@@ -43,9 +64,6 @@ If ($Reader) {
     Write-Information -MessageData "Check path: $PackagePath."
     If (!(Test-Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
-    # Remove EXE and MSP files in the package folder if they exist
-    Get-ChildItem -Path "$PackagePath\*" | Remove-Item -Force -Confirm:$False -Verbose
-
 
     #region Download files and setup the package
     # Grab the most recent installer and update objects in case there happens to be more than one
@@ -55,14 +73,20 @@ If ($Reader) {
     # Download the Adobe Reader installer
     ForEach ($File in $Installer) {
         $OutFile = Join-Path -Path $PackagePath -ChildPath (Split-Path -Path $File.Uri -Leaf)
-        Write-Information -MessageData "Downloading to: $OutFile."
-        try {
-            Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
-            If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
+        Write-Information -MessageData "Installer target: $OutFile."
+        If (Test-Path -Path $OutFile) {
+            Write-Information -MessageData "File exists: $OutFile."
         }
-        catch [System.Exception] {
-            Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
-            Break
+        Else {
+            Write-Information -MessageData "Downloading to: $OutFile."
+            try {
+                Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
+                If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
+            }
+            catch [System.Exception] {
+                Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
+                Break
+            }
         }
     }
 
@@ -70,14 +94,20 @@ If ($Reader) {
     If ($Updater.Version -gt $Installer.Version) {
         ForEach ($File in $Updater) {
             $OutFile = Join-Path -Path $PackagePath -ChildPath (Split-Path -Path $File.Uri -Leaf)
-            Write-Information -MessageData "Downloading to: $OutFile."
-            try {
-                Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
-                If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
+            Write-Information -MessageData "Patch file target: $OutFile."
+            If (Test-Path -Path $OutFile) {
+                Write-Information -MessageData "File exists: $OutFile."
             }
-            catch [System.Exception] {
-                Write-Warning -Message "Failed to download Adobe Reader update patch with: $($_.Exception.Message)"
-                Break
+            Else {
+                Write-Information -MessageData "Downloading to: $OutFile."
+                try {
+                    Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
+                    If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
+                }
+                catch [System.Exception] {
+                    Write-Warning -Message "Failed to download Adobe Reader update patch with: $($_.Exception.Message)"
+                    Break
+                }
             }
         }
     }
@@ -156,7 +186,7 @@ If ($Reader) {
     $Description = "The leading PDF viewer to print, sign, and annotate PDFs"
     $ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
     $Publisher = "Adobe"
-    $DisplayName = "Adobe Reader DC" + " " + $Installer.Version
+    $DisplayName = $res.Name + " " + $Installer.Version
     #$InstallCommandLine = "$($AdobeReaderSetup.FileName) /sAll /rs /rps /l"
     $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1"
     $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
@@ -180,7 +210,7 @@ If ($Reader) {
     }
 
     # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-    If ($Null -eq $ProductCode -or $Null -eq $Installer.Version) {
+    If ($ProductCode -and $Installer.Version) {
         $params = @{
             ProductCode            = $ProductCode
             ProductVersionOperator = "greaterThanOrEqual"
@@ -190,6 +220,8 @@ If ($Reader) {
     }
     Else {
         Write-Warning -Message "Cannot create the detection rule - check ProductCode and version number."
+        Write-Information -MessageData "ProductCode: $ProductCode."
+        Write-Information -MessageData "Version: $($Installer.Version)."
         Break
     }
     
