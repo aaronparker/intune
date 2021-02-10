@@ -77,15 +77,16 @@ If ($VcRedists) {
     ForEach ($VcRedist in $VcRedists) {
 
         # Variables for the package
-        $Description = $VcRedist.Name
-        $DisplayName = $Publisher + " " + $VcRedist.Name + " " + $VcRedist.Architecture + " " + $VcRedist.Version
-        $exe = Split-Path -Path $VcRedist -Leaf
+        $DisplayName = "$Publisher Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)"
+        $Description = "$Publisher $($VcRedist.Name) $($VcRedist.Architecture) $($VcRedist.Version)."
+        $Description += "`n`nSee this document for more info: [The latest supported Visual C++ downloads](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)."
+        $exe = Split-Path -Path $VcRedist.Download -Leaf
         $InstallCommandLine = ".\$exe $($VcRedist.SilentInstall)"
         $UninstallCommandLine = "msiexec.exe /X $($VcRedist.ProductCode) /QN-"
 
         # Build a path to the VcRedist installer
         $VcRedistPath = [System.IO.Path]::Combine($PackagePath, $VcRedist.Release, $VcRedist.Architecture, $VcRedist.ShortName)
-        Write-Information -MessageData "Check output path: $PackageOutput."
+        Write-Information -MessageData "Check input path: $VcRedistPath."
         
         # Build a path to the VcRedist package output
         $PackageOutput = [System.IO.Path]::Combine($Path, "Output", $VcRedist.Release, $VcRedist.Architecture, $VcRedist.ShortName)
@@ -94,6 +95,7 @@ If ($VcRedists) {
 
         try {
             # Create the package
+            Write-Information -MessageData "Running: $wrapperBin -c $VcRedistPath -s $exe -o $PackageOutput -q"
             Start-Process -FilePath $wrapperBin -ArgumentList "-c $VcRedistPath -s $exe -o $PackageOutput -q" -Wait -NoNewWindow
         }
         catch [System.Exception] {
@@ -101,6 +103,7 @@ If ($VcRedists) {
             Break
         }
         try {
+            Write-Information -MessageData "Getting packages from: $PackageOutput."
             $IntuneWinFile = Get-ChildItem -Path $PackageOutput -Filter "*.intunewin" -ErrorAction "SilentlyContinue"
         }
         catch {
@@ -112,8 +115,7 @@ If ($VcRedists) {
 
         #region Upload intunewin file and create the Intune app
         # Convert image file to icon
-        <#
-        $ImageSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Adobe-AcrobatReader.png"
+        $ImageSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Microsoft-VisualStudio.png"
         $ImageFile = (Join-Path -Path $Path -ChildPath (Split-Path -Path $ImageSource -Leaf))
         try {
             Invoke-WebRequest -Uri $ImageSource -OutFile $ImageFile -UseBasicParsing
@@ -129,7 +131,6 @@ If ($VcRedists) {
             Write-Warning -Message "Cannot find the icon file."
             Break
         }
-        #>
 
         # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
         $params = @{
@@ -170,7 +171,7 @@ If ($VcRedists) {
                 RequirementRule          = $RequirementRule
                 InstallCommandLine       = $InstallCommandLine
                 UninstallCommandLine     = $UninstallCommandLine
-                #Icon                     = $Icon
+                Icon                     = $Icon
                 Verbose                  = $true
             }
             $App = Add-IntuneWin32App @params
@@ -209,5 +210,5 @@ If ($VcRedists) {
     #endregion
 }
 Else {
-    Write-Information -MessageData "Failed to retrieve Adobe Reader from Evergreen."
+    Write-Information -MessageData "Failed to retrieve packages from VcRedist."
 }
