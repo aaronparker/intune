@@ -1,0 +1,15 @@
+DisplayName,MembershipRule,Description
+DeviceCollection-Surface,"(device.deviceModel -startsWith ""Surface"")",Microsoft Surface devices
+DeviceCollection-Lenovo,"(device.deviceManufacturer -startsWith ""LENOVO"")",Lenovo desktops and laptops
+DeviceCollection-LenovoCorporate,"(device.deviceOwnership -eq ""Company"") -and (device.deviceManufacturer -startsWith ""LENOVO"")",All corporate Lenovo devices
+DeviceCollection-HP,"(device.deviceManufacturer -startsWith ""HP"")",HP desktops and laptops
+DeviceCollection-HPCorporate,"(device.deviceOwnership -eq ""Company"") -and (device.deviceManufacturer -startsWith ""HP"")",All corporate HP devices
+DeviceCollection-Dell,"(device.deviceManufacturer -startsWith ""Dell"")",Dell desktops and laptops
+DeviceCollection-DellCorporate,"(device.deviceOwnership -eq ""Company"") -and (device.deviceManufacturer -startsWith ""Dell"")",All corporate Dell devices
+DeviceCollection-Samsung,"(device.deviceManufacturer -startsWith ""Samsung"")",Samsung PCs and mobile devices
+DeviceCollection-SamsungCorporate,"(device.deviceOwnership -eq ""Company"") -and (device.deviceManufacturer -startsWith ""Samsung"")",All corporate Samsung devices
+DeviceCollection-Apple,"(device.deviceManufacturer -startsWith ""Apple"")",All Apple devices
+DeviceCollection-AppleCorporate,"(device.deviceOwnership -eq ""Company"") -and (device.deviceManufacturer -startsWith ""Apple"")",All corporate Apple devices
+DeviceCollection-Google,"(device.deviceManufacturer -startsWith ""Google"")",Google tablets and phones
+DeviceCollection-TagHybridAzureAD,(device.devicePhysicalIds -any _ -eq ""[OrderId]:HybridAzureAD""),Devices with Group ID tag: HybridAzureAD
+DynamicLicense-Microsoft365-E3,"((user.objectId -ne null) -and (user.userType -eq ""Member"") -and (user.accountEnabled -eq true)) -and (user.userPrincipalName -contains ""@company.com"")",Enabled user accounts (excluding guests) within specific domains will automatically receive a Microsoft 365 E3 license
