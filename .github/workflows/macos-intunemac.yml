@@ -23,84 +23,84 @@ jobs:
       - name: Download IntuneAppUtil
         shell: pwsh
         run: |
-          Write-Host "`n== IntuneAppUtil" -ForegroundColor "Cyan"
-          $Path = "~/intune"
-          New-Item -Path $Path -ItemType "Directory"
-          $uri = "https://raw.githubusercontent.com/msintuneappsdk/intune-app-wrapping-tool-mac/v1.2/IntuneAppUtil"
-          $binary = Join-Path -Path $Path -ChildPath (Split-Path -Path $uri -Leaf)
-          try {
-              Invoke-WebRequest -Uri $uri -OutFile $binary -UseBasicParsing
-          }
-          catch {
-              Write-Warning "Failed to download: $uri."
-              Throw $_
-          }
-          If (Test-Path -Path $binary) {
-              try {
-                  chmod +x $binary
-              }
-              catch {
-                  Write-Warning "Failed to set execute permission on: $binary."
-                  Throw $_
-              }
-          }
+            Write-Host "`n== IntuneAppUtil" -ForegroundColor "Cyan"
+            New-Item -Path "~/intune" -ItemType "Directory"
+            $Path = Resolve-Path -Path "~/intune"
+            $uri = "https://raw.githubusercontent.com/msintuneappsdk/intune-app-wrapping-tool-mac/v1.2/IntuneAppUtil"
+            $binary = Join-Path -Path $Path -ChildPath (Split-Path -Path $uri -Leaf)
+            try {
+                Invoke-WebRequest -Uri $uri -OutFile $binary -UseBasicParsing
+            }
+            catch {
+                Write-Warning "Failed to download: $uri."
+                Throw $_
+            }
+            If (Test-Path -Path $binary) {
+                try {
+                    chmod +x $binary
+                }
+                catch {
+                    Write-Warning "Failed to set execute permission on: $binary."
+                    Throw $_
+                }
+            }
       - name: Generate Package
         shell: pwsh
         run: |
-          $app = "Adobe Acrobat Reader DC"
-          $Path = "~/intune"
-          Write-Host "`n== $app" -ForegroundColor "Cyan"
-          $update = "https://armmf.adobe.com/arm-manifests/mac/AcrobatDC/reader/current_version.txt"
-          try {
-              $version = Invoke-RestMethod -Uri $update
-          }
-          catch {
-              Write-Warning "Failed to query: $update."
-              Throw $_
-          }
-
-          # Download Acrobat Reader
-          try {
-              $verstring = $version -replace "\.", ""
-              $uri = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$verstring/AcroRdrDC_$($verstring)_MUI.dmg"
-              $output = Join-Path -Path $Path -ChildPath (Split-Path $uri -Leaf)
-              Write-Host "$($app): $uri" -ForegroundColor "Cyan"
-              Write-Host "$($app): $version" -ForegroundColor "Cyan"
-              Write-Host "$($app): $output" -ForegroundColor "Cyan"
-              Invoke-WebRequest -Uri $uri -OutFile $output -UseBasicParsing
-          }
-          catch {
-              Write-Warning "Failed to grab Pkg."
-              Throw $_
-          }
-
-          # Mount the Dmg 
-          try {
-            If (Test-Path -Path $output) {
-                $RegEx = "\/Volumes.*"
-                $mount = hdiutil attach $output
-                $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
-
-                # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
-                $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
-                $NewPackage = Join-Path -Path $Path -ChildPath "AcroRdrDC_MUI.png"
-                Copy-Item -Path $Package.FullName -Destination $NewPackage
+            $app = "Adobe Acrobat Reader DC"
+            $Path = Resolve-Path -Path "~/intune"
+            Write-Host "`n== $app" -ForegroundColor "Cyan"
+            $update = "https://armmf.adobe.com/arm-manifests/mac/AcrobatDC/reader/current_version.txt"
+            try {
+                $version = Invoke-RestMethod -Uri $update
             }
-          }
-          catch {
-              Write-Warning "Failed extract Pkg from Dmg."
-              Throw $_
-          }
+            catch {
+                Write-Warning "Failed to query: $update."
+                Throw $_
+            }
 
-          # Unmount the Dmg
-          hdiutil detach $VolPath
+            # Download Acrobat Reader
+            try {
+                $verstring = $version -replace "\.", ""
+                $uri = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$verstring/AcroRdrDC_$($verstring)_MUI.dmg"
+                $output = Join-Path -Path $Path -ChildPath (Split-Path $uri -Leaf)
+                Write-Host "$($app): $uri" -ForegroundColor "Cyan"
+                Write-Host "$($app): $version" -ForegroundColor "Cyan"
+                Write-Host "$($app): $output" -ForegroundColor "Cyan"
+                Invoke-WebRequest -Uri $uri -OutFile $output -UseBasicParsing
+            }
+            catch {
+                Write-Warning "Failed to grab Pkg."
+                Throw $_
+            }
 
-          # Convert the Pkg to IntuneMac format
-          If (Test-Path -Path $NewPackage) {
-              Write-Host "Execute: ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version" -ForegroundColor "Cyan"
-              # ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version
-              ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v
-          }
+            # Mount the Dmg 
+            try {
+                If (Test-Path -Path $output) {
+                    $RegEx = "\/Volumes.*"
+                    $mount = hdiutil attach $output
+                    $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
+
+                    # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
+                    $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
+                    $NewPackage = Join-Path -Path $Path -ChildPath "AcroRdrDC_MUI.png"
+                    Copy-Item -Path $Package.FullName -Destination $NewPackage
+                }
+            }
+            catch {
+                Write-Warning "Failed extract Pkg from Dmg."
+                Throw $_
+            }
+
+            # Unmount the Dmg
+            hdiutil detach $VolPath
+
+            # Convert the Pkg to IntuneMac format
+            If (Test-Path -Path $NewPackage) {
+                Write-Host "Execute: ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version" -ForegroundColor "Cyan"
+                # ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version
+                ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v
+            }
       - name: Upload report
         uses: actions/upload-artifact@v2
         with:
