@@ -97,7 +97,9 @@ jobs:
 
           # Convert the Pkg to IntuneMac format
           If (Test-Path -Path $NewPackage) {
-              ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version
+              Write-Host "Execute: ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version" -ForegroundColor "Cyan"
+              # ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version
+              ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v
           }
       - name: Upload report
         uses: actions/upload-artifact@v2
