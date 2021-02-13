@@ -101,7 +101,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
         Write-Host "`n== $app" -ForegroundColor "Cyan"
         $update = "https://armmf.adobe.com/arm-manifests/mac/AcrobatDC/reader/current_version.txt"
         try {
-            $r = Invoke-RestMethod -Uri $update
+            $version = Invoke-RestMethod -Uri $update
         }
         catch {
             Write-Warning "Failed to query: $update."
@@ -111,8 +111,8 @@ If ($PSVersionTable.OS -like "Darwin*") {
 
         # Download Acrobat Reader
         try {
-            $vernum = $version -replace "\.", ""
-            $uri = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$vernum/AcroRdrDC_$($vernum)_MUI.dmg"
+            $verstring = $version -replace "\.", ""
+            $uri = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$verstring/AcroRdrDC_$($verstring)_MUI.dmg"
             $output = Join-Path -Path $Path -ChildPath (Split-Path $uri -Leaf)
             Write-Host "$($app): $uri" -ForegroundColor "Cyan"
             Write-Host "$($app): $version" -ForegroundColor "Cyan"
