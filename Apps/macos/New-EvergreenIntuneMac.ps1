@@ -126,15 +126,17 @@ If ($PSVersionTable.OS -like "Darwin*") {
         }
 
         # Mount the Dmg file
-        If (Test-Path -Path $output) {
-            $RegEx = "\/Volumes.*"
-            $mount = hdiutil attach $output
-            $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
+        try {
+            If (Test-Path -Path $output) {
+                $RegEx = "\/Volumes.*"
+                $mount = hdiutil attach $output
+                $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
 
-            # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
-            $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
-            $NewPackage = (Join-Path -Path $Path -ChildPath ((Split-Path -Path $Package -Leaf) -replace " ", ""))
-            Copy-Item -Path $Package.FullName -Destination $NewPackage
+                # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
+                $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
+                $NewPackage = (Join-Path -Path $Path -ChildPath ((Split-Path -Path $Package -Leaf) -replace " ", ""))
+                Copy-Item -Path $Package.FullName -Destination $NewPackage
+            }
         }
         catch {
             Write-Warning "Failed extract Pkg from Dmg."
