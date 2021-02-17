@@ -14,7 +14,15 @@ Param (
     [System.String] $Path = "C:\Temp\VcRedist",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com"
+    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
+
+    [Parameter(Mandatory = $False)]
+    [ValidateSet("2010", "2012", "2013", "2019")]
+    [System.String[]] $VcRelease = @("2010", "2012", "2013", "2019"),
+
+    [Parameter(Mandatory = $False)]
+    [ValidateSet("x86", "x64")]
+    [System.String[]] $VcArchitecture = @("x86", "x64")
 )
 
 # Variables
@@ -45,7 +53,7 @@ Else {
 
 # Download VcRedist installer and updates with VcRedist
 Write-Information -MessageData "Getting VcRedist details."
-$VcRedists = Get-VcList -Release 2010, 2012, 2013, 2019
+$VcRedists = Get-VcList -Release $VcRelease -Architecture $VcArchitecture
 If ($VcRedists) {
     
     # Create the package folder
@@ -182,8 +190,8 @@ If ($VcRedists) {
         }
 
         # Create an available assignment for all users
-        <#
         If ($Null -ne $App) {
+            <#
             try {
                 $params = @{
                     Id                           = $App.Id
@@ -205,7 +213,8 @@ If ($VcRedists) {
                 Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
                 Break
             }
-        }#>
+            #>
+        }
     }
     #endregion
 }
