@@ -5,7 +5,7 @@ Scripts to create a shortcut or remove target shortcuts. Can be used to create s
 Proactive remediation scripts:
 
 * `Detect-PublicDesktopShortcuts.ps1` - detect whether there are shortcuts on the Public Desktop: `C:\Users\Public\Desktop`
-* `Resolve-PublicDesktopShortcuts.ps1` - removes shortcuts from the Public Desktop
+* `Remediate-PublicDesktopShortcuts.ps1` - removes shortcuts from the Public Desktop
 * `Detect-DuplicateShortcuts.ps1` - detect duplicate Microsoft Edge and Teams shortcuts
 * `Remediate-DuplicateShortcuts.ps1` - remove duplicate Microsoft Edge and Teams shortcuts
 
