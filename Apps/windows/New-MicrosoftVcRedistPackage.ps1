@@ -191,29 +191,20 @@ If ($VcRedists) {
 
         # Create an available assignment for all users
         If ($Null -ne $App) {
-            <#
             try {
                 $params = @{
                     Id                           = $App.Id
-                    Intent                       = "available"
-                    Notification                 = "showAll"
-                    DeliveryOptimizationPriority = "foreground"
-                    #AvailableTime                = ""
-                    #DeadlineTime                 = ""
-                    #UseLocalTime                 = $true
-                    #EnableRestartGracePeriod     = $true
-                    #RestartGracePeriod           = 360
-                    #RestartCountDownDisplay      = 20
-                    #RestartNotificationSnooze    = 60
+                    Intent                       = $package.Intent
+                    Notification                 = $package.Notification
+                    DeliveryOptimizationPriority = $package.DeliveryOptimizationPriority
                     Verbose                      = $true
                 }
-                Add-IntuneWin32AppAssignmentAllUsers @params
+                Add-IntuneWin32AppAssignmentAllDevices @params
             }
             catch [System.Exception] {
                 Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
                 Break
             }
-            #>
         }
     }
     #endregion
