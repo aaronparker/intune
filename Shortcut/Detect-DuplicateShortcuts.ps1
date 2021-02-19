@@ -1,8 +1,14 @@
 <#
         .SYNOPSIS
-            Removes shortcuts from user's desktop.
-            Use with Proactive Remediations or PowerShell scripts
+            Detects shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
  
+            For example, detects shortcuts with the following names:
+            Microsoft Teams (3).lnk
+            Microsoft Teams - Copy (2).lnk
+            Microsoft Teams - Copy - Copy (2).lnk
+            Microsoft Teams - Copy - Copy.lnk
+            Microsoft Teams - Copy.lnk
+
         .NOTES
  	        NAME: Detect-DuplicateShortcuts.ps1
 	        VERSION: 1.0
@@ -41,8 +47,8 @@ Function Get-KnownFolderPath {
 # Get shortcuts from the Public desktop
 try {
     $Path = Get-KnownFolderPath -KnownFolder "Desktop"
-    $Filter = "$Path\Microsoft Edge*copy*.lnk", "$Path\Microsoft Teams*copy*.lnk"
-    $Shortcuts = Get-ChildItem -Path $Filter
+    $Filter = "(.*Copy.*lnk$)|(.*\(\d\).*lnk$)"
+    $Shortcuts = Get-ChildItem -Path $Path | Where-Object { $_.Name -match $Filter }
 }
 catch {
     Write-Host "Failed when enumerating shortcuts at: $Path."
