@@ -1,7 +1,13 @@
 <#
         .SYNOPSIS
-            Removes shortcuts from user's desktop.
-            Use with Proactive Remediations or PowerShell scripts
+            Removes shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
+ 
+            For example, detects shortcuts with the following names:
+            Microsoft Teams (3).lnk
+            Microsoft Teams - Copy (2).lnk
+            Microsoft Teams - Copy - Copy (2).lnk
+            Microsoft Teams - Copy - Copy.lnk
+            Microsoft Teams - Copy.lnk
  
         .NOTES
  	        NAME: Remediate-DuplicateShortcuts.ps1
@@ -41,8 +47,8 @@ Function Get-KnownFolderPath {
 # Get shortcuts from the Public desktop
 try {
     $Path = Get-KnownFolderPath -KnownFolder "Desktop"
-    $Filter = "$Path\Microsoft Edge*copy*.lnk", "$Path\Microsoft Teams*copy*.lnk"
-    $Shortcuts = Get-ChildItem -Path $Filter
+    $Filter = "(.*Copy.*lnk$)|(.*\(\d\).*lnk$)"
+    $Shortcuts = Get-ChildItem -Path $Path | Where-Object { $_.Name -match $Filter }
 }
 catch {
     Write-Host "Failed when enumerating shortcuts at: $Path."
@@ -65,4 +71,103 @@ ForEach ($Shortcut in $Shortcuts) {
     $Output += "$($Shortcut.FullName)`n"
 }
 Write-Host "Removed shortcuts:`n$Output"
+
+#region
+<#
+    Source:
+    https://msendpointmgr.com/2020/06/25/endpoint-analytics-proactive-remediations/
+#>
+Function Display-ToastNotification() {
+    $Load = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+    $Load = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
+
+    # Load the notification into the required format
+    $ToastXML = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
+    $ToastXML.LoadXml($Toast.OuterXml)
+        
+    # Display the toast notification
+    try {
+        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($App).Show($ToastXml)
+    }
+    catch { 
+        Write-Output -Message 'Something went wrong when displaying the toast notification' -Level Warn
+        Write-Output -Message 'Make sure the script is running as the logged on user' -Level Warn     
+    }
+}
+<# Setting image variables
+$LogoImageUri = "https://azurefilesnorway.blob.core.windows.net/brandingpictures/Notifications/SCConfigMgr_Symbol_512.png"
+$HeroImageUri = "https://azurefilesnorway.blob.core.windows.net/brandingpictures/Notifications/MSEndpoingMgrHeroImage.png"
+$LogoImage = "$env:TEMP\ToastLogoImage.png"
+$HeroImage = "$env:TEMP\ToastHeroImage.png"
+
+#Fetching images from uri
+Invoke-WebRequest -Uri $LogoImageUri -OutFile $LogoImage
+Invoke-WebRequest -Uri $HeroImageUri -OutFile $HeroImage
+#>
+
+#Defining the Toast notification settings
+#ToastNotification Settings
+$Scenario = 'reminder' # <!-- Possible values are: reminder | short | long -->
+        
+# Load Toast Notification text
+$AttributionText = "stealthpuppy Service Desk"
+$HeaderText = "Duplicate shortcuts found"
+$TitleText = "Duplicate shortcuts have been removed from your desktop"
+$BodyText1 = "These shortcuts were removed:"
+
+ForEach ($Shortcut in $Shortcuts) {
+    $BodyText2 += "$($Shortcut.Name)`n"
+}
+$BodyText2 = $BodyText2.TrimEnd("`n")
+
+# Check for required entries in registry for when using Powershell as application for the toast
+# Register the AppID in the registry for use with the Action Center, if required
+$RegPath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settings'
+$App = '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe'
+
+# Creating registry entries if they don't exist
+if (-NOT(Test-Path -Path "$RegPath\$App")) {
+    New-Item -Path "$RegPath\$App" -Force > $Null
+    New-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' > $Null
+}
+
+# Make sure the app used with the action center is enabled
+if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAction SilentlyContinue).ShowInActionCenter -ne '1') {
+    New-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' -Force > $Null
+}
+
+
+# Formatting the toast notification XML
+[xml]$Toast = @"
+<toast scenario="$Scenario">
+    <visual>
+    <binding template="ToastGeneric">
+        <text placement="attribution">$AttributionText</text>
+        <text>$HeaderText</text>
+        <group>
+            <subgroup>
+                <text hint-style="title" hint-wrap="true" >$TitleText</text>
+            </subgroup>
+        </group>
+        <group>
+            <subgroup>     
+                <text hint-style="body" hint-wrap="true" >$BodyText1</text>
+            </subgroup>
+        </group>
+        <group>
+            <subgroup>     
+                <text hint-style="body" hint-wrap="true" >$BodyText2</text>
+            </subgroup>
+        </group>
+    </binding>
+    </visual>
+    <actions>
+        <action activationType="system" arguments="dismiss" content="$DismissButtonContent"/>
+    </actions>
+</toast>
+"@
+
+#Send the notification
+Display-ToastNotification
 Exit 0
+#endregion
