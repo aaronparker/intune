@@ -3,6 +3,7 @@
     .SYNOPSIS
         Packages the latest Microsoft Visual C++ Redistributables for Intune deployment.
         Uploads the mew package into the target Intune tenant.
+        Requires a connection via Connect-MSIntuneGraph first.
 
     .NOTES
         For details on IntuneWin32App go here: https://github.com/MSEndpointMgr/IntuneWin32App/blob/master/README.md
@@ -140,13 +141,23 @@ If ($VcRedists) {
             Break
         }
 
-        # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-        $params = @{
-            ProductCode            = $VcRedist.ProductCode
-            ProductVersionOperator = "greaterThanOrEqual"
-            ProductVersion         = $VcRedist.Version
+        # Create detection rule using Registry detection
+        Switch ($VcRedist.Architecture) {
+            "x86" {
+                $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+            }
+            "x64" {
+                $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            }
         }
-        $DetectionRule = New-IntuneWin32AppDetectionRuleMSI @params
+        $params = @{
+            Existence            = $true
+            KeyPath              = "$KeyPath\$($VcRedist.ProductCode)"
+            #ValueName            = ""
+            Check32BitOn64System = $false
+            DetectionType        = "exists"
+        }
+        $DetectionRule = New-IntuneWin32AppDetectionRuleRegistry @params
     
         # Create custom requirement rule
         Switch ($VcRedist.Architecture) {
@@ -163,7 +174,7 @@ If ($VcRedists) {
         }
         $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
-        # Add new EXE Win32 app; Requires a connection via Connect-MSIntuneGraph first
+        # Add new EXE Win32 app
         try {
             $params = @{
                 FilePath                 = $IntuneWinFile.FullName
@@ -194,9 +205,9 @@ If ($VcRedists) {
             try {
                 $params = @{
                     Id                           = $App.Id
-                    Intent                       = $package.Intent
-                    Notification                 = $package.Notification
-                    DeliveryOptimizationPriority = $package.DeliveryOptimizationPriority
+                    Intent                       = "required"
+                    Notification                 = "hideAll"
+                    DeliveryOptimizationPriority = "foreground"
                     Verbose                      = $true
                 }
                 Add-IntuneWin32AppAssignmentAllDevices @params
