@@ -25,7 +25,17 @@ Param (
     [System.String] $ScriptName = "Install-Reader.ps1",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com"
+    [ValidateSet("x64", "x86")]
+    [System.String] $Architecture = "x86",
+
+    [Parameter(Mandatory = $False)]
+    [System.String] $Language = "English (UK)",
+
+    [Parameter(Mandatory = $False)]
+    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
+
+    [Parameter(Mandatory = $False)]
+    [System.Management.Automation.SwitchParameter] $Upload
 )
 
 # Variables
@@ -56,63 +66,40 @@ Else {
 
 # Download Reader installer and updates with Evergreen
 Write-Information -MessageData "Getting Adobe Acrobat Reader DC version via Evergreen."
-$Reader = Get-AdobeAcrobatReaderDC | Where-Object { $_.Language -eq "English" -or $_.Language -eq "Neutral" }
-If ($Reader) {
+$Package = Get-AdobeAcrobatReaderDC | Where-Object { $_.Language -eq $Language -and $_.Architecture -eq $Architecture }
+If ($Package) {
+    If ($Package.Count -gt 1) {
+        Write-Warning -Message "Found more than 1 installer. Exiting."
+        $Package
+        Break
+    } 
     
     # Create the package folder
+    $Path = Join-Path -Path $Path -ChildPath $Architecture
     $PackagePath = Join-Path -Path $Path -ChildPath "Package"
     Write-Information -MessageData "Check path: $PackagePath."
     If (!(Test-Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
-
     #region Download files and setup the package
-    # Grab the most recent installer and update objects in case there happens to be more than one
-    $Installer = ($Reader | Where-Object { $_.Type -eq "Installer" | Sort-Object -Property "Version" -Descending })[-1]
-    $Updater = ($Reader | Where-Object { $_.Type -eq "Updater" | Sort-Object -Property "Version" -Descending })[-1]
-        
+    # Grab the most recent installer and update objects in case there happens to be more than one        
     # Download the Adobe Reader installer
-    ForEach ($File in $Installer) {
-        $OutFile = Join-Path -Path $PackagePath -ChildPath (Split-Path -Path $File.Uri -Leaf)
-        Write-Information -MessageData "Installer target: $OutFile."
-        If (Test-Path -Path $OutFile) {
-            Write-Information -MessageData "File exists: $OutFile."
-        }
-        Else {
-            Write-Information -MessageData "Downloading to: $OutFile."
-            try {
-                Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
-                If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
-            }
-            catch [System.Exception] {
-                Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
-                Break
-            }
-        }
-    }
-
-    # Download the updater if the updater version is greater than the installer
-    If ($Updater.Version -gt $Installer.Version) {
-        ForEach ($File in $Updater) {
-            $OutFile = Join-Path -Path $PackagePath -ChildPath (Split-Path -Path $File.Uri -Leaf)
-            Write-Information -MessageData "Patch file target: $OutFile."
-            If (Test-Path -Path $OutFile) {
-                Write-Information -MessageData "File exists: $OutFile."
-            }
-            Else {
-                Write-Information -MessageData "Downloading to: $OutFile."
-                try {
-                    Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
-                    If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
-                }
-                catch [System.Exception] {
-                    Write-Warning -Message "Failed to download Adobe Reader update patch with: $($_.Exception.Message)"
-                    Break
-                }
-            }
-        }
+    $Executable = Split-Path -Path $Package.Uri -Leaf
+    $OutFile = Join-Path -Path $PackagePath -ChildPath $Executable
+        
+    Write-Information -MessageData "Installer target: $OutFile."
+    If (Test-Path -Path $OutFile) {
+        Write-Information -MessageData "File exists: $OutFile."
     }
     Else {
-        Write-Information -MessageData "Installer already up to date, skipping patch file."
+        Write-Information -MessageData "Downloading to: $OutFile."
+        try {
+            Invoke-WebRequest -Uri $Package.Uri -OutFile $OutFile -UseBasicParsing
+            If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
+            Break
+        }
     }
     #endregion
 
@@ -125,18 +112,8 @@ If ($Reader) {
     [System.String] $ScriptContent
     $ScriptContent += "# $($res.Name)"
     $ScriptContent += "`n"
-    $ScriptContent += "`$InstallFolder = Resolve-Path -Path `$PWD"
+    $ScriptContent += "`$r = Start-Process -FilePath `"`$PWD\$Executable`" -ArgumentList `"$($res.Install.Physical.Arguments)`" -Wait -PassThru"
     $ScriptContent += "`n"
-    $Installers = Get-ChildItem -Path $PackagePath -Filter "*.exe"
-    ForEach ($exe in $Installers) {
-        $ScriptContent += "`$r = Start-Process -FilePath `"`$InstallFolder\$exe`" -ArgumentList `"$($res.Install.Physical.Arguments)`" -Wait -PassThru"
-        $ScriptContent += "`n"
-    }
-    $Updates = Get-ChildItem -Path $PackagePath -Filter "*.msp"
-    ForEach ($msp in $Updates) {
-        $ScriptContent += "Start-Process -FilePath `"$env:SystemRoot\System32\msiexec.exe`" -ArgumentList `"/update $msp /quiet /qn-`" -Wait"
-        $ScriptContent += "`n"
-    }
     $ScriptContent += "Return `$r.ExitCode"
     $ScriptContent += "`n"
     try {
@@ -164,7 +141,7 @@ If ($Reader) {
     # Create the package
     try {
         $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
-        Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $exe -o $PackageOutput -q" -Wait -NoNewWindow
+        Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $Executable -o $PackageOutput -q" -Wait -NoNewWindow
     }
     catch [System.Exception] {
         Write-Warning -Message "Failed to convert to an Intunewin package with: $($_.Exception.Message)"
@@ -186,9 +163,8 @@ If ($Reader) {
     $Description = "The leading PDF viewer to print, sign, and annotate PDFs"
     $ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
     $Publisher = "Adobe"
-    $DisplayName = $res.Name + " " + $Installer.Version
-    #$InstallCommandLine = "$($AdobeReaderSetup.FileName) /sAll /rs /rps /l"
-    $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1"
+    $DisplayName = $res.Name + " " + $Architecture + " " + $Package.Version
+    $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
     $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
 
     # Convert image file to icon
@@ -210,78 +186,91 @@ If ($Reader) {
     }
 
     # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-    If ($ProductCode -and $Installer.Version) {
+    If ($ProductCode -and $Package.Version) {
         $params = @{
             ProductCode            = $ProductCode
             ProductVersionOperator = "greaterThanOrEqual"
-            ProductVersion         = $Installer.Version
+            ProductVersion         = $Package.Version
         }
         $DetectionRule = New-IntuneWin32AppDetectionRuleMSI @params
     }
     Else {
         Write-Warning -Message "Cannot create the detection rule - check ProductCode and version number."
         Write-Information -MessageData "ProductCode: $ProductCode."
-        Write-Information -MessageData "Version: $($Installer.Version)."
+        Write-Information -MessageData "Version: $($Package.Version)."
         Break
     }
     
     # Create custom requirement rule
+    Switch ($Architecture) {
+        "x86" {
+            $Architecture = "All"
+        }
+        "x64" {
+            $Architecture = "x64"
+        }
+    }
     $params = @{
-        Architecture                    = "All"
+        Architecture                    = $Architecture
         MinimumSupportedOperatingSystem = "1607"
     }
     $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
     # Add new EXE Win32 app
     # Requires a connection via Connect-MSIntuneGraph first
-    try {
-        $params = @{
-            FilePath                 = $IntuneWinFile.FullName
-            DisplayName              = $DisplayName
-            Description              = $Description
-            Publisher                = $Publisher
-            InformationURL           = "https://helpx.adobe.com/au/reader/faq.html"
-            PrivacyURL               = "https://www.adobe.com/au/privacy/policy.html"
-            CompanyPortalFeaturedApp = $false
-            InstallExperience        = "system"
-            RestartBehavior          = "suppress"
-            DetectionRule            = $DetectionRule
-            RequirementRule          = $RequirementRule
-            InstallCommandLine       = $InstallCommandLine
-            UninstallCommandLine     = $UninstallCommandLine
-            Icon                     = $Icon
-            Verbose                  = $true
-        }
-        $App = Add-IntuneWin32App @params
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
-        Break
-    }
-
-    # Create an available assignment for all users
-    If ($Null -ne $App) {
+    If ($PSBoundParameters.Keys.Contains("Upload")) {
         try {
             $params = @{
-                Id                           = $App.Id
-                Intent                       = "available"
-                Notification                 = "showAll"
-                DeliveryOptimizationPriority = "foreground"
-                #AvailableTime                = ""
-                #DeadlineTime                 = ""
-                #UseLocalTime                 = $true
-                #EnableRestartGracePeriod     = $true
-                #RestartGracePeriod           = 360
-                #RestartCountDownDisplay      = 20
-                #RestartNotificationSnooze    = 60
-                Verbose                      = $true
+                FilePath                 = $IntuneWinFile.FullName
+                DisplayName              = $DisplayName
+                Description              = $Description
+                Publisher                = $Publisher
+                InformationURL           = "https://helpx.adobe.com/au/reader/faq.html"
+                PrivacyURL               = "https://www.adobe.com/au/privacy/policy.html"
+                CompanyPortalFeaturedApp = $false
+                InstallExperience        = "system"
+                RestartBehavior          = "suppress"
+                DetectionRule            = $DetectionRule
+                RequirementRule          = $RequirementRule
+                InstallCommandLine       = $InstallCommandLine
+                UninstallCommandLine     = $UninstallCommandLine
+                Icon                     = $Icon
+                Verbose                  = $true
             }
-            Add-IntuneWin32AppAssignmentAllUsers @params
+            $App = Add-IntuneWin32App @params
         }
         catch [System.Exception] {
-            Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+            Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
             Break
         }
+
+        # Create an available assignment for all users
+        If ($Null -ne $App) {
+            try {
+                $params = @{
+                    Id                           = $App.Id
+                    Intent                       = "available"
+                    Notification                 = "showAll"
+                    DeliveryOptimizationPriority = "foreground"
+                    #AvailableTime                = ""
+                    #DeadlineTime                 = ""
+                    #UseLocalTime                 = $true
+                    #EnableRestartGracePeriod     = $true
+                    #RestartGracePeriod           = 360
+                    #RestartCountDownDisplay      = 20
+                    #RestartNotificationSnooze    = 60
+                    Verbose                      = $true
+                }
+                Add-IntuneWin32AppAssignmentAllUsers @params
+            }
+            catch [System.Exception] {
+                Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+                Break
+            }
+        }
+    }
+    Else {
+        Write-Host -Object "Parameter -Upload not specified. Skipping upload to Intune."
     }
     #endregion
 }

@@ -14,7 +14,13 @@ Param (
     [System.String] $Path = "C:\Temp\Wvd",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com"
+    [System.String] $ScriptName = "Install-RemoteDesktop.ps1",
+
+    [Parameter(Mandatory = $False)]
+    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
+
+    [Parameter(Mandatory = $False)]
+    [System.Management.Automation.SwitchParameter] $Upload
 )
 
 # Variables
@@ -45,8 +51,13 @@ Else {
 
 # Download Reader installer and updates with Evergreen
 Write-Information -MessageData "Getting Microsoft Windows Virtual Desktop Remote Desktop version via Evergreen."
-$RemoteDesktop = Get-MicrosoftWvdRemoteDesktop | Where-Object { $_.Architecture -eq "x64" }
-If ($RemoteDesktop) {
+$Package = Get-MicrosoftWvdRemoteDesktop | Where-Object { $_.Architecture -eq "x64" }
+If ($Package) {
+    If ($Package.Count -gt 1) {
+        Write-Warning -Message "Found more than 1 installer. Exiting."
+        $Package
+        Break
+    }
     
     # Create the package folder
     $PackagePath = Join-Path -Path $Path -ChildPath "Package"
@@ -55,29 +66,45 @@ If ($RemoteDesktop) {
 
     #region Download files and setup the package        
     # Download the Remote Desktop installer
-    ForEach ($File in $RemoteDesktop) {
-        $OutFile = Join-Path -Path $PackagePath -ChildPath $File.Filename
-        Write-Information -MessageData "Installer target: $OutFile."
-        If (Test-Path -Path $OutFile) {
-            Write-Information -MessageData "File exists: $OutFile."
+    $Executable = $Package.FileName
+    $OutFile = Join-Path -Path $PackagePath -ChildPath $Executable
+
+    Write-Information -MessageData "Installer target: $OutFile."
+    If (Test-Path -Path $OutFile) {
+        Write-Information -MessageData "File exists: $OutFile."
+    }
+    Else {
+        Write-Information -MessageData "Downloading to: $OutFile."
+        try {
+            Invoke-WebRequest -Uri $Package.Uri -OutFile $OutFile -UseBasicParsing
+            If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
         }
-        Else {
-            Write-Information -MessageData "Downloading to: $OutFile."
-            try {
-                Invoke-WebRequest -Uri $File.Uri -OutFile $OutFile -UseBasicParsing
-                If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
-            }
-            catch [System.Exception] {
-                Write-Warning -Message "Failed to download Remote Desktop installer with: $($_.Exception.Message)"
-                Break
-            }
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to download Remote Desktop installer with: $($_.Exception.Message)"
+            Break
         }
     }
     #endregion
 
 
-    #region Get resource strings and write out a script that will install Reader
+    #region Get resource strings and write out a script that will install Remote Desktop
     $res = Export-EvergreenFunctionStrings -AppName "MicrosoftWvdRemoteDesktop"
+
+    Remove-Variable -Name "ScriptContent" -ErrorAction "SilentlyContinue"
+    [System.String] $ScriptContent
+    $ScriptContent += "# $($res.Name)"
+    $ScriptContent += "`n"
+    $ScriptContent += "`$r = Start-Process -FilePath `"`$env:SystemRoot\System32\msiexec.exe`" -ArgumentList `"/package `$PWD\`$Executable /quiet /norestart`" -Wait -PassThru"
+    $ScriptContent += "`n"
+    $ScriptContent += "Return `$r.ExitCode"
+    $ScriptContent += "`n"
+    try {
+        $ScriptContent | Out-File -FilePath "$PackagePath\$ScriptName" -Encoding "Utf8" -NoNewline -Force
+    }
+    catch [System.Exception] {
+        Write-Warning -Message "Failed to write install script $PackagePath\$ScriptName with: $($_.Exception.Message)"
+        Break
+    }
     #endregion
 
 
@@ -96,7 +123,7 @@ If ($RemoteDesktop) {
     # Create the package
     try {
         $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
-        Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $($RemoteDesktop.Filename) -o $PackageOutput -q" -Wait -NoNewWindow
+        Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $($Package.Filename) -o $PackageOutput -q" -Wait -NoNewWindow
     }
     catch [System.Exception] {
         Write-Warning -Message "Failed to convert to an Intunewin package with: $($_.Exception.Message)"
@@ -118,8 +145,8 @@ If ($RemoteDesktop) {
     $Description = "The Microsoft Windows Virtual Desktop Remote Desktop client for Windows Desktop."
     $ProductCode = "{0D305810-09D2-49D9-8AF7-D5459F40BB95}"
     $Publisher = "Microsoft"
-    $DisplayName = $res.Name + " " + $RemoteDesktop.Version
-    $InstallCommandLine = "msiexec.exe /i $($RemoteDesktop.FileName) /quiet /noreboot"
+    $DisplayName = $res.Name + " " + $Package.Version
+    $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
     $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
 
     # Convert image file to icon
@@ -141,81 +168,86 @@ If ($RemoteDesktop) {
     }
 
     # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-    If ($ProductCode -and $RemoteDesktop.Version) {
+    If ($ProductCode -and $Package.Version) {
         $params = @{
             Version              = $True
             Path                 = "$env:ProgramFiles\Remote Desktop"
             FileOrFolder         = "msrdcw.exe"
             Check32BitOn64System = $True 
             Operator             = "greaterThanOrEqual"
-            VersionValue         = $RemoteDesktop.Version
+            VersionValue         = $Package.Version
         }
         $DetectionRule = New-IntuneWin32AppDetectionRuleFile @params
     }
     Else {
         Write-Warning -Message "Cannot create the detection rule - check ProductCode and version number."
         Write-Information -MessageData "ProductCode: $ProductCode."
-        Write-Information -MessageData "Version: $($RemoteDesktop.Version)."
+        Write-Information -MessageData "Version: $($Package.Version)."
         Break
     }
     
     # Create custom requirement rule
     $params = @{
-        Architecture                    = "All"
+        Architecture                    = "x64"
         MinimumSupportedOperatingSystem = "1607"
     }
     $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
     # Add new EXE Win32 app
     # Requires a connection via Connect-MSIntuneGraph first
-    try {
-        $params = @{
-            FilePath                 = $IntuneWinFile.FullName
-            DisplayName              = $DisplayName
-            Description              = $Description
-            Publisher                = $Publisher
-            InformationURL           = "https://docs.microsoft.com/en-au/windows-server/remote/remote-desktop-services/clients/windowsdesktop"
-            PrivacyURL               = "https://go.microsoft.com/fwlink/?LinkId=521839"
-            CompanyPortalFeaturedApp = $false
-            InstallExperience        = "system"
-            RestartBehavior          = "suppress"
-            DetectionRule            = $DetectionRule
-            RequirementRule          = $RequirementRule
-            InstallCommandLine       = $InstallCommandLine
-            UninstallCommandLine     = $UninstallCommandLine
-            Icon                     = $Icon
-            Verbose                  = $true
-        }
-        $App = Add-IntuneWin32App @params
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
-        Break
-    }
-
-    # Create an available assignment for all users
-    If ($Null -ne $App) {
+    If ($PSBoundParameters.Keys.Contains("Upload")) {
         try {
             $params = @{
-                Id                           = $App.Id
-                Intent                       = "available"
-                Notification                 = "showAll"
-                DeliveryOptimizationPriority = "foreground"
-                #AvailableTime                = ""
-                #DeadlineTime                 = ""
-                #UseLocalTime                 = $true
-                #EnableRestartGracePeriod     = $true
-                #RestartGracePeriod           = 360
-                #RestartCountDownDisplay      = 20
-                #RestartNotificationSnooze    = 60
-                Verbose                      = $true
+                FilePath                 = $IntuneWinFile.FullName
+                DisplayName              = $DisplayName
+                Description              = $Description
+                Publisher                = $Publisher
+                InformationURL           = "https://docs.microsoft.com/en-au/windows-server/remote/remote-desktop-services/clients/windowsdesktop"
+                PrivacyURL               = "https://go.microsoft.com/fwlink/?LinkId=521839"
+                CompanyPortalFeaturedApp = $false
+                InstallExperience        = "system"
+                RestartBehavior          = "suppress"
+                DetectionRule            = $DetectionRule
+                RequirementRule          = $RequirementRule
+                InstallCommandLine       = $InstallCommandLine
+                UninstallCommandLine     = $UninstallCommandLine
+                Icon                     = $Icon
+                Verbose                  = $true
             }
-            Add-IntuneWin32AppAssignmentAllUsers @params
+            $App = Add-IntuneWin32App @params
         }
         catch [System.Exception] {
-            Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+            Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
             Break
         }
+
+        # Create an available assignment for all users
+        If ($Null -ne $App) {
+            try {
+                $params = @{
+                    Id                           = $App.Id
+                    Intent                       = "available"
+                    Notification                 = "showAll"
+                    DeliveryOptimizationPriority = "foreground"
+                    #AvailableTime                = ""
+                    #DeadlineTime                 = ""
+                    #UseLocalTime                 = $true
+                    #EnableRestartGracePeriod     = $true
+                    #RestartGracePeriod           = 360
+                    #RestartCountDownDisplay      = 20
+                    #RestartNotificationSnooze    = 60
+                    Verbose                      = $true
+                }
+                Add-IntuneWin32AppAssignmentAllUsers @params
+            }
+            catch [System.Exception] {
+                Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+                Break
+            }
+        }
+    }
+    Else {
+        Write-Host -Object "Parameter -Upload not specified. Skipping upload to Intune."
     }
     #endregion
 }

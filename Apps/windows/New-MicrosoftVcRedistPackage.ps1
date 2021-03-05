@@ -15,15 +15,18 @@ Param (
     [System.String] $Path = "C:\Temp\VcRedist",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
-
-    [Parameter(Mandatory = $False)]
     [ValidateSet("2010", "2012", "2013", "2019")]
     [System.String[]] $VcRelease = @("2010", "2012", "2013", "2019"),
 
     [Parameter(Mandatory = $False)]
     [ValidateSet("x86", "x64")]
-    [System.String[]] $VcArchitecture = @("x86", "x64")
+    [System.String[]] $VcArchitecture = @("x86", "x64"),
+
+    [Parameter(Mandatory = $False)]
+    [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
+
+    [Parameter(Mandatory = $False)]
+    [System.Management.Automation.SwitchParameter] $Upload
 )
 
 # Variables
@@ -175,47 +178,52 @@ If ($VcRedists) {
         $RequirementRule = New-IntuneWin32AppRequirementRule @params
 
         # Add new EXE Win32 app
-        try {
-            $params = @{
-                FilePath                 = $IntuneWinFile.FullName
-                DisplayName              = $DisplayName
-                Description              = $Description
-                Publisher                = $Publisher
-                InformationURL           = $VcRedist.URL
-                PrivacyURL               = $PrivacyUrl
-                CompanyPortalFeaturedApp = $false
-                InstallExperience        = "system"
-                RestartBehavior          = "suppress"
-                DetectionRule            = $DetectionRule
-                RequirementRule          = $RequirementRule
-                InstallCommandLine       = $InstallCommandLine
-                UninstallCommandLine     = $UninstallCommandLine
-                Icon                     = $Icon
-                Verbose                  = $true
-            }
-            $App = Add-IntuneWin32App @params
-        }
-        catch [System.Exception] {
-            Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
-            Break
-        }
-
-        # Create an available assignment for all users
-        If ($Null -ne $App) {
+        If ($PSBoundParameters.Keys.Contains("Upload")) {
             try {
                 $params = @{
-                    Id                           = $App.Id
-                    Intent                       = "required"
-                    Notification                 = "hideAll"
-                    DeliveryOptimizationPriority = "foreground"
-                    Verbose                      = $true
+                    FilePath                 = $IntuneWinFile.FullName
+                    DisplayName              = $DisplayName
+                    Description              = $Description
+                    Publisher                = $Publisher
+                    InformationURL           = $VcRedist.URL
+                    PrivacyURL               = $PrivacyUrl
+                    CompanyPortalFeaturedApp = $false
+                    InstallExperience        = "system"
+                    RestartBehavior          = "suppress"
+                    DetectionRule            = $DetectionRule
+                    RequirementRule          = $RequirementRule
+                    InstallCommandLine       = $InstallCommandLine
+                    UninstallCommandLine     = $UninstallCommandLine
+                    Icon                     = $Icon
+                    Verbose                  = $true
                 }
-                Add-IntuneWin32AppAssignmentAllDevices @params
+                $App = Add-IntuneWin32App @params
             }
             catch [System.Exception] {
-                Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+                Write-Warning -Message "Failed to create application: $DisplayName with: $($_.Exception.Message)"
                 Break
             }
+
+            # Create an available assignment for all users
+            If ($Null -ne $App) {
+                try {
+                    $params = @{
+                        Id                           = $App.Id
+                        Intent                       = "required"
+                        Notification                 = "hideAll"
+                        DeliveryOptimizationPriority = "foreground"
+                        Verbose                      = $true
+                    }
+                    Add-IntuneWin32AppAssignmentAllDevices @params
+                }
+                catch [System.Exception] {
+                    Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+                    Break
+                }
+            }
+        }
+        Else {
+            Write-Host -Object "Parameter -Upload not specified. Skipping upload to Intune."
         }
     }
     #endregion
