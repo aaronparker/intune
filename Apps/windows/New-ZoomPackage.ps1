@@ -1,35 +1,20 @@
 #Requires -Modules Evergreen, IntuneWin32App, PSIntuneAuth, AzureAD
 <#
     .SYNOPSIS
-        Packages the latest Adobe Acrobat Reader DC (US English) for Intune deployment.
+        Packages the latest Zoom for Intune deployment.
         Uploads the mew package into the target Intune tenant.
 
     .NOTES
         For details on IntuneWin32App go here: https://github.com/MSEndpointMgr/IntuneWin32App/blob/master/README.md
         For details on Evergreen go here: https://stealthpuppy.com/Evergreen
-    
-        Use the following when importing the package into Intune:
-        
-        Install: C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy RemoteSigned -WindowStyle Hidden -NonInteractive -File .\Install-Reader.ps1
-        Uninstall: MsiExec.exe /X "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}" /QN-
-        MSI detection: {AC76BA86-7AD7-1033-7B44-AC0F074E4100}
-
-        # Enforce settings with GPO: https://www.adobe.com/devnet-docs/acrobatetk/tools/AdminGuide/gpo.html
 #>
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory = $False)]
-    [System.String] $Path = "C:\Temp\Reader",
+    [System.String] $Path = "C:\Temp\Zoom",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $ScriptName = "Install-Reader.ps1",
-
-    [Parameter(Mandatory = $False)]
-    [ValidateSet("x64", "x86")]
-    [System.String] $Architecture = "x86",
-
-    [Parameter(Mandatory = $False)]
-    [System.String] $Language = "English (UK)",
+    [System.String] $ScriptName = "Install-Zoom.ps1",
 
     [Parameter(Mandatory = $False)]
     [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
@@ -42,7 +27,7 @@ Param (
 Write-Information -MessageData "Checking for existing authentication token."
 If ($Null -ne $Global:AuthToken) {
     $UtcDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.datetime - $UtcDateTime).Minutes
+    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 
     If ($TokenExpireMins -le 0) {
@@ -61,53 +46,44 @@ Else {
 
 
 #region Variables
-Write-Information -MessageData "Getting Adobe Acrobat Reader DC version via Evergreen."
+Write-Information -MessageData "Getting Zoom version via Evergreen."
 $ProgressPreference = "SilentlyContinue"
 $InformationPreference = "Continue"
-$Package = Get-AdobeAcrobatReaderDC | Where-Object { $_.Language -eq $Language -and $_.Architecture -eq $Architecture } | Select-Object -First 1
-$res = Export-EvergreenFunctionStrings -AppName "AdobeAcrobatReaderDC"
-$IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Adobe-AcrobatReader.png"
+$Package = Get-Zoom | Where-Object { $_.Type -eq "Msi" -and $_.Platform -eq "Windows" } | Select-Object -First 1
+$IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Zoom.png"
 $Win32Wrapper = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
 
 # Variables for the package
-$Description = "The leading PDF viewer to print, sign, and annotate PDFs"
-$Publisher = "Adobe"
-$DisplayName = $res.Name + " " + $Architecture + " " + $Package.Version
-$Executable = Split-Path -Path $Package.Uri -Leaf
-$InformationURL = "https://acrobat.adobe.com/au/en/acrobat/pdf-reader.html"
-$PrivacyURL = "https://www.adobe.com/privacy.html"
-Switch ($Architecture) {
-    "x64" {
-        $ProductCode = "{AC76BA86-1033-1033-7760-BC15014EA700}"
-        $AppPath = "$env:ProgramFiles\Adobe\Acrobat DC\Acrobat"
-        $AppExecutable = "Acrobat.exe"
-    }
-    "x86" {
-        $ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
-        $AppPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Reader"
-        $AppExecutable = "AcroRd32.exe"
-    }
-}
+$Description = "Simplified video conferencing and messaging across any device."
+$ProductCode = "{9A0F6468-2A0B-4E6A-B212-40C55E9B4B4B}"
+$Publisher = "Zoom Video Communications, Inc."
+$ProductName = "Zoom Client for Meetings"
+$DisplayName = $ProductName + " " + $Package.Version
+$Executable = Split-Path -Path $Package.URI -Leaf
+
 #$InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
-$InstallCommandLine = "$Executable $($res.Install.Physical.Arguments)"
+$InstallCommandLine = "msiexec /i $Executable /quiet /norestart ALLUSERS=1" 
 $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
+
+$AppPath = "${env:ProgramFiles(x86)}\Zoom\bin"
+$AppExecutable = "Zoom.exe"
+$InformationURL = "https://explore.zoom.us/meetings"
+$PrivacyURL = "https://explore.zoom.us/legal"
 #endregion
 
 
 # Download installer with Evergreen
 If ($Package) {
- 
+
     # Create the package folder
-    $Path = Join-Path -Path $Path -ChildPath $Architecture
     $PackagePath = Join-Path -Path $Path -ChildPath "Package"
     Write-Information -MessageData "Check path: $PackagePath."
     If (!(Test-Path -Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
-    #region Download files and setup the package
-    # Grab the most recent installer and update objects in case there happens to be more than one        
-    # Download the Adobe Reader installer
+    #region Download files and setup the package        
+    # Download the Remote Desktop installer
     $OutFile = Join-Path -Path $PackagePath -ChildPath $Executable
-        
+
     Write-Information -MessageData "Installer target: $OutFile."
     If (Test-Path -Path $OutFile) {
         Write-Information -MessageData "File exists: $OutFile."
@@ -119,31 +95,9 @@ If ($Package) {
             If (Test-Path -Path $OutFile) { Write-Information -MessageData "Downloaded: $OutFile." }
         }
         catch [System.Exception] {
-            Write-Warning -Message "Failed to download Adobe Reader installer with: $($_.Exception.Message)"
+            Write-Warning -Message "Failed to download Remote Desktop installer with: $($_.Exception.Message)"
             Break
         }
-    }
-    #endregion
-
-
-    #region Get resource strings and write out a script that will install Reader
-    $res = Export-EvergreenFunctionStrings -AppName "AdobeAcrobatReaderDC"
-    
-    # Build the installation script
-    Remove-Variable -Name "ScriptContent" -ErrorAction "SilentlyContinue"
-    [System.String] $ScriptContent
-    $ScriptContent += "# $($res.Name)"
-    $ScriptContent += "`n"
-    $ScriptContent += "`$r = Start-Process -FilePath `"`$PWD\$Executable`" -ArgumentList `"$($res.Install.Physical.Arguments)`" -Wait -PassThru"
-    $ScriptContent += "`n"
-    $ScriptContent += "Return `$r.ExitCode"
-    $ScriptContent += "`n"
-    try {
-        $ScriptContent | Out-File -FilePath "$PackagePath\$ScriptName" -Encoding "Utf8" -NoNewline -Force
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to write install script $PackagePath\$ScriptName with: $($_.Exception.Message)"
-        Break
     }
     #endregion
 
@@ -197,7 +151,7 @@ If ($Package) {
         Break
     }
 
-    # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
+    # Create detection rule using the en-US MSI product code
     If ($ProductCode -and $Package.Version) {
         $params = @{
             ProductCode            = $ProductCode
@@ -238,16 +192,8 @@ If ($Package) {
     }
     
     # Create custom requirement rule
-    Switch ($Architecture) {
-        "x86" {
-            $PackageArchitecture = "All"
-        }
-        "x64" {
-            $PackageArchitecture = "x64"
-        }
-    }
     $params = @{
-        Architecture                    = $PackageArchitecture
+        Architecture                    = "All"
         MinimumSupportedOperatingSystem = "1607"
     }
     $RequirementRule = New-IntuneWin32AppRequirementRule @params
@@ -311,5 +257,5 @@ If ($Package) {
     #endregion
 }
 Else {
-    Write-Information -MessageData "Failed to retrieve Adobe Acrobat Reader DC package via Evergreen."
+    Write-Information -MessageData "Failed to retrieve Microsoft Remote Desktop package via Evergreen."
 }

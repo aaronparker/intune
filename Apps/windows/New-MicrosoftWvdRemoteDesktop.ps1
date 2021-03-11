@@ -23,16 +23,11 @@ Param (
     [System.Management.Automation.SwitchParameter] $Upload
 )
 
-# Variables
-$ProgressPreference = "SilentlyContinue"
-$InformationPreference = "Continue"
-
-
-# Check if token has expired and if, request a new
+#region Check if token has expired and if, request a new
 Write-Information -MessageData "Checking for existing authentication token."
 If ($Null -ne $Global:AuthToken) {
-    $UTCDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UTCDateTime).Minutes
+    $UtcDateTime = (Get-Date).ToUniversalTime()
+    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 
     If ($TokenExpireMins -le 0) {
@@ -47,26 +42,46 @@ Else {
     Write-Information -MessageData "Authentication token does not exist, requesting a new token."
     $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
 }
+#endregion
 
 
-# Download Reader installer and updates with Evergreen
+#region Variables
 Write-Information -MessageData "Getting Microsoft Windows Virtual Desktop Remote Desktop version via Evergreen."
-$Package = Get-MicrosoftWvdRemoteDesktop | Where-Object { $_.Architecture -eq "x64" }
+$ProgressPreference = "SilentlyContinue"
+$InformationPreference = "Continue"
+$Package = Get-MicrosoftWvdRemoteDesktop | Where-Object { $_.Architecture -eq "x64" } | Select-Object -First 1
+$res = Export-EvergreenFunctionStrings -AppName "MicrosoftWvdRemoteDesktop"
+$IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Microsoft-RemoteDesktop3.png"
+$Win32Wrapper = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
+
+# Variables for the package
+$Description = "The Microsoft Windows Virtual Desktop Remote Desktop client for Windows Desktop."
+$ProductCode = "{0D305810-09D2-49D9-8AF7-D5459F40BB95}"
+$Publisher = "Microsoft"
+$DisplayName = $res.Name + " " + $Package.Version
+$Executable = $Package.FileName
+
+#$InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
+$InstallCommandLine = "msiexec /i $Executable /quiet /norestart ALLUSERS=1" 
+$UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
+
+$AppPath = "$env:ProgramFiles\Remote Desktop"
+$AppExecutable = "msrdcw.exe"
+$InformationURL = "https://docs.microsoft.com/en-au/windows-server/remote/remote-desktop-services/clients/windowsdesktop"
+$PrivacyURL = "https://go.microsoft.com/fwlink/?LinkId=521839"
+#endregion
+
+
+# Download installer with Evergreen
 If ($Package) {
-    If ($Package.Count -gt 1) {
-        Write-Warning -Message "Found more than 1 installer. Exiting."
-        $Package
-        Break
-    }
-    
+
     # Create the package folder
     $PackagePath = Join-Path -Path $Path -ChildPath "Package"
     Write-Information -MessageData "Check path: $PackagePath."
-    If (!(Test-Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
+    If (!(Test-Path -Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
     #region Download files and setup the package        
     # Download the Remote Desktop installer
-    $Executable = $Package.FileName
     $OutFile = Join-Path -Path $PackagePath -ChildPath $Executable
 
     Write-Information -MessageData "Installer target: $OutFile."
@@ -87,9 +102,7 @@ If ($Package) {
     #endregion
 
 
-    #region Get resource strings and write out a script that will install Remote Desktop
-    $res = Export-EvergreenFunctionStrings -AppName "MicrosoftWvdRemoteDesktop"
-
+    #region Get resource strings and write an install script
     Remove-Variable -Name "ScriptContent" -ErrorAction "SilentlyContinue"
     [System.String] $ScriptContent
     $ScriptContent += "# $($res.Name)"
@@ -110,10 +123,9 @@ If ($Package) {
 
     #region Package the app
     # Download the Intune Win32 wrapper
-    $wrapperUrl = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
-    $wrapperBin = Join-Path -Path $Path -ChildPath (Split-Path -Path $wrapperUrl -Leaf)
+    $wrapperBin = Join-Path -Path $Path -ChildPath (Split-Path -Path $Win32Wrapper -Leaf)
     try {
-        Invoke-WebRequest -Uri $wrapperUrl -OutFile $wrapperBin -UseBasicParsing
+        Invoke-WebRequest -Uri $Win32Wrapper -OutFile $wrapperBin -UseBasicParsing
     }
     catch [System.Exception] {
         Write-Warning -Message "Failed to Microsoft Win32 Content Prep Tool with: $($_.Exception.Message)"
@@ -141,22 +153,13 @@ If ($Package) {
 
 
     #region Upload intunewin file and create the Intune app
-    # Variables for the package
-    $Description = "The Microsoft Windows Virtual Desktop Remote Desktop client for Windows Desktop."
-    $ProductCode = "{0D305810-09D2-49D9-8AF7-D5459F40BB95}"
-    $Publisher = "Microsoft"
-    $DisplayName = $res.Name + " " + $Package.Version
-    $InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
-    $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
-
     # Convert image file to icon
-    $ImageSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Microsoft-RemoteDesktop-macOS.png"
-    $ImageFile = (Join-Path -Path $Path -ChildPath (Split-Path -Path $ImageSource -Leaf))
+    $ImageFile = (Join-Path -Path $Path -ChildPath (Split-Path -Path $IconSource -Leaf))
     try {
-        Invoke-WebRequest -Uri $ImageSource -OutFile $ImageFile -UseBasicParsing
+        Invoke-WebRequest -Uri $IconSource -OutFile $ImageFile -UseBasicParsing
     }
     catch [System.Exception] {
-        Write-Warning -Message "Failed to download: $ImageSource with: $($_.Exception.Message)"
+        Write-Warning -Message "Failed to download: $IconSource with: $($_.Exception.Message)"
         Break
     }
     If (Test-Path -Path $ImageFile) {
@@ -167,22 +170,22 @@ If ($Package) {
         Break
     }
 
-    # Create detection rule using the en-US MSI product code (1033 in the GUID below correlates to the lcid)
-    If ($ProductCode -and $Package.Version) {
+    # Create detection rule using the en-US MSI product code
+    If ($AppPath -and $AppExecutable) {
         $params = @{
             Version              = $True
-            Path                 = "$env:ProgramFiles\Remote Desktop"
-            FileOrFolder         = "msrdcw.exe"
-            Check32BitOn64System = $True 
+            Path                 = $AppPath
+            FileOrFolder         = $AppExecutable
+            Check32BitOn64System = $False 
             Operator             = "greaterThanOrEqual"
             VersionValue         = $Package.Version
         }
         $DetectionRule = New-IntuneWin32AppDetectionRuleFile @params
     }
     Else {
-        Write-Warning -Message "Cannot create the detection rule - check ProductCode and version number."
-        Write-Information -MessageData "ProductCode: $ProductCode."
-        Write-Information -MessageData "Version: $($Package.Version)."
+        Write-Warning -Message "Cannot create the detection rule - check application path and executable."
+        Write-Information -MessageData "Path: $AppPath."
+        Write-Information -MessageData "Exe: $AppExecutable."
         Break
     }
     
@@ -202,8 +205,8 @@ If ($Package) {
                 DisplayName              = $DisplayName
                 Description              = $Description
                 Publisher                = $Publisher
-                InformationURL           = "https://docs.microsoft.com/en-au/windows-server/remote/remote-desktop-services/clients/windowsdesktop"
-                PrivacyURL               = "https://go.microsoft.com/fwlink/?LinkId=521839"
+                InformationURL           = $InformationURL
+                PrivacyURL               = $PrivacyURL
                 CompanyPortalFeaturedApp = $false
                 InstallExperience        = "system"
                 RestartBehavior          = "suppress"
@@ -252,5 +255,5 @@ If ($Package) {
     #endregion
 }
 Else {
-    Write-Information -MessageData "Failed to retrieve Remote Desktop from Evergreen."
+    Write-Information -MessageData "Failed to retrieve Microsoft Remote Desktop package via Evergreen."
 }
