@@ -182,9 +182,9 @@ If ($VcRedists) {
             #region Variables for the package
             $DisplayName = "$Publisher Visual C++ Redistributable $($VcRedist.Release) $($VcRedist.Architecture) $($VcRedist.Version)"
             $Description = "$Publisher $($VcRedist.Name) $($VcRedist.Architecture) $($VcRedist.Version)."
-            $Description += "`n`nSee this document for more info: [The latest supported Visual C++ downloads](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)."
+            $Description += "`n`nSupport information: [The latest supported Visual C++ downloads](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)."
             $InstallCommandLine = ".\$Executable $($VcRedist.SilentInstall)"
-            $UninstallCommandLine = "msiexec.exe /X $($VcRedist.ProductCode) /QN-"
+            $UninstallCommandLine = $VcRedist.SilentUninstall
             #endregion
 
             try {

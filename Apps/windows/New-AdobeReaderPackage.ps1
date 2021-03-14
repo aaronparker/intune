@@ -84,7 +84,7 @@ Switch ($Architecture) {
     }
     "x86" {
         $ProductCode = "{AC76BA86-7AD7-1033-7B44-AC0F074E4100}"
-        $AppPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Reader"
+        $AppPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat Reader DC\Reader"
         $AppExecutable = "AcroRd32.exe"
     }
 }
