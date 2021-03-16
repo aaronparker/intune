@@ -14,9 +14,6 @@ Param (
     [System.String] $Path = "C:\Temp\Wvd",
 
     [Parameter(Mandatory = $False)]
-    [System.String] $ScriptName = "Install-RemoteDesktop.ps1",
-
-    [Parameter(Mandatory = $False)]
     [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
 
     [Parameter(Mandatory = $False)]
@@ -60,8 +57,6 @@ $ProductCode = "{0D305810-09D2-49D9-8AF7-D5459F40BB95}"
 $Publisher = "Microsoft"
 $DisplayName = $res.Name + " " + $Package.Version
 $Executable = $Package.FileName
-
-#$InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
 $InstallCommandLine = "msiexec /i $Executable /quiet /norestart ALLUSERS=1" 
 $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
 
@@ -100,26 +95,6 @@ If ($Package) {
         }
     }
     #endregion
-
-
-    #region Get resource strings and write an install script
-    Remove-Variable -Name "ScriptContent" -ErrorAction "SilentlyContinue"
-    [System.String] $ScriptContent
-    $ScriptContent += "# $($res.Name)"
-    $ScriptContent += "`n"
-    $ScriptContent += "`$r = Start-Process -FilePath `"`$env:SystemRoot\System32\msiexec.exe`" -ArgumentList `"/package `$PWD\`$Executable /quiet /norestart`" -Wait -PassThru"
-    $ScriptContent += "`n"
-    $ScriptContent += "Return `$r.ExitCode"
-    $ScriptContent += "`n"
-    try {
-        $ScriptContent | Out-File -FilePath "$PackagePath\$ScriptName" -Encoding "Utf8" -NoNewline -Force
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to write install script $PackagePath\$ScriptName with: $($_.Exception.Message)"
-        Break
-    }
-    #endregion
-
 
     #region Package the app
     # Download the Intune Win32 wrapper

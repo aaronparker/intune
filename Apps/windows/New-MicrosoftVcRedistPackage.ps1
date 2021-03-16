@@ -33,7 +33,7 @@ Param (
 Write-Information -MessageData "Checking for existing authentication token."
 If ($Null -ne $Global:AuthToken) {
     $UtcDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.datetime - $UtcDateTime).Minutes
+    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 
     If ($TokenExpireMins -le 0) {
@@ -140,11 +140,11 @@ If ($VcRedists) {
 
 
         #region Create detection rule using Registry detection
-        Switch ($VcRedist.Architecture) {
-            "x86" {
+        Switch ($VcRedist.UninstallKey) {
+            "32" {
                 $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
             }
-            "x64" {
+            "64" {
                 $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
             }
         }

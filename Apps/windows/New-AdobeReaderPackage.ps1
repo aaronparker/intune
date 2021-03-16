@@ -42,7 +42,7 @@ Param (
 Write-Information -MessageData "Checking for existing authentication token."
 If ($Null -ne $Global:AuthToken) {
     $UtcDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.datetime - $UtcDateTime).Minutes
+    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 
     If ($TokenExpireMins -le 0) {
@@ -161,7 +161,7 @@ If ($Package) {
 
     # Create the package
     try {
-        $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
+        $PackageOutput = Join-Path -Path $Path -ChildPath $OutputPath
         Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $Executable -o $PackageOutput -q" -Wait -NoNewWindow
     }
     catch [System.Exception] {
@@ -239,12 +239,8 @@ If ($Package) {
     
     # Create custom requirement rule
     Switch ($Architecture) {
-        "x86" {
-            $PackageArchitecture = "All"
-        }
-        "x64" {
-            $PackageArchitecture = "x64"
-        }
+        "x86" { $PackageArchitecture = "All" }
+        "x64" { $PackageArchitecture = "x64" }
     }
     $params = @{
         Architecture                    = $PackageArchitecture
