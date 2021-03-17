@@ -141,10 +141,10 @@ If ($VcRedists) {
 
         #region Create detection rule using Registry detection
         Switch ($VcRedist.UninstallKey) {
-            "32" {
+            "64" {
                 $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
             }
-            "64" {
+            "32" {
                 $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
             }
         }
