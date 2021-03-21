@@ -90,11 +90,11 @@ If ($VcRedists) {
     ForEach ($VcRedist in $VcRedists) {
 
         # Build a path to the VcRedist installer
-        $VcRedistPath = [System.IO.Path]::Combine($PackagePath, $VcRedist.Release, $VcRedist.Architecture, $VcRedist.ShortName)
+        $VcRedistPath = [System.IO.Path]::Combine($PackagePath, $VcRedist.Release, $VcRedist.Architecture, $VcRedist.Version)
         Write-Information -MessageData "Check input path: $VcRedistPath."
         
         # Build a path to the VcRedist package output
-        $PackageOutput = [System.IO.Path]::Combine($Path, "Output", $VcRedist.Release, $VcRedist.Architecture, $VcRedist.ShortName)
+        $PackageOutput = [System.IO.Path]::Combine($Path, "Output", $VcRedist.Release, $VcRedist.Architecture, $VcRedist.Version)
         Write-Information -MessageData "Check output path: $PackageOutput."
         If (!(Test-Path $PackageOutput)) { New-Item -Path $PackageOutput -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
@@ -140,19 +140,11 @@ If ($VcRedists) {
 
 
         #region Create detection rule using Registry detection
-        Switch ($VcRedist.UninstallKey) {
-            "64" {
-                $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-            }
-            "32" {
-                $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-            }
-        }
+        $KeyPath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
         $params = @{
             Existence            = $true
             KeyPath              = "$KeyPath\$($VcRedist.ProductCode)"
-            #ValueName            = ""
-            Check32BitOn64System = $false
+            Check32BitOn64System = If ($VcRedist.UninstallKey -eq "32") { $True } Else { $False }
             DetectionType        = "exists"
         }
         $DetectionRule = New-IntuneWin32AppDetectionRuleRegistry @params
