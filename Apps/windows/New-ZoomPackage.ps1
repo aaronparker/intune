@@ -49,7 +49,7 @@ Else {
 Write-Information -MessageData "Getting Zoom version via Evergreen."
 $ProgressPreference = "SilentlyContinue"
 $InformationPreference = "Continue"
-$Package = Get-Zoom | Where-Object { $_.Type -eq "Msi" -and $_.Platform -eq "Windows" } | Select-Object -First 1
+$Package = Get-EvergreenApp -Name "Zoom" | Where-Object { $_.Type -eq "Msi" -and $_.Platform -eq "Windows" } | Select-Object -First 1
 $IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Zoom.png"
 $Win32Wrapper = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
 

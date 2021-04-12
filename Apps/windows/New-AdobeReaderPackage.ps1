@@ -66,8 +66,8 @@ ForEach ($Arch in $Architecture) {
     Write-Host -Foregroundcolor "Cyan" "Getting Adobe Acrobat Reader DC $Arch version via Evergreen."
     $ProgressPreference = "SilentlyContinue"
     $InformationPreference = "Continue"
-    $Package = Get-AdobeAcrobatReaderDC | Where-Object { $_.Language -eq $Language -and $_.Architecture -eq $Arch } | Select-Object -First 1
-    $res = Export-EvergreenFunctionStrings -AppName "AdobeAcrobatReaderDC"
+    $Package = Get-EvergreenApp -Name "AdobeAcrobatReaderDC" | Where-Object { $_.Language -eq $Language -and $_.Architecture -eq $Arch } | Select-Object -First 1
+    $res = Export-EvergreenManifest -AppName "AdobeAcrobatReaderDC"
     $IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Adobe-AcrobatReader.png"
     $Win32Wrapper = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
 

@@ -46,8 +46,8 @@ Else {
 Write-Information -MessageData "Getting Microsoft Windows Virtual Desktop Remote Desktop version via Evergreen."
 $ProgressPreference = "SilentlyContinue"
 $InformationPreference = "Continue"
-$Package = Get-MicrosoftWvdRemoteDesktop | Where-Object { $_.Architecture -eq "x64" } | Select-Object -First 1
-$res = Export-EvergreenFunctionStrings -AppName "MicrosoftWvdRemoteDesktop"
+$Package = Get-EvergreenApp -Name "MicrosoftWvdRemoteDesktop" | Where-Object { $_.Architecture -eq "x64" } | Select-Object -First 1
+$res = Export-EvergreenManifest -AppName "MicrosoftWvdRemoteDesktop"
 $IconSource = "https://raw.githubusercontent.com/Insentra/intune-icons/main/icons/Microsoft-RemoteDesktop3.png"
 $Win32Wrapper = "https://raw.githubusercontent.com/microsoft/Microsoft-Win32-Content-Prep-Tool/master/IntuneWinAppUtil.exe"
 
