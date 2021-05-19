@@ -1,4 +1,5 @@
-#Requires -Modules Evergreen, IntuneWin32App, PSIntuneAuth, AzureAD
+#Requires -Modules IntuneWin32App, PSIntuneAuth, AzureAD
+#Requires -Modules @{ ModuleName="Evergreen"; ModuleVersion="2104.355" }
 <#
     .SYNOPSIS
         Packages the latest Zoom for Intune deployment.
@@ -12,9 +13,6 @@
 Param (
     [Parameter(Mandatory = $False)]
     [System.String] $Path = "C:\Temp\Zoom",
-
-    [Parameter(Mandatory = $False)]
-    [System.String] $ScriptName = "Install-Zoom.ps1",
 
     [Parameter(Mandatory = $False)]
     [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
@@ -61,7 +59,6 @@ $ProductName = "Zoom Client for Meetings"
 $DisplayName = $ProductName + " " + $Package.Version
 $Executable = Split-Path -Path $Package.URI -Leaf
 
-#$InstallCommandLine = "C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -File .\$ScriptName"
 $InstallCommandLine = "msiexec /i $Executable /quiet /norestart ALLUSERS=1" 
 $UninstallCommandLine = "msiexec.exe /X $ProductCode /QN-"
 

@@ -32,7 +32,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
             catch {
                 Write-Warning "Failed to validate path: $Path."
                 Throw $_
-                Break
             }
         }
         
@@ -47,7 +46,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
             catch {
                 Write-Warning "Failed to download: $uri."
                 Throw $_
-                Break
             }
             If (Test-Path -Path $binary) {
                 try {
@@ -56,7 +54,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
                 catch {
                     Write-Warning "Failed to set execute permission on: $binary."
                     Throw $_
-                    Break
                 }
             }
         }
@@ -73,7 +70,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to query: $update."
             Throw $_
-            Break
         }
         try {
             $url = ($r.sources | Where-Object { $_.name -eq "AgileBits" }).url
@@ -86,7 +82,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to grab Pkg."
             Throw $_
-            Break
         }
 
         # Convert the Pkg to IntuneMac format
@@ -106,7 +101,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to query: $update."
             Throw $_
-            Break
         }
 
         # Download Acrobat Reader
@@ -122,7 +116,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to grab Pkg."
             Throw $_
-            Break
         }
 
         # Mount the Dmg file
@@ -141,7 +134,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed extract Pkg from Dmg."
             Throw $_
-            Break
         }
 
         # Unmount the Dmg
@@ -164,7 +156,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to query: $update."
             Throw $_
-            Break
         }
         try {
             $leaf = ($r.Catalog.Installers | Where-Object { $_.name -eq "Receiver" }).Installer.DownloadURL
@@ -177,7 +168,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to grab Pkg."
             Throw $_
-            Break
         }
 
         # Convert the Pkg to IntuneMac format
@@ -197,7 +187,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to query: $update."
             Throw $_
-            Break
         }
         try {
             $output = Join-Path -Path $Path -ChildPath (Split-Path -Path $r.url -Leaf)
@@ -210,7 +199,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to grab Pkg."
             Throw $_
-            Break
         }
         # Convert the Pkg to IntuneMac format
         If (Test-Path -Path $output) {
@@ -232,7 +220,6 @@ If ($PSVersionTable.OS -like "Darwin*") {
         catch {
             Write-Warning "Failed to grab Pkg."
             Throw $_
-            Break
         }
 
         # Convert the Pkg to IntuneMac format

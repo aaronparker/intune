@@ -90,11 +90,11 @@ If ($VcRedists) {
     ForEach ($VcRedist in $VcRedists) {
 
         # Build a path to the VcRedist installer
-        $VcRedistPath = [System.IO.Path]::Combine($PackagePath, $VcRedist.Release, $VcRedist.Architecture, $VcRedist.Version)
+        $VcRedistPath = [System.IO.Path]::Combine($PackagePath, $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
         Write-Information -MessageData "Check input path: $VcRedistPath."
         
         # Build a path to the VcRedist package output
-        $PackageOutput = [System.IO.Path]::Combine($Path, "Output", $VcRedist.Release, $VcRedist.Architecture, $VcRedist.Version)
+        $PackageOutput = [System.IO.Path]::Combine($Path, "Output", $VcRedist.Release, $VcRedist.Version, $VcRedist.Architecture)
         Write-Information -MessageData "Check output path: $PackageOutput."
         If (!(Test-Path $PackageOutput)) { New-Item -Path $PackageOutput -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
