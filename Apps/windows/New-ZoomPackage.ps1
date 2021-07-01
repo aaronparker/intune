@@ -23,22 +23,18 @@ Param (
 
 #region Check if token has expired and if, request a new
 Write-Information -MessageData "Checking for existing authentication token."
-If ($Null -ne $Global:AuthToken) {
+$UtcDateTime = (Get-Date).ToUniversalTime()
+$TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
+Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
+If ($TokenExpireMins -le 0) {
+    Write-Host -ForegroundColor "Cyan" "Existing token found but has expired, requesting a new token."
+    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
     $UtcDateTime = (Get-Date).ToUniversalTime()
     $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
-
-    If ($TokenExpireMins -le 0) {
-        Write-Information -MessageData "Existing token found but has expired, requesting a new token."
-        $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName
-    }
-    Else {
-        Write-Information -MessageData "Existing authentication token has not expired, will not request a new token."
-    }        
 }
 Else {
-    Write-Information -MessageData "Authentication token does not exist, requesting a new token."
-    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
+    Write-Host -ForegroundColor "Cyan" "Existing authentication token has not expired, will not request a new token."
 }
 #endregion
 
@@ -74,11 +70,12 @@ If ($Package) {
 
     # Create the package folder
     $PackagePath = Join-Path -Path $Path -ChildPath "Package"
+    $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
     Write-Information -MessageData "Check path: $PackagePath."
     If (!(Test-Path -Path $PackagePath)) { New-Item -Path $PackagePath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" > $Null }
 
     #region Download files and setup the package        
-    # Download the Remote Desktop installer
+    # Download the Zoom installer
     $OutFile = Join-Path -Path $PackagePath -ChildPath $Executable
 
     Write-Information -MessageData "Installer target: $OutFile."
@@ -100,33 +97,40 @@ If ($Package) {
 
 
     #region Package the app
-    # Download the Intune Win32 wrapper
-    $wrapperBin = Join-Path -Path $Path -ChildPath (Split-Path -Path $Win32Wrapper -Leaf)
-    try {
-        Invoke-WebRequest -Uri $Win32Wrapper -OutFile $wrapperBin -UseBasicParsing
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to Microsoft Win32 Content Prep Tool with: $($_.Exception.Message)"
-        Break
-    }
+        # Download the Intune Win32 wrapper
+        $wrapperBin = Join-Path -Path $Path -ChildPath (Split-Path -Path $Win32Wrapper -Leaf)
+        try {
+            Invoke-WebRequest -Uri $Win32Wrapper -OutFile $wrapperBin -UseBasicParsing
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to Microsoft Win32 Content Prep Tool with: $($_.Exception.Message)"
+            Break
+        }
 
-    # Create the package
-    try {
-        $PackageOutput = Join-Path -Path $Path -ChildPath "Output"
-        Start-Process -FilePath $wrapperBin -ArgumentList "-c $PackagePath -s $Executable -o $PackageOutput -q" -Wait -NoNewWindow
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "Failed to convert to an Intunewin package with: $($_.Exception.Message)"
-        Break
-    }
-    try {
-        $IntuneWinFile = Get-ChildItem -Path $PackageOutput -Filter "*.intunewin" -ErrorAction "SilentlyContinue"
-    }
-    catch {
-        Write-Warning -Message "Failed to find an Intunewin package in $PackageOutput with: $($_.Exception.Message)"
-        Break
-    }
-    Write-Information -MessageData "Found package: $($IntuneWinFile.FullName)."
+        # Create the package
+        try {
+            Write-Host -ForegroundColor "Cyan" "Package path: $($PackagePath)."
+            Write-Host -ForegroundColor "Cyan" "Executable path:  $($Executable)."
+            $params = @{
+                FilePath     = $wrapperBin
+                ArgumentList = "-c $PackagePath -s $Executable -o $PackageOutput -q"
+                Wait         = $True
+                NoNewWindow  = $True
+            }
+            Start-Process @params
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "Failed to convert to an Intunewin package with: $($_.Exception.Message)"
+            Break
+        }
+        try {
+            $IntuneWinFile = Get-ChildItem -Path $PackageOutput -Filter "*.intunewin" -ErrorAction "SilentlyContinue"
+        }
+        catch {
+            Write-Warning -Message "Failed to find an Intunewin package in $PackageOutput with: $($_.Exception.Message)"
+            Break
+        }
+        Write-Host -ForegroundColor "Cyan" "Found package: $($IntuneWinFile.FullName)."
     #endregion
 
 

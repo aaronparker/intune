@@ -22,22 +22,18 @@ Param (
 
 #region Check if token has expired and if, request a new
 Write-Information -MessageData "Checking for existing authentication token."
-If ($Null -ne $Global:AuthToken) {
+$UtcDateTime = (Get-Date).ToUniversalTime()
+$TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
+Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
+If ($TokenExpireMins -le 0) {
+    Write-Host -ForegroundColor "Cyan" "Existing token found but has expired, requesting a new token."
+    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
     $UtcDateTime = (Get-Date).ToUniversalTime()
     $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
-
-    If ($TokenExpireMins -le 0) {
-        Write-Information -MessageData "Existing token found but has expired, requesting a new token."
-        $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName
-    }
-    Else {
-        Write-Information -MessageData "Existing authentication token has not expired, will not request a new token."
-    }        
 }
 Else {
-    Write-Information -MessageData "Authentication token does not exist, requesting a new token."
-    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
+    Write-Host -ForegroundColor "Cyan" "Existing authentication token has not expired, will not request a new token."
 }
 #endregion
 
