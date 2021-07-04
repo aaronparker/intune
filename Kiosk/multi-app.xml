@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config" xmlns:v2="http://schemas.microsoft.com/AssignedAccess/201810/config" xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config">
+<AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config" xmlns:rs5="http://schemas.microsoft.com/AssignedAccess/201810/config" xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config">
     <Profiles>
         <Profile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}">
             <AllAppsList>
@@ -18,10 +18,10 @@
                     <App DesktopAppPath="%ProgramFiles(x86)%\Adobe\Acrobat DC\Acrobat\Acrobat.exe" />
                 </AllowedApps>
             </AllAppsList>
-            <v2:FileExplorerNamespaceRestrictions>
-                <v2:AllowedNamespace Name="Downloads"/>
-                <v2:AllowedNamespace Name="AllowRemovableDrives" />
-            </v2:FileExplorerNamespaceRestrictions>
+            <v3:FileExplorerNamespaceRestrictions>
+                <v3:AllowedNamespace Name="Downloads"/>
+                <v3:AllowedNamespace Name="AllowRemovableDrives"/>
+            </v3:FileExplorerNamespaceRestrictions>
             <StartLayout>
                 <![CDATA[<LayoutModificationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout"
     xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1"
@@ -34,7 +34,7 @@
                     <start:DesktopApplicationTile Size="2x2" Column="4" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Accessories\Notepad.lnk" />
                     <start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Word.lnk" />
                     <start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Excel.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat DC.lnk" />
+                    <start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat.lnk" />
                     <start:DesktopApplicationTile Size="2x2" Column="0" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" />
                     <start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk" />
                 </start:Group>
@@ -61,7 +61,7 @@
     </Profiles>
     <Configs>
         <Config>
-            <AutoLogonAccount/>
+            <AutoLogonAccount rs5:DisplayName="Press Enter"/>
             <DefaultProfile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}"/>
         </Config>
     </Configs>
