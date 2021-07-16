@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config" xmlns:rs5="http://schemas.microsoft.com/AssignedAccess/201810/config" xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config">
+<AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config" xmlns:v2="http://schemas.microsoft.com/AssignedAccess/201810/config" xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config">
     <Profiles>
         <Profile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}">
             <AllAppsList>
@@ -13,55 +13,51 @@
                     <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft Office\root\Office16\WINWORD.EXE" />
                     <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft Office\root\Office16\EXCEL.EXE" />
                     <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft Office\root\Office16\POWERPNT.EXE" />
-                    <App DesktopAppPath="%ProgramFiles(x86)% (x86)\Microsoft\Edge\Application\msedge.exe" />
                     <App DesktopAppPath="%SystemRoot%\explorer.exe" />
-                    <App DesktopAppPath="%ProgramFiles(x86)%\Adobe\Acrobat DC\Acrobat\Acrobat.exe" />
+                    <App DesktopAppPath="%ProgramFiles%\Adobe\Acrobat DC\Acrobat\Acrobat.exe" />
+                    <App DesktopAppPath="%ProgramFiles%\Adobe\Acrobat DC\Acrobat\AcroCef\AcroCef.exe" />
+                    <App DesktopAppPath="%ProgramFiles%\Common Files\Adobe\ARM\1.0\AdobeARM.exe" />
+                    <App DesktopAppPath="%SystemRoot%\System32\BackgroundTaskHost.exe" />
                 </AllowedApps>
             </AllAppsList>
-            <v3:FileExplorerNamespaceRestrictions>
-                <v3:AllowedNamespace Name="Downloads"/>
-                <v3:AllowedNamespace Name="AllowRemovableDrives"/>
-            </v3:FileExplorerNamespaceRestrictions>
+            <v2:FileExplorerNamespaceRestrictions>
+                <v2:AllowedNamespace Name="Downloads"/>
+				<v3:AllowRemovableDrives/>
+            </v2:FileExplorerNamespaceRestrictions>
             <StartLayout>
-                <![CDATA[<LayoutModificationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout"
-    xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1"
-    xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">
-    <LayoutOptions StartTileGroupCellWidth="6" />
-    <DefaultLayoutOverride>
-        <StartLayoutCollection>
-            <defaultlayout:StartLayout GroupCellWidth="6">
-                <start:Group Name="">
-                    <start:DesktopApplicationTile Size="2x2" Column="4" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Accessories\Notepad.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Word.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Excel.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="0" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" />
-                    <start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk" />
-                </start:Group>
-                <start:Group Name="">
-                    <start:Tile Size="4x2" Column="0" Row="2" AppUserModelID="Microsoft.Getstarted_8wekyb3d8bbwe!App" />
-                    <start:Tile Size="2x2" Column="0" Row="0" AppUserModelID="Microsoft.WindowsCalculator_8wekyb3d8bbwe!App" />
-                    <start:Tile Size="2x2" Column="2" Row="0" AppUserModelID="Microsoft.Windows.Photos_8wekyb3d8bbwe!App" />
-                    <start:Tile Size="2x2" Column="4" Row="0" AppUserModelID="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
-                </start:Group>
-            </defaultlayout:StartLayout>
-        </StartLayoutCollection>
-    </DefaultLayoutOverride>
-    <CustomTaskbarLayoutCollection PinListPlacement="Replace">
-        <defaultlayout:TaskbarLayout>
-            <taskbar:TaskbarPinList>
-                <taskbar:DesktopApp DesktopApplicationLinkPath="%APPDATA%\Microsoft\Windows\Start Menu\Programs\System Tools\File Explorer.lnk" />
-            </taskbar:TaskbarPinList>
-        </defaultlayout:TaskbarLayout>
-    </CustomTaskbarLayoutCollection>
-</LayoutModificationTemplate>]]>
+                <![CDATA[<LayoutModificationTemplate 
+				xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout"
+				xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1"
+				xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">
+					<LayoutOptions StartTileGroupCellWidth="6" />
+					<DefaultLayoutOverride>
+						<StartLayoutCollection>
+							<defaultlayout:StartLayout GroupCellWidth="6">
+								<start:Group Name="">
+									<start:DesktopApplicationTile Size="2x2" Column="4" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Accessories\Notepad.lnk" />
+									<start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Word.lnk" />
+									<start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Excel.lnk" />
+									<start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat DC.lnk" />
+									<start:DesktopApplicationTile Size="2x2" Column="0" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" />
+									<start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk" />
+								</start:Group>
+								<start:Group Name="">
+									<start:Tile Size="4x2" Column="0" Row="2" AppUserModelID="Microsoft.Getstarted_8wekyb3d8bbwe!App" />
+									<start:Tile Size="2x2" Column="0" Row="0" AppUserModelID="Microsoft.WindowsCalculator_8wekyb3d8bbwe!App" />
+									<start:Tile Size="2x2" Column="2" Row="0" AppUserModelID="Microsoft.Windows.Photos_8wekyb3d8bbwe!App" />
+									<start:Tile Size="2x2" Column="4" Row="0" AppUserModelID="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
+								</start:Group>
+							</defaultlayout:StartLayout>
+						</StartLayoutCollection>
+					</DefaultLayoutOverride>
+				</LayoutModificationTemplate>]]>
             </StartLayout>
             <Taskbar ShowTaskbar="true"/>
         </Profile>
     </Profiles>
     <Configs>
         <Config>
-            <AutoLogonAccount rs5:DisplayName="Press Enter"/>
+            <AutoLogonAccount/>
             <DefaultProfile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}"/>
         </Config>
     </Configs>
