@@ -32,22 +32,22 @@
 					<LayoutOptions StartTileGroupCellWidth="6" />
 					<DefaultLayoutOverride>
 						<StartLayoutCollection>
-							<defaultlayout:StartLayout GroupCellWidth="6">
-								<start:Group Name="">
-									<start:DesktopApplicationTile Size="2x2" Column="4" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Accessories\Notepad.lnk" />
-									<start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Word.lnk" />
-									<start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Excel.lnk" />
-									<start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Adobe Acrobat DC.lnk" />
-									<start:DesktopApplicationTile Size="2x2" Column="0" Row="2" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" />
-									<start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk" />
-								</start:Group>
-								<start:Group Name="">
-									<start:Tile Size="4x2" Column="0" Row="2" AppUserModelID="Microsoft.Getstarted_8wekyb3d8bbwe!App" />
-									<start:Tile Size="2x2" Column="0" Row="0" AppUserModelID="Microsoft.WindowsCalculator_8wekyb3d8bbwe!App" />
-									<start:Tile Size="2x2" Column="2" Row="0" AppUserModelID="Microsoft.Windows.Photos_8wekyb3d8bbwe!App" />
-									<start:Tile Size="2x2" Column="4" Row="0" AppUserModelID="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
-								</start:Group>
-							</defaultlayout:StartLayout>
+                            <defaultlayout:StartLayout GroupCellWidth="6">
+                                <start:Group Name="">
+                                <start:DesktopApplicationTile Size="2x2" Column="4" Row="2" DesktopApplicationID="{6D809377-6AF0-444B-8957-A3773F02200E}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" />
+                                <start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationID="Microsoft.Windows.Explorer" />
+                                <start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationID="Microsoft.Office.POWERPNT.EXE.15" />
+                                <start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationID="Microsoft.Office.EXCEL.EXE.15" />
+                                <start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationID="Microsoft.Office.WINWORD.EXE.15" />
+                                <start:DesktopApplicationTile Size="2x2" Column="0" Row="2" DesktopApplicationID="MSEdge" />
+                                </start:Group>
+                                <start:Group Name="">
+                                <start:Tile Size="4x2" Column="0" Row="0" AppUserModelID="Microsoft.Windows.Photos_8wekyb3d8bbwe!App" />
+                                <start:Tile Size="2x2" Column="4" Row="0" AppUserModelID="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
+                                <start:DesktopApplicationTile Size="2x2" Column="2" Row="2" DesktopApplicationID="{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\notepad.exe" />
+                                <start:Tile Size="2x2" Column="0" Row="2" AppUserModelID="Microsoft.WindowsCalculator_8wekyb3d8bbwe!App" />
+                                </start:Group>
+                            </defaultlayout:StartLayout>
 						</StartLayoutCollection>
 					</DefaultLayoutOverride>
 				</LayoutModificationTemplate>]]>
