@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config" xmlns:v2="http://schemas.microsoft.com/AssignedAccess/201810/config" xmlns:v3="http://schemas.microsoft.com/AssignedAccess/2020/config">
+    <Profiles>
+        <Profile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}">
+            <AllAppsList>
+                <AllowedApps>
+                    <App AppUserModelId="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" />
+                    <App DesktopAppPath="%SystemRoot%\explorer.exe" />
+                    <App DesktopAppPath="%SystemRoot%\System32\BackgroundTaskHost.exe" />
+                    <App DesktopAppPath="%ProgramFiles%\Remote Desktop\msrdcw.exe" />
+                    <App DesktopAppPath="%ProgramFiles%\Remote Desktop\msrdc.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\CDViewer.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\concentr.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\cpviewer.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Ctx64Injector64.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\CtxBrowserInt.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\CtxCFRUI.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\CtxTwnPA.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\HdxBrowser.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\HdxRtcEngine.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\icaconf.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\migrateN.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\NMHost.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\pcl2bmp.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\PdfPrintHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\RawPrintHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\redirector.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SetIntegrityLevel.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\WebHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\wfcrun32.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\wfcwow64.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\wfica32.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\XpsNativePrintHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\XPSPrintHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\AuthManager\AuthManSvr.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\AuthManager\PrimaryAuthModule.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\AuthManager\storebrowse.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Browser\Browser.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Browser\CtxWebBrowser.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Browser\HdxBrowserCef.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Citrix Screen Casting for Windows\WinDocker.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Drivers64\usbinst.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\Ceip.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\CitrixReceiverUpdater.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\ConfigurationWizard.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\PrefPanel.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\Receiver.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\SRProxy.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\UpdaterService.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\CrashReporting\crashpad_handler.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\DiagnosticTools\CdfCollector.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\DiagnosticTools\DiagnosticTool.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\Receiver\FeatureFlag\CWAFeatureFlagUpdater.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\CemAutoEnrollHelper.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\CleanUp.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\NPSPrompt.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\SelfService.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\SelfServicePlugin.exe" />
+                    <App DesktopAppPath="%ProgramFiles(x86)%\Citrix\ICA Client\SelfServicePlugin\SelfServiceUninstaller.exe" />
+                </AllowedApps>
+            </AllAppsList>
+            <v2:FileExplorerNamespaceRestrictions>
+                <v2:AllowedNamespace Name="Downloads"/>
+                <v3:AllowRemovableDrives/>
+            </v2:FileExplorerNamespaceRestrictions>
+            <StartLayout>
+                <![CDATA[<LayoutModificationTemplate 
+				xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">
+					<LayoutOptions StartTileGroupCellWidth="6" />
+					<DefaultLayoutOverride>
+						<StartLayoutCollection>
+                            <defaultlayout:StartLayout GroupCellWidth="6">
+                                <start:Group Name="">
+                                <start:DesktopApplicationTile Size="2x2" Column="2" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Citrix Workspace.lnk" />
+                                <start:DesktopApplicationTile Size="2x2" Column="4" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Remote Desktop.lnk" />
+                                <start:DesktopApplicationTile Size="2x2" Column="0" Row="0" DesktopApplicationLinkPath="%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" />
+                                </start:Group>
+                                </start:Group>
+                                <start:Group Name="">
+                                <start:Tile Size="2x2" Column="4" Row="0" AppUserModelID="windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" />
+                                </start:Group>
+                            </defaultlayout:StartLayout>
+						</StartLayoutCollection>
+					</DefaultLayoutOverride>
+				</LayoutModificationTemplate>]]>
+            </StartLayout>
+            <Taskbar ShowTaskbar="true"/>
+        </Profile>
+    </Profiles>
+    <Configs>
+        <Config>
+            <AutoLogonAccount/>
+            <DefaultProfile Id="{5B328104-BD89-4863-AB27-4ED6EE355485}"/>
+        </Config>
+    </Configs>
+</AssignedAccessConfiguration>
