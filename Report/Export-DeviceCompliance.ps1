@@ -5,12 +5,15 @@
 [CmdletBinding()]
 param ()
 
+<#
+# Configure an app registration with permissions to the DeviceManagement API
 $authparams = @{
     ClientId     = "db8dbb7a-40a4-444b-8912-6f14f80816b7"
     TenantId     = "tenant.onmicrosoft.com"
     ClientSecret = ("sdflkjsdflkjsdfsdfsdfsdfsdf" | ConvertTo-SecureString -AsPlainText -Force)
 }
 $auth = Get-MsalToken @authParams
+#>
 
 $settings = @(
     "Windows10CompliancePolicy.ActiveFirewallRequired",

@@ -268,6 +268,28 @@ ForEach ($Arch in $Architecture) {
                 try {
                     $params = @{
                         Id                           = $App.Id
+                        Intent                       = "required"
+                        Notification                 = "showReboot"
+                        DeliveryOptimizationPriority = "foreground"
+                        #AvailableTime                = ""
+                        #DeadlineTime                 = ""
+                        #UseLocalTime                 = $true
+                        EnableRestartGracePeriod     = $true
+                        RestartGracePeriod           = 360
+                        RestartCountDownDisplay      = 20
+                        RestartNotificationSnooze    = 60
+                        Verbose                      = $true
+                    }
+                    Add-IntuneWin32AppAssignmentAllDevices @params
+                }
+                catch [System.Exception] {
+                    Write-Warning -Message "Failed to add device assignment to $($App.displayName) with: $($_.Exception.Message)"
+                    Break
+                }
+   
+                try {
+                    $params = @{
+                        Id                           = $App.Id
                         Intent                       = "available"
                         Notification                 = "showAll"
                         DeliveryOptimizationPriority = "foreground"
@@ -283,7 +305,7 @@ ForEach ($Arch in $Architecture) {
                     Add-IntuneWin32AppAssignmentAllUsers @params
                 }
                 catch [System.Exception] {
-                    Write-Warning -Message "Failed to add assignment to $($App.displayName) with: $($_.Exception.Message)"
+                    Write-Warning -Message "Failed to add user assignment to $($App.displayName) with: $($_.Exception.Message)"
                     Break
                 }
             }
