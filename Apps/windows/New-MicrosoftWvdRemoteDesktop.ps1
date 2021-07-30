@@ -17,7 +17,18 @@ Param (
     [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
 
     [Parameter(Mandatory = $False)]
-    [System.Management.Automation.SwitchParameter] $Upload
+    [System.Management.Automation.SwitchParameter] $Upload,
+
+    [Parameter(Mandatory = $False)]
+    [ValidateScript( {
+            If ([System.Guid]::TryParse($_, $([ref][System.Guid]::Empty))) {
+                $True
+            }
+            Else {
+                Throw "$($_) is not a GUID."
+            }
+        })]
+    [System.String] $ExcludeGroup
 )
 
 #region Check if token has expired and if, request a new
