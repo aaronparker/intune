@@ -29,7 +29,15 @@ Param (
     [System.Management.Automation.SwitchParameter] $Upload,
 
     [Parameter(Mandatory = $False)]
-    [System.String] $ExcludeGroup = "c6870360-2cfd-4365-b622-9227b710db5e"
+    [ValidateScript( {
+            If ([System.Guid]::TryParse($_, $([ref][System.Guid]::Empty))) {
+                $True
+            }
+            Else {
+                Throw "$($_) is not a GUID."
+            }
+        })]
+        [System.String] $ExcludeGroup = "c6870360-2cfd-4365-b622-9227b710db5e"
 )
 
 #region Check if token has expired and if, request a new
@@ -231,17 +239,22 @@ If ($VcRedists) {
                     Break
                 }
 
-                try {
-                    $params = @{
-                        Exclude = $True
-                        ID      = $App.Id
-                        GroupID = $ExcludeGroup
-                        Intent  = "required"
+
+                # Add the group exclusion if the group Id is specified
+                If ($ExcludeGroup.IsPresent) {
+                    try {
+                        $params = @{
+                            Exclude = $True
+                            ID      = $App.Id
+                            GroupID = $ExcludeGroup
+                            Intent  = "required"
+                        }
+                        Add-IntuneWin32AppAssignmentGroup @params
                     }
-                    Add-IntuneWin32AppAssignmentGroup @params
-                }
-                catch [System.Exception] {
-                    Write-Warning -Message "Failed to add exclude device assignment to $($App.displayName) with: $($_.Exception.Message)"
+                    catch [System.Exception] {
+                        Write-Warning -Message "Failed to add exclude device assignment to $($App.displayName) with: $($_.Exception.Message)"
+                        Break
+                    }
                 }
             }
         }

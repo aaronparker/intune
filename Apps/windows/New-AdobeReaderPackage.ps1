@@ -33,7 +33,18 @@ Param (
     [System.String] $TenantName = "stealthpuppylab.onmicrosoft.com",
 
     [Parameter(Mandatory = $False)]
-    [System.Management.Automation.SwitchParameter] $Upload
+    [System.Management.Automation.SwitchParameter] $Upload,
+
+    [Parameter(Mandatory = $False)]
+    [ValidateScript( {
+            If ([System.Guid]::TryParse($_, $([ref][System.Guid]::Empty))) {
+                $True
+            }
+            Else {
+                Throw "$($_) is not a GUID."
+            }
+        })]
+    [System.String] $ExcludeGroup
 )
 
 #region Check if token has expired and if, request a new
@@ -285,6 +296,23 @@ ForEach ($Arch in $Architecture) {
                 catch [System.Exception] {
                     Write-Warning -Message "Failed to add device assignment to $($App.displayName) with: $($_.Exception.Message)"
                     Break
+                }
+
+                # Add the group exclusion if the group Id is specified
+                If ($ExcludeGroup.IsPresent) {
+                    try {
+                        $params = @{
+                            Exclude = $True
+                            ID      = $App.Id
+                            GroupID = $ExcludeGroup
+                            Intent  = "required"
+                        }
+                        Add-IntuneWin32AppAssignmentGroup @params
+                    }
+                    catch [System.Exception] {
+                        Write-Warning -Message "Failed to add exclude device assignment to $($App.displayName) with: $($_.Exception.Message)"
+                        Break
+                    }
                 }
    
                 try {
