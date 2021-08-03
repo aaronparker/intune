@@ -274,10 +274,10 @@ ForEach ($Arch in $Architecture) {
                         #AvailableTime                = ""
                         #DeadlineTime                 = ""
                         #UseLocalTime                 = $true
-                        EnableRestartGracePeriod     = $true
-                        RestartGracePeriod           = 360
-                        RestartCountDownDisplay      = 20
-                        RestartNotificationSnooze    = 60
+                        #EnableRestartGracePeriod     = $true
+                        #RestartGracePeriod           = 360
+                        #RestartCountDownDisplay      = 20
+                        #RestartNotificationSnooze    = 60
                         Verbose                      = $true
                     }
                     Add-IntuneWin32AppAssignmentAllDevices @params
