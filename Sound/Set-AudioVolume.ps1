@@ -1,3 +1,13 @@
+<#
+  .SYNOPSIS
+    Set Windows audio level.
+    Some device models set audio level to 100% during OOBE
+#>
+[CmdletBinding()]
+param (
+    [ValidateRange(0, 1)]
+    [System.Int32] $Volume = 0.3
+)
 
 Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
@@ -45,5 +55,11 @@ public class Audio {
 }
 '@
 
-[Audio]::Mute = $false
-[Audio]::Volume = 0.3
+try {
+  [Audio]::Mute = $false
+  [Audio]::Volume = 0.3
+  Exit 0
+}
+catch {
+  Throw $_
+}
