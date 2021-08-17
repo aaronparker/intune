@@ -1,30 +1,30 @@
 <#
-        .SYNOPSIS
-            Removes shortcuts from the Public desktop.
-            Use with Proactive Remediations or PowerShell scripts
+    .SYNOPSIS
+        Removes shortcuts from the Public desktop.
+        Use with Proactive Remediations or PowerShell scripts
  
-        .NOTES
- 	        NAME: Detect-PublicDesktopShortcuts.ps1
-	        VERSION: 1.0
-	        AUTHOR: Aaron Parker
-	        TWITTER: @stealthpuppy
+    .NOTES
+ 	    NAME: Detect-PublicDesktopShortcuts.ps1
+	    VERSION: 1.0
+	    AUTHOR: Aaron Parker
+	    TWITTER: @stealthpuppy
  
-        .LINK
-            http://stealthpuppy.com
-    #>
+    .LINK
+        http://stealthpuppy.com
+#>
 [CmdletBinding()]
 Param ()
     
 #region Functions
 Function Get-KnownFolderPath {
     <#
-            .SYNOPSIS
-                Gets a known folder's path using GetFolderPath.
-            .PARAMETER KnownFolder
-                The known folder whose path to get. Validates set to ensure only known folders are passed.
-            .NOTES
-                https://stackoverflow.com/questions/16658015/how-can-i-use-powershell-to-call-shgetknownfolderpath
-        #>
+        .SYNOPSIS
+            Gets a known folder's path using GetFolderPath.
+        .PARAMETER KnownFolder
+            The known folder whose path to get. Validates set to ensure only known folders are passed.
+        .NOTES
+            https://stackoverflow.com/questions/16658015/how-can-i-use-powershell-to-call-shgetknownfolderpath
+    #>
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AdminTools', 'ApplicationData', 'CDBurning', 'CommonAdminTools', 'CommonApplicationData', 'CommonDesktopDirectory', 'CommonDocuments', 'CommonMusic', `

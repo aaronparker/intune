@@ -1,23 +1,23 @@
 <#
-        .SYNOPSIS
-            Removes shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
+    .SYNOPSIS
+        Removes shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
  
-            For example, detects shortcuts with the following names:
-            Microsoft Teams (3).lnk
-            Microsoft Teams - Copy (2).lnk
-            Microsoft Teams - Copy - Copy (2).lnk
-            Microsoft Teams - Copy - Copy.lnk
-            Microsoft Teams - Copy.lnk
+        For example, detects shortcuts with the following names:
+        Microsoft Teams (3).lnk
+        Microsoft Teams - Copy (2).lnk
+        Microsoft Teams - Copy - Copy (2).lnk
+        Microsoft Teams - Copy - Copy.lnk
+        Microsoft Teams - Copy.lnk
  
-        .NOTES
- 	        NAME: Remediate-DuplicateShortcuts.ps1
-	        VERSION: 1.0
-	        AUTHOR: Aaron Parker
-	        TWITTER: @stealthpuppy
+    .NOTES
+ 	    NAME: Remediate-DuplicateShortcuts.ps1
+	    VERSION: 1.0
+	    AUTHOR: Aaron Parker
+	    TWITTER: @stealthpuppy
  
-        .LINK
-            http://stealthpuppy.com
-    #>
+    .LINK
+        http://stealthpuppy.com
+#>
 [CmdletBinding()]
 Param ()
 
