@@ -1,9 +1,13 @@
-#Requires -Modules IntuneWin32App, PSIntuneAuth, AzureAD
+#Requires -Modules IntuneWin32App, PSIntuneAuth, AzureAD, MSAL.PS
 #Requires -Modules @{ ModuleName="Evergreen"; ModuleVersion="2104.355" }
 <#
     .SYNOPSIS
         Packages the latest Adobe Acrobat Reader DC (US English) for Intune deployment.
-        Uploads the mew package into the target Intune tenant.
+        Uploads the new package into the target Intune tenant - use the -Upload parameter
+
+        Authenticate to the tenant first with:
+        
+        Connect-MSIntuneGraph -TenantID "domain.onmicrosoft.com"
 
     .NOTES
         For details on IntuneWin32App go here: https://github.com/MSEndpointMgr/IntuneWin32App/blob/master/README.md
@@ -16,6 +20,12 @@
         MSI detection: {AC76BA86-7AD7-1033-7B44-AC0F074E4100}
 
         # Enforce settings with GPO: https://www.adobe.com/devnet-docs/acrobatetk/tools/AdminGuide/gpo.html
+
+
+        ## Update Nuget Package and PowerShellGet Module
+        Install-PackageProvider -Name NuGet -Force
+        Update-Module -Name PowerShellGet
+
 #>
 [CmdletBinding()]
 Param (
@@ -50,13 +60,13 @@ Param (
 #region Check if token has expired and if, request a new
 Write-Host -ForegroundColor "Cyan" "Checking for existing authentication token for tenant: $TenantName."
 $UtcDateTime = (Get-Date).ToUniversalTime()
-$TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
+$TokenExpireMins = ($Global:AccessToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
 Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 If ($TokenExpireMins -le 5) {
     Write-Host -ForegroundColor "Cyan" "Existing token found but has expired, requesting a new token."
-    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
+    $Global:AccessToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
     $UtcDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
+    $TokenExpireMins = ($Global:AccessToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 }
 Else {

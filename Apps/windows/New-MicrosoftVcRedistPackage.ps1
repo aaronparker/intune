@@ -42,14 +42,14 @@ Param (
 
 #region Check if token has expired and if, request a new
 Write-Information -MessageData "Checking for existing authentication token."
-If ($Null -ne $Global:AuthToken) {
+If ($Null -ne $Global:AccessToken) {
     $UtcDateTime = (Get-Date).ToUniversalTime()
-    $TokenExpireMins = ($Global:AuthToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
+    $TokenExpireMins = ($Global:AccessToken.ExpiresOn.DateTime - $UtcDateTime).Minutes
     Write-Warning -Message "Current authentication token expires in (minutes): $($TokenExpireMins)"
 
     If ($TokenExpireMins -le 0) {
         Write-Information -MessageData "Existing token found but has expired, requesting a new token."
-        $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName
+        $Global:AccessToken = Get-MSIntuneAuthToken -TenantName $TenantName
     }
     Else {
         Write-Information -MessageData "Existing authentication token has not expired, will not request a new token."
@@ -57,7 +57,7 @@ If ($Null -ne $Global:AuthToken) {
 }
 Else {
     Write-Information -MessageData "Authentication token does not exist, requesting a new token."
-    $Global:AuthToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
+    $Global:AccessToken = Get-MSIntuneAuthToken -TenantName $TenantName -PromptBehavior "Auto"
 }
 #endregion
 
