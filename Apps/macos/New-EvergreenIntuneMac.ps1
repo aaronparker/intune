@@ -13,7 +13,7 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [System.String] $Path = "/Users/aaron/Projects/macOS-Apps"
+    [System.String] $Path = "/Users/aaron/Temp/macOS-Apps"
 )
 
 # Turn off download progress for faster downloads; Enable verbose output

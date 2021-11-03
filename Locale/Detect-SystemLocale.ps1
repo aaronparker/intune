@@ -75,6 +75,6 @@ try {
     Exit 0
 }
 catch {
-    Write-Error -Message $_.Exception.Message
+    Write-Host $_.Exception.Message
     Exit 1
 }
