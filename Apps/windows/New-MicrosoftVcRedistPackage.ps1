@@ -15,7 +15,7 @@ Param (
     [System.String] $Path = "C:\Temp\VcRedist",
 
     [Parameter(Mandatory = $False)]
-    [ValidateSet("2012", "2013", "2022")]
+    [ValidateSet("2012", "2013", "2015", "2017", "2019", "2022")]
     [System.String[]] $VcRelease = @("2012", "2013", "2022"),
 
     [Parameter(Mandatory = $False)]
