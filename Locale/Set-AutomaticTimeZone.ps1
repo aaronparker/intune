@@ -25,3 +25,9 @@ $params = @{
     Value = "Allow"
 }
 Set-ItemProperty @params
+$params = @{
+    Path  = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"
+    Name  = "Value"
+    Value = "Allow"
+}
+Set-ItemProperty @params
