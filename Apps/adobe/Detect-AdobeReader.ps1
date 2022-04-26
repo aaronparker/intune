@@ -14,6 +14,18 @@ $Settings = @"
         "type": "Dword"
     },
     {
+        "path": "HKLM:\\SOFTWARE\\Policies\\Adobe\\Acrobat Reader\\DC\\FeatureLockDown",
+        "name": "bDisableJavaScript",
+        "value": 1,
+        "type": "Dword"
+    },
+    {
+        "path": "HKCU:\\SOFTWARE\\Adobe\\Adobe Acrobat\\DC\\AVAlert\\cCheckbox",
+        "name": "iAppDoNotTakePDFOwnershipAtLaunchWin10",
+        "value": 1,
+        "type": "Dword"
+    },
+    {
         "path": "HKLM:\\SOFTWARE\\Policies\\Adobe\\Adobe Acrobat\\DC\\FeatureLockDown",
         "name": "bDisableJavaScript",
         "value": 1,
