@@ -7,7 +7,7 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [string] $FilePath = $(Join-Path (Resolve-Path $pwd) "Lendlease-Devices.xlsx")
+    [string] $FilePath = $(Join-Path (Resolve-Path $pwd) "Devices.xlsx")
 )
 
 # Install required modules
@@ -30,6 +30,6 @@ $Devices = Get-IntuneManagedDevice | `
 
 # Write output to Excel
 $Excel = New-ExcelDocument
-$ExcelWorkSheet = Add-ExcelWorkSheet -ExcelDocument $Excel -WorksheetName "Devices" -Supress $False -Option 'Replace'
-Add-ExcelWorksheetData -ExcelWorksheet $ExcelWorkSheet -DataTable $Devices -AutoFit -Supress $True -FreezeTopRow -TableStyle Light9
+$ExcelWorkSheet = Add-ExcelWorkSheet -ExcelDocument $Excel -WorksheetName "Devices" -Suppress $False -Option 'Replace'
+Add-ExcelWorksheetData -ExcelWorksheet $ExcelWorkSheet -DataTable $Devices -AutoFit -Suppress $True -FreezeTopRow -TableStyle Light9
 Save-ExcelDocument -ExcelDocument $Excel -FilePath $FilePath -OpenWorkBook
