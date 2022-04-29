@@ -34,23 +34,26 @@ $Settings = @"
 ]
 "@ | ConvertFrom-Json
 
-function Set-Registry ($Item) {
+[System.Int16] $Script = 0
+[System.Int16] $Result = 0
+
+foreach ($Setting in $Settings) {
     try {
-        if (!(Test-Path -Path $Item.path -ErrorAction "SilentlyContinue")) {
+        if (!(Test-Path -Path $Setting.path -ErrorAction "SilentlyContinue")) {
             $params = @{
-                Path        = $Item.path
+                Path        = $Setting.path
                 Type        = "RegistryKey"
                 Force       = $True
                 ErrorAction = "SilentlyContinue"
             }
-            $ItemResult = New-Item @params
-            if ("Handle" -in ($ItemResult | Get-Member | Select-Object -ExpandProperty "Name")) { $ItemResult.Handle.Close() }
+            $SettingResult = New-Item @params
+            if ("Handle" -in ($SettingResult | Get-Member -ErrorAction "SilentlyContinue" | Select-Object -ExpandProperty "Name")) { $SettingResult.Handle.Close() }
         }
         $params = @{
-            Path        = $Item.path
-            Name        = $Item.name
-            Value       = $Item.value
-            Type        = $Item.type
+            Path        = $Setting.path
+            Name        = $Setting.name
+            Value       = $Setting.value
+            Type        = $Setting.type
             Force       = $True
             ErrorAction = "SilentlyContinue"
         }
@@ -59,11 +62,8 @@ function Set-Registry ($Item) {
     }
     catch {
         $Result = 1
+        $Script = 1
     }
-    Write-Output -InputObject $Result
+    Write-Output -InputObject "$Result $($Setting.path)"
 }
-
-foreach ($Setting in $Settings) {
-    Write-Output -InputObject $Setting.path
-    return (Set-Registry -Item $Setting)
-}
+exit $Script

@@ -34,33 +34,34 @@ $Settings = @"
 ]
 "@ | ConvertFrom-Json
 
-function Get-Registry ($Item) {
+[System.Int16] $Script = 0
+[System.Int16] $Result = 0
+
+foreach ($Setting in $Settings) {
     try {
-        if (Test-Path -Path $Item.path -ErrorAction "SilentlyContinue") {
+        if (Test-Path -Path $Setting.path -ErrorAction "SilentlyContinue") {
             $params = @{
-                Path        = $Item.path
-                Name        = $Item.name
+                Path        = $Setting.path
+                Name        = $Setting.name
                 ErrorAction = "SilentlyContinue"
             }
             $Value = Get-ItemProperty @params
-            if ($Value.($Item.name) -eq $Item.value) {
+            if ($Value.($Setting.name) -eq $Setting.value) {
                 $Result = 0
             }
             else {
                 $Result = 1
+                $Script = 1
             }
         }
         else {
             $Result = 1
+            $Script = 1
         }
     }
     catch {
         $Result = 1
     }
-    Write-Output -InputObject $Result
+    Write-Output -InputObject "$Result $($Setting.path)"
 }
-
-foreach ($Setting in $Settings) {
-    Write-Output -InputObject $Setting.path
-    return (Get-Registry -Item $Setting)
-}
+exit $Script
