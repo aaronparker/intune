@@ -15,7 +15,8 @@
     "MicrosoftTeams_8wekyb3d8bbwe", # Microsoft Teams package on Windows 11
     "Microsoft.XboxApp_8wekyb3d8bbwe", # Xbox Console Companion
     "Microsoft.BingNews_8wekyb3d8bbwe", # Microsoft News
-    "Microsoft.GamingApp_8wekyb3d8bbwe" # Microsoft Xbox app?
+    "Microsoft.GamingApp_8wekyb3d8bbwe", # Microsoft Xbox app?
+    "Clipchamp.Clipchamp_yxz26nhyzhsrt" # Clipchamp on Windows 11
 )
 
 # Get elevated status. If elevated we'll remove packages from all users and provisioned packages
