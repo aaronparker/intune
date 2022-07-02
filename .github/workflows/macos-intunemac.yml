@@ -33,17 +33,18 @@ jobs:
             }
             catch {
                 Write-Warning "Failed to download: $uri."
-                Throw $_
+                throw $_
             }
-            If (Test-Path -Path $binary) {
+            if (Test-Path -Path $binary) {
                 try {
                     chmod +x $binary
                 }
                 catch {
                     Write-Warning "Failed to set execute permission on: $binary."
-                    Throw $_
+                    throw $_
                 }
             }
+
       - name: Generate Package
         shell: pwsh
         run: |
@@ -56,7 +57,7 @@ jobs:
             }
             catch {
                 Write-Warning "Failed to query: $update."
-                Throw $_
+                throw $_
             }
 
             # Download Acrobat Reader
@@ -71,38 +72,42 @@ jobs:
             }
             catch {
                 Write-Warning "Failed to grab Pkg."
-                Throw $_
+                throw $_
             }
 
             # Mount the Dmg 
             try {
-                If (Test-Path -Path $output) {
+                if (Test-Path -Path $output) {
                     $RegEx = "\/Volumes.*"
                     $mount = hdiutil attach $output
                     $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
 
                     # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
                     $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
-                    $NewPackage = Join-Path -Path $Path -ChildPath "AcroRdrDC_MUI.png"
+                    $NewPackage = Join-Path -Path $Path -ChildPath "package"
+                    New-Item -Path $NewPackage -ItemType "Directory"
                     Copy-Item -Path $Package.FullName -Destination $NewPackage
+                    $Package = Get-ChildItem -Path $NewPackage -Filter "AcroRdr*.pkg"
                 }
             }
             catch {
                 Write-Warning "Failed extract Pkg from Dmg."
-                Throw $_
+                throw $_
             }
 
             # Unmount the Dmg
             hdiutil detach $VolPath
 
             # Convert the Pkg to IntuneMac format
-            If (Test-Path -Path $NewPackage) {
-                Write-Host "Execute: ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version" -ForegroundColor "Cyan"
-                # ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v -n $version
-                ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v
+            if (Test-Path -Path $NewPackage) {
+                
+                New-Item -Path $NewPackage -ItemType "Directory"
+                Write-Host "Execute: ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version" -ForegroundColor "Cyan"
+                ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version
             }
+
       - name: Upload report
         uses: actions/upload-artifact@v3
         with:
           name: acrobatreader-pkg
-          path: ~/intune/AcroRdrDC_MUI.png
+          path: ~/intune/AcroRdrDC_2200120142_MUI.pkg.intunemac
