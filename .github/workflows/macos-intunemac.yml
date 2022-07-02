@@ -102,7 +102,7 @@ jobs:
                 ~/intune/IntuneAppUtil -c $NewPackage -o $Path -v
             }
       - name: Upload report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: acrobatreader-pkg
           path: ~/intune/AcroRdrDC_MUI.png
