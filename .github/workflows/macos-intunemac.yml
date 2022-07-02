@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
         run: |
             Write-Host "`n== IntuneAppUtil" -ForegroundColor "Cyan"
-            New-Item -Path "~/intune" -ItemType "Directory"
+            New-Item -Path "~/intune" -ItemType "Directory" -ErrorAction "SilentlyContinue"
             $Path = Resolve-Path -Path "~/intune"
             $uri = "https://raw.githubusercontent.com/msintuneappsdk/intune-app-wrapping-tool-mac/v1.2/IntuneAppUtil"
             $binary = Join-Path -Path $Path -ChildPath (Split-Path -Path $uri -Leaf)
@@ -85,7 +85,7 @@ jobs:
                     # Copy the Workspace app installer to the scratch directory, removing spaces from the file name
                     $Package = Get-ChildItem -Path $VolPath -Filter "AcroRdr*.pkg" | Select-Object -First 1
                     $NewPackage = Join-Path -Path $Path -ChildPath "package"
-                    New-Item -Path $NewPackage -ItemType "Directory"
+                    New-Item -Path $NewPackage -ItemType "Directory" -ErrorAction "SilentlyContinue"
                     Copy-Item -Path $Package.FullName -Destination $NewPackage
                     $Package = Get-ChildItem -Path $NewPackage -Filter "AcroRdr*.pkg"
                 }
@@ -101,7 +101,7 @@ jobs:
             # Convert the Pkg to IntuneMac format
             if (Test-Path -Path $NewPackage) {
                 
-                New-Item -Path $NewPackage -ItemType "Directory"
+                New-Item -Path $NewPackage -ItemType "Directory" -ErrorAction "SilentlyContinue"
                 Write-Host "Execute: ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version" -ForegroundColor "Cyan"
                 ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version
             }
