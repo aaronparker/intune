@@ -1,8 +1,21 @@
 {
     "cSpell.words": [
+        "COMPANYNAME",
         "defaultlayout",
+        "Dism",
+        "Dont",
+        "EXTERNALMODULEDEPENDENCIES",
+        "EXTERNALSCRIPTDEPENDENCIES",
         "HKCU",
         "HKEY",
-        "tzautoupdate"
+        "ICONURI",
+        "LICENSEURI",
+        "PRIVATEDATA",
+        "PROJECTURI",
+        "RELEASENOTES",
+        "Remediations",
+        "REQUIREDSCRIPTS",
+        "tzautoupdate",
+        "Wordpad"
     ]
 }

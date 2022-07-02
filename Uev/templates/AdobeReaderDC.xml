@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+  <Name>Adobe Acrobat Reader DC </Name>
+  <ID>AdobeAcrobatReaderDC</ID>
+  <Version>1</Version>
+  <Author>
+    <Name>Aaron Parker</Name>
+    <Email>aaron@stealthpuppy.com</Email>
+  </Author>
+  <Processes>
+    <Process>
+      <Filename>AcroRd32.exe</Filename>
+    </Process>
+  </Processes>
+  <Settings>
+    <Registry>
+      <Path Recursive="true">Software\Adobe\Acrobat Reader</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Adobe\Adobe Acrobat</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Adobe\Adobe Synchronizer</Path>
+    </Registry>
+    <Registry>
+      <Path>Software\Adobe\CommonFiles\Usage\AcrobatDC</Path>
+    </Registry>
+    <Registry>
+      <Path>Software\Adobe\CommonFiles\Usage\Reader DC</Path>
+    </Registry>
+    <Registry>
+      <Path>Software\Adobe\CommonFiles\Usage</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Adobe\Adobe ARM</Path>
+    </Registry>
+    <File>
+      <Root>
+        <EnvironmentVariable>APPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Adobe\Acrobat\DC</Path>
+    </File>
+  </Settings>
+</SettingsLocationTemplate>

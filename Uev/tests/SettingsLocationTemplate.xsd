@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="UevSettingsLocationTemplate" targetNamespace="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" elementFormDefault="qualified" 
+    xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" 
+    xmlns:mstns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:simpleType name="Guid">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="FilenameString">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^\\\?\*\|&lt;&gt;/:]+" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="IDString">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^\\\?\*\|&lt;&gt;/:.]+" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="CompositeIDString">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^\\\?\*\|&lt;&gt;/:.]+([.][^\\\?\*\|&lt;&gt;/:.]+)?" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TemplateVersion">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0" />
+            <xs:maxInclusive value="2147483647" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Empty">
+        <xs:sequence/>
+    </xs:complexType>
+    <xs:complexType name="LocalizedString">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Locale" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="LocalizedName">
+        <xs:sequence>
+            <xs:element name="Name" type="LocalizedString" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="LocalizedDescription">
+        <xs:sequence>
+            <xs:element name="Description" type="LocalizedString" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReplacedTemplates">
+        <xs:sequence>
+            <xs:element name="ID" type="CompositeIDString" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Author">
+        <xs:all>
+            <xs:element name="Name" type="xs:string" minOccurs="1" />
+            <xs:element name="Email" type="xs:string" minOccurs="0" />
+        </xs:all>
+    </xs:complexType>
+    <xs:complexType name="Range">
+        <xs:attribute name="Minimum" type="xs:integer" use="required"/>
+        <xs:attribute name="Maximum" type="xs:integer" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ProcessVersion">
+        <xs:sequence>
+            <xs:element name="Major" type="Range" minOccurs="1" />
+            <xs:element name="Minor" type="Range" minOccurs="0" />
+            <xs:element name="Build" type="Range" minOccurs="0" />
+            <xs:element name="Patch" type="Range" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="Architecture">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Win32"/>
+            <xs:enumeration value="Win64"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Process">
+        <xs:sequence>
+            <xs:element name="Filename" type="FilenameString" minOccurs="1" />
+            <xs:element name="Architecture" type="Architecture" minOccurs="0" />
+            <xs:element name="ProductName" type="xs:string" minOccurs="0" />
+            <xs:element name="FileDescription" type="xs:string" minOccurs="0" />
+            <xs:element name="ProductVersion" type="ProcessVersion" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="FileVersion" type="ProcessVersion" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Processes">
+        <xs:sequence>
+            <xs:choice minOccurs="1">
+                <xs:element name="Process" type="Process" />
+                <xs:element name="ShellProcess" type="Empty" />
+            </xs:choice>
+            <xs:element name="Process" type="Process" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Path">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Recursive" type="xs:boolean" default="false"/>
+                <xs:attribute name="DeleteIfNotFound" type="xs:boolean" default="false"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RegistrySetting">
+        <xs:sequence>
+            <xs:element name="Path" type="Path" />
+            <xs:element name="Name" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="Exclude" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Path" type="Path" minOccurs="0" />
+                        <xs:element name="Name" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FileSetting">
+        <xs:sequence>
+
+            <xs:element name="Root">
+                <xs:complexType>
+                    <xs:choice>
+                        <xs:element name="KnownFolder" type="Guid" />
+                        <xs:element name="RegistryEntry" type="xs:string" />
+                        <xs:element name="EnvironmentVariable" type="xs:string" />
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Path" minOccurs="0" type="Path" />
+            <xs:element name="FileMask" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="Exclude" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Path" type="Path" minOccurs="0" />
+                        <xs:element name="FileMask" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="CustomActionSetting">
+        <xs:restriction base="xs:anyURI"/>
+    </xs:simpleType>
+    <xs:simpleType name="SystemParameterSetting">
+        <xs:restriction base="xs:string">
+            <!-- Accessibility parameters -->
+            <xs:enumeration value="AccessTimeout"/>
+            <xs:enumeration value="AudioDescription"/>
+            <xs:enumeration value="ClientAreaAnimation"/>
+            <xs:enumeration value="DisableOverlappedContent"/>
+            <xs:enumeration value="FilterKeys"/>
+            <xs:enumeration value="FocusBorderHeight"/>
+            <xs:enumeration value="FocusBorderWidth"/>
+            <xs:enumeration value="HighContrast"/>
+            <xs:enumeration value="MessageDuration"/>
+            <xs:enumeration value="MouseClickLock"/>
+            <xs:enumeration value="MouseClickLockTime"/>
+            <xs:enumeration value="MouseKeys"/>
+            <xs:enumeration value="MouseSonar"/>
+            <xs:enumeration value="MouseVanish"/>
+            <xs:enumeration value="ScreenReader"/>
+            <xs:enumeration value="ShowSounds"/>
+            <xs:enumeration value="SoundSentry"/>
+            <xs:enumeration value="StickyKeys"/>
+            <xs:enumeration value="ToggleKeys"/>
+            <!-- Input parameters -->
+            <xs:enumeration value="Beep"/>
+            <xs:enumeration value="BlockSendInputResets"/>
+            <xs:enumeration value="DefaultInputLang"/>
+            <xs:enumeration value="DoubleClickTime"/>
+            <xs:enumeration value="DoubleClkHeight"/>
+            <xs:enumeration value="DoubleClkWidth"/>
+            <xs:enumeration value="KeyboardCues"/>
+            <xs:enumeration value="KeyboardDelay"/>
+            <xs:enumeration value="KeyboardPref"/>
+            <xs:enumeration value="KeyboardSpeed"/>
+            <xs:enumeration value="Mouse"/>
+            <xs:enumeration value="MouseButtonSwap"/>
+            <xs:enumeration value="MouseHoverHeight"/>
+            <xs:enumeration value="MouseHoverTime"/>
+            <xs:enumeration value="MouseHoverWidth"/>
+            <xs:enumeration value="MouseSpeed"/>
+            <xs:enumeration value="MouseTrails"/>
+            <xs:enumeration value="SnapToDefButton"/>
+            <xs:enumeration value="WheelScrollChars"/>
+            <xs:enumeration value="WheelScrollLines"/>
+            <!-- Desktop parameters (limited subset) -->
+            <xs:enumeration value="DeskWallpaper"/>
+            <xs:enumeration value="DesktopColor"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Settings">
+        <xs:sequence>
+            <xs:element name="Asynchronous" type="xs:boolean" minOccurs="0" />
+            <xs:element name="PreventOverlappingSynchronization" type="xs:boolean" minOccurs="0" />
+            <xs:element name="AlwaysApplySettings" type="xs:boolean" minOccurs="0" />
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="Registry" type="RegistrySetting" />
+                <xs:element name="File" type="FileSetting" />
+                <xs:element name="SystemParameter" type="SystemParameterSetting" />
+                <xs:element name="CustomAction" type="CustomActionSetting" />
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Common">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string" />
+            <xs:element name="ID" type="IDString" />
+            <xs:element name="ReplacedTemplates" type="ReplacedTemplates" minOccurs="0" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" />
+            <xs:element name="LocalizedNames" type="LocalizedName" minOccurs="0" />
+            <xs:element name="LocalizedDescriptions" type="LocalizedDescription" minOccurs="0" />
+            <xs:element name="Version" type="xs:integer" />
+            <xs:element name="DeferToMSAccount" type="Empty" minOccurs="0" />
+            <xs:element name="DeferToOffice365" type="Empty" minOccurs="0" />
+            <xs:element name="Settings" type="Settings" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Application">
+        <xs:sequence>
+            <xs:element name="Name" type="xs:string" />
+            <xs:element name="ID" type="IDString" />
+            <xs:element name="ReplacedTemplates" type="ReplacedTemplates" minOccurs="0" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" />
+            <xs:element name="LocalizedNames" type="LocalizedName" minOccurs="0" />
+            <xs:element name="LocalizedDescriptions" type="LocalizedDescription" minOccurs="0" />
+            <xs:element name="Version" type="xs:integer" />
+            <xs:element name="DeferToMSAccount" type="Empty" minOccurs="0" />
+            <xs:element name="DeferToOffice365" type="Empty" minOccurs="0" />
+            <xs:element name="Processes" type="Processes" />
+            <xs:element name="Settings" type="Settings" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="SettingsLocationTemplate">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Name" type="xs:string" />
+                <xs:element name="ID" type="IDString" />
+                <xs:element name="Description" type="xs:string" minOccurs="0" />
+                <xs:element name="LocalizedNames" type="LocalizedName" minOccurs="0" />
+                <xs:element name="LocalizedDescriptions" type="LocalizedDescription" minOccurs="0" />
+                <xs:choice>
+                    <!-- Single application -->
+                    <xs:sequence>
+                        <xs:element name="ReplacedTemplates" type="ReplacedTemplates" minOccurs="0" />
+                        <xs:element name="Version" type="TemplateVersion" />
+                        <xs:element name="Author" type="Author" minOccurs="0" />
+                        <xs:element name="FixedProfile" type="xs:string" minOccurs="0" />
+                        <xs:element name="DeferToMSAccount" type="Empty" minOccurs="0" />
+                        <xs:element name="DeferToOffice365" type="Empty" minOccurs="0" />
+                        <xs:element name="Processes" type="Processes" />
+                        <xs:element name="Settings" type="Settings" />
+                    </xs:sequence>
+                    <!-- Suite of applications -->
+                    <xs:sequence>
+                        <xs:element name="ManageSuiteOnly" type="xs:boolean" minOccurs="0" />
+                        <xs:element name="Author" type="Author" minOccurs="0" />
+                        <xs:element name="FixedProfile" type="xs:string" minOccurs="0" />
+                        <xs:element name="Common" type="Common" />
+                        <xs:element name="Application" type="Application" minOccurs="2" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- SettingsLocationTemplate -->
+</xs:schema>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+  <Name>Remote Desktop Connection</Name>
+  <ID>RemoteDesktopConnection</ID>
+  <Version>1</Version>
+  <Author>
+    <Name>Aaron Parker</Name>
+    <Email>aaron@stealthpuppy.com</Email>
+  </Author>
+  <Processes>
+    <Process>
+      <Filename>mstsc.exe</Filename>
+    </Process>
+  </Processes>
+  <Settings>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\Terminal Server Client</Path>
+    </Registry>
+  </Settings>
+</SettingsLocationTemplate>

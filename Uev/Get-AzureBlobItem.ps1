@@ -1,4 +1,4 @@
-Function Get-AzureBlobItem {
+function Get-AzureBlobItem {
     <#
         .SYNOPSIS
             Returns an array of items and properties from an Azure blog storage URL.
@@ -20,11 +20,11 @@ Function Get-AzureBlobItem {
             Get-AzureBlobItems -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
 
             Description:
-            Returns the list of files from the supplied URL, with Name, URL, Size and Last Modifed properties for each item.
+            Returns the list of files from the supplied URL, with Name, URL, Size and Last Modified properties for each item.
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
     [OutputType([System.Management.Automation.PSObject])]
-    Param (
+    param (
         [Parameter(ValueFromPipeline = $True, Mandatory = $True, HelpMessage = "Azure blob storage URL with List Containers request URI '?comp=list'.")]
         [ValidatePattern("^(http|https)://")]
         [System.String] $Uri
@@ -41,27 +41,28 @@ Function Get-AzureBlobItem {
         $list = Invoke-WebRequest @iwrParams
     }
     catch [System.Net.WebException] {
-        Write-Warning -Message ([string]::Format("Error : {0}", $_.Exception.Message))
+        Write-Warning -Message ([System.String]::Format("Error : {0}", $_.Exception.Message))
+        throw $_.Exception.Message
     }
     catch [System.Exception] {
-        Write-Warning -Message "$($MyInvocation.MyCommand): failed to download: $Uri."
-        Throw $_.Exception.Message
+        Write-Warning -Message "failed to download: $Uri."
+        throw $_.Exception.Message
     }
-    If ($Null -ne $list) {
+    if ($Null -ne $list) {
         [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
 
         # Build an object with file properties to return on the pipeline
         $fileList = New-Object -TypeName System.Collections.ArrayList
-        ForEach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
+        foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
             $PSObject = [PSCustomObject] @{
-                Name         = ($node | Select-Object -ExpandProperty Name)
-                Url          = ($node | Select-Object -ExpandProperty Url)
-                Size         = ($node | Select-Object -ExpandProperty Size)
-                LastModified = ($node | Select-Object -ExpandProperty LastModified)
+                Name         = $($node | Select-Object -ExpandProperty "Name")
+                Url          = $($node | Select-Object -ExpandProperty "Url")
+                Size         = $($node | Select-Object -ExpandProperty "Size")
+                LastModified = $($node | Select-Object -ExpandProperty "LastModified")
             }
             $fileList.Add($PSObject) | Out-Null
         }
-        If ($Null -ne $fileList) {
+        if ($Null -ne $fileList) {
             Write-Output -InputObject $fileList
         }
     }

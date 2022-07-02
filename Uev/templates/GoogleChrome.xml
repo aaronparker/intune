@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+  <Name>Google Chrome</Name>
+  <ID>GoogleChrome</ID>
+  <Version>2</Version>
+  <Author>
+    <Name>Matt Hadley</Name>
+  </Author>
+  <Processes>
+    <Process>
+      <Filename>chrome.exe</Filename>
+    </Process>
+  </Processes>
+  <Settings>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data</Path>
+      <FileMask>First Run</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data</Path>
+      <FileMask>Local State</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Databases</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Extension Rules</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Extension State</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Extensions</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Local Extension Settings</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Managed Extension Settings</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Sync Data</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Google\Chrome\User Data\Default\Sync Extension Settings</Path>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Bookmarks</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Cookies</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Cookies-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Current Session</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Current Tabs</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Favicons</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Favicons-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>History</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>History-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Last Session</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Last Tabs</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Login Data</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Login Data-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Preferences</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Secure Preferences</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Shortcuts</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Shortcuts-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Top Sites</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Top Sites-journal</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Visited Links</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Web Data</FileMask>
+    </File>
+    <File>
+      <Root>
+        <EnvironmentVariable>LOCALAPPDATA</EnvironmentVariable>
+      </Root>
+      <Path>Google\Chrome\User Data\Default</Path>
+      <FileMask>Web Data-journal</FileMask>
+    </File>
+  </Settings>
+</SettingsLocationTemplate>
