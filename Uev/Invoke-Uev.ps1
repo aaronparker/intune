@@ -288,7 +288,7 @@ if (Test-WindowsEnterprise) {
                 exit 1
             }
 
-            # Register specified templates, and enable Backup mode for all templates
+            # Register specified templates
             foreach ($template in $Templates) {
                 try {
                     Write-Verbose -Message "Registering template: $template."
@@ -300,11 +300,12 @@ if (Test-WindowsEnterprise) {
                 }
             }
 
+            # Enable Backup mode for all templates
             Get-UevTemplate | ForEach-Object { Set-UevTemplateProfile -Id $_.TemplateId -Profile "Backup" `
                     -ErrorAction "SilentlyContinue" }
 
             # If the templates registered successfully, configure the client
-            if (Get-UevTemplate | Out-Null) {
+            if ((Get-UevTemplate).Count -ge 1) {
 
                 # Set the UEV settings. These settings will work for UEV in OneDrive with Enterprise State Roaming enabled
                 # https://docs.microsoft.com/en-us/azure/active-directory/devices/enterprise-state-roaming-faqs
