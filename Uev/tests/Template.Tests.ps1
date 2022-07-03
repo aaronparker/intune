@@ -19,6 +19,7 @@ Describe -Name "Template file type tests" -ForEach $Templates {
 
     Context "Templates are XML files only" {
         It "$($Template.Name) should be an .XML file" {
+            Write-Host "File: $($template.FullName)."
             [System.IO.Path]::GetExtension($Template.Name) -match ".xml$" | Should -BeTrue
         }
     }
@@ -34,8 +35,8 @@ Describe -Name "Template file type tests" -ForEach $Templates {
             $Content | Should -BeOfType "System.Xml.XmlNode"
         }
         It "$($template.Name) should validate against the schema" {
-            #Write-Host "File: $($template.FullName)."
-            #Write-Host "Schema: $SchemaFile."
+            Write-Host "Schema: $SchemaFile."
+            Write-Host "File: $($template.FullName)."
             Test-XmlSchema -XmlPath $template.FullName -SchemaPath $SchemaFile | Should -BeTrue
         }
     }

@@ -8,7 +8,6 @@ steps:
 - checkout: self
   persistCredentials: true
 
-
 - task: PowerShell@2
   displayName: "Install Pester"
   inputs:
@@ -36,3 +35,12 @@ steps:
     verbosePreference: 'continue'
     pwsh: true
     workingDirectory: '$(Build.SourcesDirectory)/Uev/tests'
+
+- task: AzureFileCopy@4
+  inputs:
+    SourcePath: '$(Build.SourcesDirectory)/Uev/templates'
+    azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+    Destination: 'AzureBlob'
+    storage: 'stpydeviceause'
+    ContainerName: 'uev'
+    AdditionalArgumentsForBlobCopy: '--log-level=INFO'
