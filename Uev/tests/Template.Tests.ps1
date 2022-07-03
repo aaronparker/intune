@@ -15,11 +15,11 @@ Describe -Name "Template file type tests" -ForEach $Templates {
     BeforeAll {
         $Template = $_
         $SchemaFile = Join-Path -Path $PWD.Path -ChildPath "SettingsLocationTemplate.xsd"
+        Write-Host "Validate template file: $($template.FullName)."
     }
 
     Context "Templates are XML files only" {
         It "<Template.Name> should be an .XML file" {
-            #Write-Host "File: $($template.FullName)."
             [System.IO.Path]::GetExtension($Template.Name) -match ".xml$" | Should -BeTrue
         }
     }
@@ -35,8 +35,6 @@ Describe -Name "Template file type tests" -ForEach $Templates {
             $Content | Should -BeOfType "System.Xml.XmlNode"
         }
         It "<Template.Name> should validate against the schema" {
-            Write-Host "Schema: $SchemaFile."
-            Write-Host "File: $($template.FullName)."
             Test-XmlSchema -XmlPath $template.FullName -SchemaPath $SchemaFile | Should -BeTrue
         }
     }

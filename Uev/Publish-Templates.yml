@@ -52,9 +52,9 @@ jobs:
     displayName: "Push templates to storage account"
     inputs:
       SourcePath: '$(Build.SourcesDirectory)\Uev\templates'
-      azureSubscription: $(AZURE_SUBSCRIPTION)
+      azureSubscription: '$(AZURE_SUBSCRIPTION)'
       destination: 'AzureBlob'
-      storage: $(STORAGE_ACCOUNT)
+      storage: '$(STORAGE_ACCOUNT)'
       containerName: 'uev'
       additionalArgumentsForBlobCopy: '--log-level=INFO'
       copyFilesInParallel: true
