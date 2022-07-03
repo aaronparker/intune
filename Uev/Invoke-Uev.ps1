@@ -58,6 +58,7 @@
     .EXAMPLE
         Set-Uev.ps1
 #>
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost")]
 [CmdletBinding(SupportsShouldProcess = $False, HelpURI = "https://github.com/aaronparker/intune/blob/main/Uev/README.md")]
 [OutputType([System.String])]
 param (

@@ -1,0 +1,38 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+  persistCredentials: true
+
+
+- task: PowerShell@2
+  displayName: "Install Pester"
+  inputs:
+    targetType: 'inline'
+    script: |
+      Install-Module -Name "Pester"
+    verbosePreference: 'continue'
+    pwsh: true
+    workingDirectory: '$(Build.SourcesDirectory)'
+
+- task: PowerShell@2
+  displayName: "Run tests"
+  inputs:
+    targetType: 'inline'
+    script: |
+      Import-Module -Name "Pester" -Force
+      $Config = [PesterConfiguration]::Default
+      $Config.Run.Path = '$(Build.SourcesDirectory)/Uev/tests'
+      $Config.Run.PassThru = $True
+      $Config.CodeCoverage.Enabled = $False
+      $Config.TestResult.Enabled = $True
+      $Config.TestResult.OutputFormat = "NUnitXml"
+      $Config.TestResult.OutputPath = "./TestResults.xml"
+      Invoke-Pester -Configuration $Config
+    verbosePreference: 'continue'
+    pwsh: true
+    workingDirectory: '$(Build.SourcesDirectory)/Uev/tests'

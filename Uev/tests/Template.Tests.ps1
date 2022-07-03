@@ -4,31 +4,39 @@
 #>
 
 # Variables
-$srcPath = Join-Path $projectRoot "templates"
-$templates = Get-ChildItem -Path $srcPath -Recurse -Include *.*
-
-#region Tests
-Describe "Template file type tests" {
-    ForEach ($template in $templates) {
-        It "$($template.Name) should be an .XML file" {
-            [IO.Path]::GetExtension($template.Name) -match ".xml" | Should -Be $True
-        }
-    }
+BeforeDiscovery {
+    Import-Module (Join-Path -Path $PWD.Path -ChildPath "Test-XmlSchema.psm1")
+    $SrcPath = Join-Path -Path $(Get-Item -Path $PWD.Path).Parent -ChildPath "templates"
+    $Templates = Get-ChildItem -Path $SrcPath -Recurse -Include "*.*"
+    $SchemaFile = Join-Path -Path $PWD.Path -ChildPath "SettingsLocationTemplate.xsd"
 }
 
-Describe "Template XML format tests" {
-    ForEach ($template in $templates) {
-        It "$($template.Name) should be in XML format" {
-            Try {
-                [xml] $content = Get-Content -Path $template.FullName -Raw -ErrorAction SilentlyContinue
+#region Tests
+Describe -Name "Template file type tests" -ForEach $Templates {
+    BeforeAll {
+        $Template = $_
+    }
+
+    Context "Templates are XML files only" {
+        It "$($Template.Name) should be an .XML file" {
+            [System.IO.Path]::GetExtension($Template.Name) -match ".xml$" | Should -BeTrue
+        }
+    }
+
+    Context "Template XML format tests" {
+        It "$($Template.Name) should be in XML format" {
+            try {
+                [System.Xml.XmlDocument] $Content = Get-Content -Path $template.FullName -Raw -ErrorAction "SilentlyContinue"
             }
-            Catch {
-                Write-Warning "Failed to read $($template.Name)."
+            catch {
+                Write-Warning -Message "Failed to read $($template.Name)."
             }
-            $content | Should -BeOfType System.Xml.XmlNode
+            $Content | Should -BeOfType "System.Xml.XmlNode"
         }
         It "$($template.Name) should validate against the schema" {
-            Test-XmlSchema -XmlPath $template.FullName -SchemaPath $schema | Should -Be $True
+            #Write-Host "File: $($template.FullName)."
+            #Write-Host "Schema: $SchemaFile."
+            Test-XmlSchema -XmlPath $template.FullName -SchemaPath $SchemaFile | Should -BeTrue
         }
     }
 }
