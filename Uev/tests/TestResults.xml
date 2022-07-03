@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="18" errors="0" failures="1" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2022-07-03" time="14:24:30">
+  <environment user="aaron" cwd="/Users/aaron/projects/intune/Uev/tests" os-version="21.5.0" machine-name="einstein" platform="Darwin" user-domain="" nunit-version="2.5.8.0" clr-version="Unknown" />
+  <culture-info current-culture="en-AU" current-uiculture="en-AU" />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Failure" success="False" time="0.1323" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="/Users/aaron/projects/intune/Uev/tests/Template.Tests.ps1" executed="True" result="Failure" success="False" time="0.1323" asserts="0" description="/Users/aaron/projects/intune/Uev/tests/Template.Tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Success" success="True" time="0.016" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Success" success="True" time="0.0033" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="AdobeReaderDC.xml should be an .XML file" name="Template file type tests.Templates are XML files only.AdobeReaderDC.xml should be an .XML file" time="0.002" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.0136" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="AdobeReaderDC.xml should be in XML format" name="Template file type tests.Template XML format tests.AdobeReaderDC.xml should be in XML format" time="0.0034" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="AdobeReaderDC.xml should validate against the schema" name="Template file type tests.Template XML format tests.AdobeReaderDC.xml should validate against the schema" time="0.0056" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Failure" success="False" time="0.0447" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Failure" success="False" time="0.0161" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="GoogleChrome.txt should be an .XML file" name="Template file type tests.Templates are XML files only.GoogleChrome.txt should be an .XML file" time="0.0149" asserts="0" success="False" result="Failure" executed="True">
+                    <failure>
+                      <message>Expected $true, but got $false.</message>
+                      <stack-trace>at [System.IO.Path]::GetExtension($Template.Name) -match ".xml$" | Should -BeTrue, /Users/aaron/projects/intune/Uev/tests/Template.Tests.ps1:23
+at &lt;ScriptBlock&gt;, /Users/aaron/projects/intune/Uev/tests/Template.Tests.ps1:23</stack-trace>
+                    </failure>
+                  </test-case>
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.0273" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="GoogleChrome.txt should be in XML format" name="Template file type tests.Template XML format tests.GoogleChrome.txt should be in XML format" time="0.002" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="GoogleChrome.txt should validate against the schema" name="Template file type tests.Template XML format tests.GoogleChrome.txt should validate against the schema" time="0.0063" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Success" success="True" time="0.0612" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Success" success="True" time="0.0042" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="GoogleChrome.xml should be an .XML file" name="Template file type tests.Templates are XML files only.GoogleChrome.xml should be an .XML file" time="0.0031" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.0137" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="GoogleChrome.xml should be in XML format" name="Template file type tests.Template XML format tests.GoogleChrome.xml should be in XML format" time="0.0017" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="GoogleChrome.xml should validate against the schema" name="Template file type tests.Template XML format tests.GoogleChrome.xml should validate against the schema" time="0.0065" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Success" success="True" time="0.075" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Success" success="True" time="0.0037" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="MozillaFirefox.xml should be an .XML file" name="Template file type tests.Templates are XML files only.MozillaFirefox.xml should be an .XML file" time="0.0014" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.0126" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="MozillaFirefox.xml should be in XML format" name="Template file type tests.Template XML format tests.MozillaFirefox.xml should be in XML format" time="0.0021" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="MozillaFirefox.xml should validate against the schema" name="Template file type tests.Template XML format tests.MozillaFirefox.xml should validate against the schema" time="0.0055" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Success" success="True" time="0.0893" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Success" success="True" time="0.0046" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="PaintDotNet.xml should be an .XML file" name="Template file type tests.Templates are XML files only.PaintDotNet.xml should be an .XML file" time="0.0034" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.012" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="PaintDotNet.xml should be in XML format" name="Template file type tests.Template XML format tests.PaintDotNet.xml should be in XML format" time="0.0032" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="PaintDotNet.xml should validate against the schema" name="Template file type tests.Template XML format tests.PaintDotNet.xml should validate against the schema" time="0.0028" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+          <test-suite type="TestFixture" name="Template file type tests" executed="True" result="Success" success="True" time="0.1101" asserts="0" description="Template file type tests">
+            <results>
+              <test-suite type="TestFixture" name="Template file type tests.Templates are XML files only" executed="True" result="Success" success="True" time="0.0039" asserts="0" description="Template file type tests.Templates are XML files only">
+                <results>
+                  <test-case description="RemoteDesktopConnection.xml should be an .XML file" name="Template file type tests.Templates are XML files only.RemoteDesktopConnection.xml should be an .XML file" time="0.0013" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="Template file type tests.Template XML format tests" executed="True" result="Success" success="True" time="0.0193" asserts="0" description="Template file type tests.Template XML format tests">
+                <results>
+                  <test-case description="RemoteDesktopConnection.xml should be in XML format" name="Template file type tests.Template XML format tests.RemoteDesktopConnection.xml should be in XML format" time="0.0044" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="RemoteDesktopConnection.xml should validate against the schema" name="Template file type tests.Template XML format tests.RemoteDesktopConnection.xml should validate against the schema" time="0.0073" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
