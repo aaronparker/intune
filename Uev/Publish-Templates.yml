@@ -8,9 +8,9 @@ trigger:
     - Uev/tests
     - Uev/Publish-Templates.yml
 
-variables:
-  AZURE_SUBSCRIPTION: $(AZURE_SUBSCRIPTION)
-  STORAGE_ACCOUNT: $(STORAGE_ACCOUNT)
+# variables:
+#   AZURE_SUBSCRIPTION: $(AZURE_SUBSCRIPTION)
+#   STORAGE_ACCOUNT: $(STORAGE_ACCOUNT)
 
 jobs:
 - job: push_templates
