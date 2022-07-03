@@ -7,7 +7,7 @@ function Get-AzureBlobItem {
             Queries an Azure blog storage URL and returns an array with properties of files in a Container.
             Requires Public access level of anonymous read access to the blob storage container.
             Works with PowerShell Core.
-            
+
         .NOTES
             Author: Aaron Parker
             Twitter: @stealthpuppy
@@ -15,7 +15,7 @@ function Get-AzureBlobItem {
         .PARAMETER Url
             The Azure blob storage container URL. The container must be enabled for anonymous read access.
             The URL must include the List Container request URI. See https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2 for more information.
-        
+
         .EXAMPLE
             Get-AzureBlobItems -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
 

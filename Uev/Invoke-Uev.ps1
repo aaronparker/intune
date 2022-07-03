@@ -86,7 +86,7 @@ function Get-AzureBlobItem {
             Queries an Azure blog storage URL and returns an array with properties of files in a Container.
             Requires Public access level of anonymous read access to the blob storage container.
             Works with PowerShell Core.
-            
+
         .NOTES
             Author: Aaron Parker
             Twitter: @stealthpuppy
@@ -94,7 +94,7 @@ function Get-AzureBlobItem {
         .PARAMETER Url
             The Azure blob storage container URL. The container must be enabled for anonymous read access.
             The URL must include the List Container request URI. See https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2 for more information.
-        
+
         .EXAMPLE
             Get-AzureBlobItems -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
 
@@ -217,7 +217,7 @@ if (Test-WindowsEnterprise) {
 
         # Copy the UEV templates from an Azure Storage account
         if (Test-Path -Path $inboxTemplatesSrc) {
-    
+
             try {
                 # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
                 $srcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Url -match ".*.xml$" }
@@ -302,8 +302,7 @@ if (Test-WindowsEnterprise) {
             }
 
             # Enable Backup mode for all templates
-            Get-UevTemplate | ForEach-Object { Set-UevTemplateProfile -Id $_.TemplateId -Profile "Backup" `
-                    -ErrorAction "SilentlyContinue" }
+            Get-UevTemplate | ForEach-Object { Set-UevTemplateProfile -Id $_.TemplateId -Profile "Backup" -ErrorAction "SilentlyContinue" }
 
             # If the templates registered successfully, configure the client
             if ((Get-UevTemplate).Count -ge 1) {

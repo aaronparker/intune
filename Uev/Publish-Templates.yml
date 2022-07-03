@@ -48,8 +48,8 @@ jobs:
     displayName: "Push templates to storage account"
     inputs:
       sourcePath: '$(Build.SourcesDirectory)\Uev\templates\*.xml'
-      azureSubscription: $(AZURE_SUBSCRIPTION) #'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
       destination: 'AzureBlob'
-      storage: $(STORAGE_ACCOUNT) #'stpydeviceause'
+      storage: 'stpydeviceause'
       containerName: 'uev'
       additionalArgumentsForBlobCopy: '--log-level=INFO'
