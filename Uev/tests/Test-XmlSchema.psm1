@@ -19,7 +19,7 @@ function Test-XmlSchema {
     $schemas = New-Object -TypeName "System.Xml.Schema.XmlSchemaSet"
     $schemas.CompilationSettings.EnableUpaCheck = $false
     $schema = Read-Schema $SchemaPath
-    [void]($schemas.Add($schema))
+    [System.Void]($schemas.Add($schema))
     $schemas.Compile()
       
     try {
