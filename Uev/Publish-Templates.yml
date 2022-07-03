@@ -9,8 +9,8 @@ trigger:
     - Uev/Publish-Templates.yml
 
 variables:
-  AZURE_SUBSCRIPTION: "Visual Studio Enterprise Subscription(ecc20e70-4763-4541-8b32-f28b3d341562)"
-  STORAGE_ACCOUNT: "stpydeviceause"
+  AZURE_SUBSCRIPTION: $(AZURE_SUBSCRIPTION)
+  STORAGE_ACCOUNT: $(STORAGE_ACCOUNT)
 
 jobs:
 - job: push_templates
