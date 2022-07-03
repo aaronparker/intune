@@ -8,8 +8,12 @@ trigger:
     - Uev/tests
     - Uev/Publish-Templates.yml
 
+variables:
+  AZURE_SUBSCRIPTION: "Visual Studio Enterprise Subscription(ecc20e70-4763-4541-8b32-f28b3d341562)"
+  STORAGE_ACCOUNT: "stpydeviceause"
+
 jobs:
-- job: push-templates
+- job: push_templates
   pool:
     vmImage: windows-latest
   steps:
@@ -48,9 +52,9 @@ jobs:
     displayName: "Push templates to storage account"
     inputs:
       SourcePath: '$(Build.SourcesDirectory)\Uev\templates'
-      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      azureSubscription: $(AZURE_SUBSCRIPTION)
       destination: 'AzureBlob'
-      storage: 'stpydeviceause'
+      storage: $(STORAGE_ACCOUNT)
       containerName: 'uev'
       additionalArgumentsForBlobCopy: '--log-level=INFO'
       copyFilesInParallel: true
