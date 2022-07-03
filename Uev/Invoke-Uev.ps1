@@ -172,7 +172,7 @@ function Get-RandomString {
 if (Test-WindowsEnterprise) {
 
     # If the UEV module is installed, enable the UEV service
-    if (Get-Module -ListAvailable -Name UEV) {
+    if (Get-Module -ListAvailable -Name "UEV") {
 
         # Enable the UE-V service
         Import-Module -Name "UEV"
