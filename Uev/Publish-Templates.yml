@@ -44,19 +44,6 @@ jobs:
       pwsh: true
       workingDirectory: '$(Build.SourcesDirectory)\Uev\tests'
 
-  - task: PowerShell@2
-    displayName: "Uninstall AzureRM"
-    inputs:
-      targetType: 'inline'
-      script: |
-        Remove-Module -Name "AzureRM"
-        Uninstall-Module -Name "AzureRM" -Force -Confirm:$False
-      verbosePreference: 'SilentlyContinue'
-      errorActionPreference: 'Continue'
-      failOnStderr: false
-      pwsh: false
-      workingDirectory: '$(Build.SourcesDirectory)'
-
   - task: AzureFileCopy@4
     displayName: "Push templates to storage account"
     inputs:
