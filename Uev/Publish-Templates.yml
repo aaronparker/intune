@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - refs/main/
+    - main
   paths:
     include:
     - Uev/templates/*
@@ -21,7 +21,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        Install-Module -Name "Pester"
+        Install-Module -Name "Pester" -Force -Confirm:$False
       verbosePreference: 'SilentlyContinue'
       pwsh: true
       workingDirectory: '$(Build.SourcesDirectory)'
