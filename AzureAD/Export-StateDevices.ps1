@@ -1,4 +1,4 @@
-#Requires -Modules AzureADP
+﻿#Requires -Modules AzureADP
 <#
     .SYNOPSIS
         List users and devices including last login time stamp.
