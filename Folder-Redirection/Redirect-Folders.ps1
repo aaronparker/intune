@@ -166,7 +166,7 @@ Function Redirect-Folder {
 
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
-        Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
+        Move-File -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
         
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
@@ -246,7 +246,7 @@ Function Invoke-Process {
     }
 }
 
-Function Move-Files {
+Function Move-File {
     <#
         .SYNOPSIS
             Moves contents of a folder with output to a log.
