@@ -56,9 +56,9 @@ function Get-AzureBlobItem {
         foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
             $PSObject = [PSCustomObject] @{
                 Name         = $($node | Select-Object -ExpandProperty "Name")
-                Url          = $($node | Select-Object -ExpandProperty "Url")
+                Uri          = $($node | Select-Object -ExpandProperty "Url")
                 Size         = $($node | Select-Object -ExpandProperty "Size")
-                LastModified = $($node | Select-Object -ExpandProperty "LastModified")
+                LastModified  = $($node | Select-Object -ExpandProperty "LastModified")
             }
             $fileList.Add($PSObject) | Out-Null
         }

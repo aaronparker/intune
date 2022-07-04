@@ -45,8 +45,8 @@
     .PARAMETER Uri
         Specifies the Uniform Resource Identifier (URI) of the Azure blog storage resource that hosts the UE-V templates to download.
 
-    .PARAMETER CustomTemplatesPath
-        Directory path where custom UE-V templates will be saved into.
+    .PARAMETER Templates
+        An array of the in-box templates to activate on the UE-V client.
 
     .NOTES
         Author: Aaron Parker
@@ -56,7 +56,7 @@
         https://stealthpuppy.com/user-experience-virtualzation-intune/
 
     .EXAMPLE
-        Invoke-Uev.ps1
+        Set-Uev.ps1
 #>
 [CmdletBinding(SupportsShouldProcess = $False, HelpURI = "https://github.com/aaronparker/intune/blob/main/Uev/README.md")]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
@@ -65,7 +65,11 @@ param (
     [System.String] $Uri = "https://stpydeviceause.blob.core.windows.net/uev/?comp=list",
 
     [Parameter(Mandatory = $false)]
-    [System.String] $CustomTemplatesPath = "$env:ProgramData\Microsoft\UEV\CustomTemplates"
+    # Inbox templates to enable. Templates downloaded from $Uri will be added to this list
+    [System.Collections.ArrayList] $Templates = @("MicrosoftNotepad.xml", "MicrosoftWordpad.xml"),
+
+    [Parameter(Mandatory = $false)]
+    [System.String] $SettingsStoragePath = "%OneDriveCommercial%"
 )
 
 # Configure TLS
@@ -206,6 +210,7 @@ if (Test-WindowsEnterprise) {
     if ($status.UevEnabled -eq $True) {
 
         # Templates local target path
+        $inboxTemplatesSrc = "$env:ProgramData\Microsoft\UEV\InboxTemplates"
         $templatesTemp = Join-Path -Path (Resolve-Path -Path $env:Temp) -ChildPath (Get-RandomString)
         try {
             Write-Verbose -Message "Creating temp folder: $templatesTemp."
@@ -216,20 +221,12 @@ if (Test-WindowsEnterprise) {
             exit 1
         }
 
-        try {
-            Write-Verbose -Message "Creating custom templates folder: $CustomTemplatesPath."
-            New-Item -Path $CustomTemplatesPath -ItemType "Directory" -Force | Out-Null
-        }
-        catch {
-            Write-Host "Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
-            exit 1
-        }
-
         # Copy the UEV templates from an Azure Storage account
-        if (Test-Path -Path $CustomTemplatesPath) {
+        if (Test-Path -Path $inboxTemplatesSrc) {
+
             try {
                 # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
-                $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
+                $srcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
             }
             catch {
                 Write-Host "Error at $Uri with $($_.Exception.Message)."
@@ -238,7 +235,7 @@ if (Test-WindowsEnterprise) {
 
             # Download each template to the target path and track success
             $downloadedTemplates = New-Object -TypeName "System.Collections.ArrayList"
-            foreach ($template in $SrcTemplates) {
+            foreach ($template in $srcTemplates) {
 
                 # Only download if the file has a .xml extension
                 if ($template.Name -match ".xml$") {
@@ -254,37 +251,99 @@ if (Test-WindowsEnterprise) {
                         }
                         Invoke-WebRequest @iwrParams
                     }
+                    catch [System.Net.WebException] {
+                        $ErrorMsg = $_.Exception.Message
+                        $failure = $True
+                    }
                     catch [System.Exception] {
-                        Write-Host "Invoke-WebRequest failed with $($_.Exception.Message)."
+                        $ErrorMsg = $_.Exception.Message
+                        $failure = $True
+                    }
+                    if ($failure) {
+                        Write-Host "Invoke-WebRequest failed with $ErrorMsg."
                         exit 1
                     }
+                    else {
+                        $downloadedTemplates.Add($targetTemplate) | Out-Null
+                        $Templates.Add($($template.Name)) | Out-Null
+                    }
                 }
-                $downloadedTemplates.Add($targetTemplate) | Out-Null
-                $Templates.Add($($template.Name)) | Out-Null
             }
-        }
 
-        # Move downloaded templates to the template store
-        foreach ($template in $downloadedTemplates) {
+            # Move downloaded templates to the template store
+            foreach ($template in $downloadedTemplates) {
+                try {
+                    Write-Verbose -Message "Moving template: $template."
+                    Move-Item -Path $template -Destination $inboxTemplatesSrc -Force
+                }
+                catch {
+                    Write-Host "Move $template failed with $($_.Exception.Message)."
+                    exit 1
+                }
+            }
+
+            Write-Verbose -Message "Removing temp folder: $templatesTemp."
+            Remove-Item -Path $templatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
+
             try {
-                Write-Verbose -Message "Moving template: $template."
-                Move-Item -Path $template -Destination $inboxTemplatesSrc -Force
+                # Unregister existing templates
+                Write-Verbose -Message "Unregister existing templates."
+                Get-UevTemplate | Unregister-UevTemplate -ErrorAction "SilentlyContinue"
             }
             catch {
-                Write-Host "Move $template failed with $($_.Exception.Message)."
+                Write-Host "Unregister-UevTemplate failed with $($_.Exception.Message)."
                 exit 1
             }
+
+            # Register specified templates
+            foreach ($template in $Templates) {
+                try {
+                    Write-Verbose -Message "Registering template: $template."
+                    Register-UevTemplate -Path "$inboxTemplatesSrc\$template"
+                }
+                catch {
+                    Write-Host "Register-UevTemplate failed with $($_.Exception.Message)."
+                    exit 1
+                }
+            }
+
+            # Enable Backup mode for all templates
+            Get-UevTemplate | ForEach-Object { Set-UevTemplateProfile -Id $_.TemplateId -Profile "Backup" -ErrorAction "SilentlyContinue" }
+
+            # If the templates registered successfully, configure the client
+            if ((Get-UevTemplate).Count -ge 1) {
+
+                # Set the UEV settings. These settings will work for UEV in OneDrive with Enterprise State Roaming enabled
+                # https://docs.microsoft.com/en-us/azure/active-directory/devices/enterprise-state-roaming-faqs
+                try {
+                    $uevParams = @{
+                        Computer                            = $True
+                        DisableSyncProviderPing             = $True
+                        DisableWaitForSyncOnLogon           = $True
+                        DisableSyncUnlistedWindows8Apps     = $True
+                        EnableDontSyncWindows8AppSettings   = $True
+                        EnableSettingsImportNotify          = $True
+                        EnableSync                          = $True
+                        EnableWaitForSyncOnApplicationStart = $True
+                        SettingsStoragePath                 = $SettingsStoragePath
+                        SyncMethod                          = "External"
+                        WaitForSyncTimeoutInMilliseconds    = "2000"
+                    }
+                    Set-UevConfiguration @uevParams
+                }
+                catch {
+                    Write-Host "Set-UevConfiguration failed with $($_.Exception.Message)."
+                    exit 1
+                }
+
+                # If we got here, everything has gone well
+                exit 0
+            }
         }
-
-        Write-Verbose -Message "Removing temp folder: $templatesTemp."
-        Remove-Item -Path $templatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
-
-        Write-Host "UE-V service enabled. Custom templates downloaded. Configure agent via policy."
-        exit 0
-    }
-    else {
-        Write-Host "UE-V service not enabled."
-        exit 1
+        else {
+            Write-Host "Path does not exist: $inboxTemplatesSrc."
+            exit 1
+        }
     }
 }
 else {
