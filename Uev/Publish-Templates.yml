@@ -4,8 +4,8 @@ trigger:
     - refs/main/
   paths:
     include:
-    - Uev/templates
-    - Uev/tests
+    - Uev/templates/*
+    - Uev/tests/*
     - Uev/Publish-Templates.yml
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
       targetType: 'inline'
       script: |
         Install-Module -Name "Pester"
-      verbosePreference: 'continue'
+      verbosePreference: 'SilentlyContinue'
       pwsh: true
       workingDirectory: '$(Build.SourcesDirectory)'
 
@@ -40,7 +40,7 @@ jobs:
         $Config.TestResult.OutputFormat = "NUnitXml"
         $Config.TestResult.OutputPath = ".\TestResults.xml"
         Invoke-Pester -Configuration $Config
-      verbosePreference: 'continue'
+      verbosePreference: 'SilentlyContinue'
       pwsh: true
       workingDirectory: '$(Build.SourcesDirectory)\Uev\tests'
 
