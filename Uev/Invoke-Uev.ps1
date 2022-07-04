@@ -104,40 +104,43 @@ function Get-AzureBlobItem {
         [System.String] $Uri
     )
 
-    # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
-    try {
-        $iwrParams = @{
-            Uri             = $Uri
-            UseBasicParsing = $True
-            ContentType     = "application/xml"
-            ErrorAction     = "Stop"
-        }
-        $list = Invoke-WebRequest @iwrParams
-    }
-    catch [System.Net.WebException] {
-        Write-Warning -Message ([System.String]::Format("Error : {0}", $_.Exception.Message))
-        throw $_.Exception.Message
-    }
-    catch [System.Exception] {
-        Write-Warning -Message "failed to download: $Uri."
-        throw $_.Exception.Message
-    }
-    if ($Null -ne $list) {
-        [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
-
-        # Build an object with file properties to return on the pipeline
-        $fileList = New-Object -TypeName System.Collections.ArrayList
-        foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
-            $PSObject = [PSCustomObject] @{
-                Name         = $($node | Select-Object -ExpandProperty "Name")
-                Uri          = $($node | Select-Object -ExpandProperty "Url")
-                Size         = $($node | Select-Object -ExpandProperty "Size")
-                LastModified = $($node | Select-Object -ExpandProperty "LastModified")
+    begin {}
+    process {
+        # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
+        try {
+            $iwrParams = @{
+                Uri             = $Uri
+                UseBasicParsing = $True
+                ContentType     = "application/xml"
+                ErrorAction     = "Stop"
             }
-            $fileList.Add($PSObject) | Out-Null
+            $list = Invoke-WebRequest @iwrParams
         }
-        if ($Null -ne $fileList) {
-            Write-Output -InputObject $fileList
+        catch [System.Net.WebException] {
+            Write-Warning -Message ([System.String]::Format("Error : {0}", $_.Exception.Message))
+            throw $_.Exception.Message
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "failed to download: $Uri."
+            throw $_.Exception.Message
+        }
+        if ($Null -ne $list) {
+            [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
+
+            # Build an object with file properties to return on the pipeline
+            $fileList = New-Object -TypeName System.Collections.ArrayList
+            foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
+                $PSObject = [PSCustomObject] @{
+                    Name         = $($node | Select-Object -ExpandProperty "Name")
+                    Uri          = $($node | Select-Object -ExpandProperty "Url")
+                    Size         = $($node | Select-Object -ExpandProperty "Size")
+                    LastModified = $($node | Select-Object -ExpandProperty "LastModified")
+                }
+                $fileList.Add($PSObject) | Out-Null
+            }
+            if ($Null -ne $fileList) {
+                Write-Output -InputObject $fileList
+            }
         }
     }
 }

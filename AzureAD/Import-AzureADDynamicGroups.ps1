@@ -15,90 +15,94 @@ Param (
     [Parameter(ValueFromPipeline, Mandatory = $False, Position = 0, HelpMessage = "Path to the CSV document describing the Dynamic Groups.")]
     [ValidateNotNullOrEmpty()]
     [ValidateScript( {
-            If ( -Not (Test-Path -Path $_)) {
-                Throw "$_ does not exist."
+            if ( -not (Test-Path -Path $_)) {
+                throw "$_ does not exist."
             }
-            If (-Not ($_ | Test-Path -PathType Leaf) ) {
-                Throw "The Path argument must be a file. Folder paths are not allowed."
+            if (-Not ($_ | Test-Path -PathType Leaf) ) {
+                throw "The Path argument must be a file. Folder paths are not allowed."
             }
-            If ($_ -notmatch "(\.csv)") {
-                Throw "The file specified in the path argument must be either of type CSV."
+            if ($_ -notmatch "(\.csv)") {
+                throw "The file specified in the path argument must be either of type CSV."
             }
             
-            Return $True
+            return $True
         })]
     [System.IO.FileInfo] $Path = (Join-Path $pwd "AzureADDynamicGroups.csv")
 )
 
-# Import CSV
-$csvGroups = Import-Csv $Path -ErrorAction SilentlyContinue
+begin {}
+process {
 
-# Get the existing dynamic groups from Azure AD
-try {
-    $existingGroups = Get-AzureADMSGroup -All:$True | Where-Object { $_.GroupTypes -eq "DynamicMembership" } `
-        -ErrorAction SilentlyContinue
-}
-catch {
-    Throw $_
-}
-finally {
-    If ($existingGroups) { Write-Verbose -Message "Found existing dynamic groups." }
-}
+    # Import CSV
+    $csvGroups = Import-Csv $Path -ErrorAction SilentlyContinue
 
-# Step through each group from the CSV file
-$output = @()
-ForEach ($group in $csvGroups) {
+    # Get the existing dynamic groups from Azure AD
+    try {
+        $existingGroups = Get-AzureADMSGroup -All:$True | Where-Object { $_.GroupTypes -eq "DynamicMembership" } `
+            -ErrorAction SilentlyContinue
+    }
+    catch {
+        throw $_
+    }
+    finally {
+        if ($existingGroups) { Write-Verbose -Message "Found existing dynamic groups." }
+    }
 
-    # Match any existing group with the same membership rule
-    $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
-    If ($matchingGroup) {
-        Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
+    # Step through each group from the CSV file
+    $output = @()
+    foreach ($group in $csvGroups) {
+
+        # Match any existing group with the same membership rule
+        $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
+        if ($matchingGroup) {
+            Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
         
-        # If the description needs updating on the group, update to match that listed in the CSV file
-        If ($matchingGroup.Description -ne $group.Description) {
-            try {
-                $setGrpParams = @{
-                    Id          = ($matchingGroup.Id)
-                    Description = $group.Description
-                    ErrorAction = "SilentlyContinue"
+            # if the description needs updating on the group, update to match that listed in the CSV file
+            if ($matchingGroup.Description -ne $group.Description) {
+                try {
+                    $setGrpParams = @{
+                        Id          = ($matchingGroup.Id)
+                        Description = $group.Description
+                        ErrorAction = "SilentlyContinue"
+                    }
+                    if ($PSCmdlet.ShouldProcess($group.DisplayName , "Add description: [$($group.Description)].")) {
+                        Set-AzureADMSGroup @setGrpParams
+                        Write-Verbose -Message "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                    }
                 }
-                If ($PSCmdlet.ShouldProcess($group.DisplayName , "Add description: [$($group.Description)].")) {
-                    Set-AzureADMSGroup @setGrpParams
-                    Write-Verbose -Message "Updated description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                catch {
+                    Write-Warning -Message "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
+                    throw $_
+                }
+            }
+        }
+        else {
+            try {
+                # Create the new group
+                $newGrpParams = @{
+                    DisplayName                   = $group.DisplayName
+                    Description                   = $group.Description
+                    GroupTypes                    = "DynamicMembership"
+                    MembershipRule                = $group.MembershipRule
+                    MembershipRuleProcessingState = "On"
+                    SecurityEnabled               = $True
+                    MailEnabled                   = $False
+                    MailNickname                  = (New-Guid)
+                    ErrorAction                   = "SilentlyContinue"
+                }
+                if ($PSCmdlet.ShouldProcess($group.DisplayName , "Create group.")) {
+                    $newGroup = New-AzureADMSGroup @newGrpParams
+                    $output += $newGroup
+                    Write-Verbose -Message "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
                 }
             }
             catch {
-                Write-Warning -Message "Failed to update description on group: $($matchingGroup.DisplayName) to '$($group.Description)'"
-                Throw $_
+                Write-Error -Message "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
+                throw $_
             }
         }
     }
-    Else {
-        try {
-            # Create the new group
-            $newGrpParams = @{
-                DisplayName                   = $group.DisplayName
-                Description                   = $group.Description
-                GroupTypes                    = "DynamicMembership"
-                MembershipRule                = $group.MembershipRule
-                MembershipRuleProcessingState = "On"
-                SecurityEnabled               = $True
-                MailEnabled                   = $False
-                MailNickname                  = (New-Guid)
-                ErrorAction                   = "SilentlyContinue"
-            }
-            If ($PSCmdlet.ShouldProcess($group.DisplayName , "Create group.")) {
-                $newGroup = New-AzureADMSGroup @newGrpParams
-                $output += $newGroup
-                Write-Verbose -Message "Created group $($group.DisplayName) with membership rule $($group.MembershipRule)."
-            }
-        }
-        catch {
-            Write-Error -Message "Failed to create group $($group.DisplayName) with membership rule $($group.MembershipRule)."
-            Throw $_
-        }
-    }
-}
 
-# Return the list of groups that were created
-Write-Output -InputObject $output
+    # Return the list of groups that were created
+    Write-Output -InputObject $output
+}

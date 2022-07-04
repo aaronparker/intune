@@ -1,4 +1,4 @@
-Function Get-AzureBlobItem {
+function Get-AzureBlobItem {
     <#
         .SYNOPSIS
             Returns an array of items and properties from an Azure blog storage URL.
@@ -7,47 +7,66 @@ Function Get-AzureBlobItem {
             Queries an Azure blog storage URL and returns an array with properties of files in a Container.
             Requires Public access level of anonymous read access to the blob storage container.
             Works with PowerShell Core.
-            
+
         .NOTES
             Author: Aaron Parker
             Twitter: @stealthpuppy
 
-        .LINK
-            https://stealthpuppy.com
-
         .PARAMETER Url
             The Azure blob storage container URL. The container must be enabled for anonymous read access.
             The URL must include the List Container request URI. See https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2 for more information.
-        
+
         .EXAMPLE
-            Get-AzureBlobItem -Url "https://aaronparker.blob.core.windows.net/folder/?comp=list"
+            Get-AzureBlobItems -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
 
             Description:
-            Returns the list of files from the supplied URL, with Name, URL, Size and Last Modifed properties for each item.
-
-        .OUTPUTS
-            Returns System.Array
+            Returns the list of files from the supplied URL, with Name, URL, Size and Last Modified properties for each item.
     #>
     [CmdletBinding(SupportsShouldProcess = $False)]
-    Param (
+    [OutputType([System.Management.Automation.PSObject])]
+    param (
         [Parameter(ValueFromPipeline = $True, Mandatory = $True, HelpMessage = "Azure blob storage URL with List Containers request URI '?comp=list'.")]
         [ValidatePattern("^(http|https)://")]
-        [string] $Uri
+        [System.String] $Uri
     )
 
-    # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
-    Try { $list = Invoke-WebRequest -Uri $Uri -UseBasicParsing -ErrorAction Stop } Catch [Exception] { Write-Host $_; Break }
-    [xml] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
+    begin {}
+    process {
+        # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
+        try {
+            $iwrParams = @{
+                Uri             = $Uri
+                UseBasicParsing = $True
+                ContentType     = "application/xml"
+                ErrorAction     = "Stop"
+            }
+            $list = Invoke-WebRequest @iwrParams
+        }
+        catch [System.Net.WebException] {
+            Write-Warning -Message ([System.String]::Format("Error : {0}", $_.Exception.Message))
+            throw $_.Exception.Message
+        }
+        catch [System.Exception] {
+            Write-Warning -Message "failed to download: $Uri."
+            throw $_.Exception.Message
+        }
+        if ($Null -ne $list) {
+            [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
 
-    # Build an object with file properties to return on the pipeline
-    $output = @()
-    ForEach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $Xml).Node) {
-        $item = New-Object -TypeName PSObject
-        $item | Add-Member -Type NoteProperty -Name 'Name' -Value ($node | Select-Object -ExpandProperty Name)
-        $item | Add-Member -Type NoteProperty -Name 'Url' -Value ($node | Select-Object -ExpandProperty Url)
-        $item | Add-Member -Type NoteProperty -Name 'Size' -Value ($node | Select-Object -ExpandProperty Size)
-        $item | Add-Member -Type NoteProperty -Name 'LastModified' -Value ($node | Select-Object -ExpandProperty LastModified)
-        $output += $item
+            # Build an object with file properties to return on the pipeline
+            $fileList = New-Object -TypeName System.Collections.ArrayList
+            foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
+                $PSObject = [PSCustomObject] @{
+                    Name         = $($node | Select-Object -ExpandProperty "Name")
+                    Uri          = $($node | Select-Object -ExpandProperty "Url")
+                    Size         = $($node | Select-Object -ExpandProperty "Size")
+                    LastModified = $($node | Select-Object -ExpandProperty "LastModified")
+                }
+                $fileList.Add($PSObject) | Out-Null
+            }
+            if ($Null -ne $fileList) {
+                Write-Output -InputObject $fileList
+            }
+        }
     }
-    Write-Output $output
 }
