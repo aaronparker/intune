@@ -58,16 +58,15 @@
     .EXAMPLE
         Set-Uev.ps1
 #>
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost")]
 [CmdletBinding(SupportsShouldProcess = $False, HelpURI = "https://github.com/aaronparker/intune/blob/main/Uev/README.md")]
-[OutputType([System.String])]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 param (
     [Parameter(Mandatory = $false)]
     [System.String] $Uri = "https://stpydeviceause.blob.core.windows.net/uev/?comp=list",
 
     [Parameter(Mandatory = $false)]
     # Inbox templates to enable. Templates downloaded from $Uri will be added to this list
-    [System.Collections.ArrayList] $Templates = @("MicrosoftNotepad.xml", "MicrosoftWordpad.xml", "MicrosoftInternetExplorer2013.xml"),
+    [System.Collections.ArrayList] $Templates = @("MicrosoftNotepad.xml", "MicrosoftWordpad.xml"),
 
     [Parameter(Mandatory = $false)]
     [System.String] $SettingsStoragePath = "%OneDriveCommercial%"
@@ -153,7 +152,7 @@ function Test-WindowsEnterprise {
         $edition = Get-WindowsEdition -Online -ErrorAction "SilentlyContinue"
     }
     catch {
-        Write-Error "Failed to run Get-WindowsEdition. Defaulting to False."
+        Write-Error -Message "Failed to run Get-WindowsEdition. Defaulting to False."
     }
     if ($edition.Edition -eq "Enterprise") {
         return $True
@@ -177,7 +176,15 @@ if (Test-WindowsEnterprise) {
         # Enable the UE-V service
         Import-Module -Name "UEV"
         $status = Get-UevStatus
-        if ($status.UevEnabled -ne $True) {
+        if ($status.UevEnabled -eq $True) {
+            if ($status.UevRebootRequired -eq $True) {
+                Write-Verbose -Message "Reboot required to enable the UE-V service."
+            }
+            else {
+                Write-Verbose -Message "UE-V service is enabled."
+            }
+        }
+        else {
             try {
                 Write-Verbose -Message "Enabling the UE-V service."
                 Enable-Uev
@@ -187,13 +194,12 @@ if (Test-WindowsEnterprise) {
                 Write-Host "Failed to enable the UEV service with $($_.Exception.Message)."
                 exit 1
             }
-        }
-        else {
-            Write-Verbose -Message "UE-V service is enabled."
-        }
-        if ($status.UevRebootRequired -eq $True) {
-            Write-Host "Reboot required to enable the UE-V service."
-            exit 1
+            if ($status.UevEnabled -eq $True) {
+                Write-Verbose -Message "UE-V service is enabled."
+            }
+            else {
+                Write-Verbose -Message "UE-V service is not enabled."
+            }
         }
     }
     else {
@@ -232,7 +238,7 @@ if (Test-WindowsEnterprise) {
             foreach ($template in $srcTemplates) {
 
                 # Only download if the file has a .xml extension
-                if ($template.Name -like "*.xml$") {
+                if ($template.Name -match ".xml$") {
                     $targetTemplate = Join-Path -Path $templatesTemp -ChildPath $template.Name
                     try {
                         $iwrParams = @{

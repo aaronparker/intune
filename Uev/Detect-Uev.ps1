@@ -18,9 +18,8 @@
     .EXAMPLE
         Set-Uev.ps1
 #>
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost")]
 [CmdletBinding(SupportsShouldProcess = $False, HelpURI = "https://github.com/aaronparker/intune/blob/main/Uev/README.md")]
-[OutputType([System.String])]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 param ()
 
 function Test-WindowsEnterprise {
@@ -29,7 +28,7 @@ function Test-WindowsEnterprise {
         $edition = Get-WindowsEdition -Online -ErrorAction "SilentlyContinue"
     }
     catch {
-        Write-Error "Failed to run Get-WindowsEdition. Defaulting to False."
+        Write-Error -Message "Failed to run Get-WindowsEdition. Defaulting to False."
     }
     if ($edition.Edition -eq "Enterprise") {
         return $True
@@ -49,13 +48,15 @@ if (Test-WindowsEnterprise) {
         # Detect the UE-V service
         Import-Module -Name "UEV"
         $status = Get-UevStatus
-        if ($status.UevRebootRequired -eq $True) {
-            Write-Host "Reboot required to enable the UE-V service."
-            exit 1
-        }
-        elseif ($status.UevEnabled -eq $True) {
-            Write-Host "UE-V service is enabled."
-            exit 0
+        if ($status.UevEnabled -eq $True) {
+            if ($status.UevRebootRequired -eq $True) {
+                Write-Host "Reboot required to enable the UE-V service."
+                exit 1
+            }
+            else {
+                Write-Host "UE-V service is enabled."
+                exit 0
+            }
         }
         else {
             Write-Host "UE-V service is not enabled."
