@@ -30,10 +30,10 @@ Function Set-KnownFolderPath {
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos')]
-        [string] $KnownFolder,
+        [System.String] $KnownFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $Path
+        [System.String] $Path
     )
 
     # Define known folder GUIDs
@@ -99,7 +99,7 @@ Function Get-KnownFolderPath {
     Param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('Contacts', 'Desktop', 'Documents', 'Downloads', 'Favorites', 'Games', 'Links',  'Music', 'Pictures', 'Videos')]
-        [string] $KnownFolder
+        [System.String] $KnownFolder
     )
     [Environment]::GetFolderPath($KnownFolder)
 }
@@ -134,16 +134,16 @@ Function Redirect-Folder {
     #>
     Param (
         [Parameter(Mandatory = $true)]
-        [string] $SyncFolder,
+        [System.String] $SyncFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $GetFolder,
+        [System.String] $GetFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $SetFolder,
+        [System.String] $SetFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $Target
+        [System.String] $Target
     )
 
     # Get current Known folder path

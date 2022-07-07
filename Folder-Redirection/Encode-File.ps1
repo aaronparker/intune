@@ -21,10 +21,10 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [string] $InputFile,
+    [System.String] $InputFile,
 
     [Parameter()]
-    [string] $OutputFile
+    [System.String] $OutputFile
 )
 
 Function Encode-Text {

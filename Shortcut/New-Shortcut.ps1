@@ -9,8 +9,8 @@
     .LINK
         https://stealthpuppy.com
 #>
-[CmdletBinding()]
-Param()
+[CmdletBinding(SupportsShouldProcess = $True)]
+param()
 
 Function Get-KnownFolderPath {
     <#
@@ -32,7 +32,7 @@ Function Get-KnownFolderPath {
                 'MyDocuments', 'MyMusic', 'MyPictures', 'MyVideos', 'NetworkShortcuts', 'Personal', 'PrinterShortcuts', `
                 'ProgramFiles', 'ProgramFilesX86', 'Programs', 'Recent', 'Resources', 'SendTo', `
                 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'UserProfile', 'Windows')]
-        [string] $KnownFolder
+        [System.String] $KnownFolder
     )
 
     $folder = [Environment]::GetFolderPath($KnownFolder)
@@ -41,39 +41,39 @@ Function Get-KnownFolderPath {
 }
 
 Function New-Shortcut {
-    [CmdletBinding()]
-    Param (
+    [CmdletBinding(SupportsShouldProcess = $True)]
+    param (
         [ValidateNotNullOrEmpty]
-        [string] $Path,
+        [System.String] $Path,
 
         [ValidateNotNullOrEmpty]
-        [string] $Target,
+        [System.String] $Target,
 
-        [string] $Arguments,
-        [string] $WorkingDirectory,
-        [string] $WindowStyle = 1,
-        [string] $Hotkey,
-        [string] $Icon,
-        [string] $Description
+        [System.String] $Arguments,
+        [System.String] $WorkingDirectory,
+        [System.String] $WindowStyle = 1,
+        [System.String] $Hotkey,
+        [System.String] $Icon,
+        [System.String] $Description
     )
     try {
-        Write-Verbose "Creating shortcut $($Path)."
-        $shell = New-Object -ComObject ("WScript.Shell")
-        $shortCut = $shell.CreateShortcut($Path)
-        $shortCut.TargetPath = $Target
-        $shortCut.Arguments = $Arguments
-        $shortCut.WorkingDirectory = $WorkingDirectory
-        $shortCut.WindowStyle = $WindowStyle
-        $shortCut.Hotkey = $Hotkey
-        $shortCut.IconLocation = $Icon
-        $shortCut.Description = $Description
-        $shortCut.Save()
+        if ($PSCmdlet.ShouldProcess($Path, ("Creating shortcut '{0}'" -f $Path))) {
+            Write-Verbose -Message "Creating shortcut $($Path)."
+            $shell = New-Object -ComObject ("WScript.Shell")
+            $shortCut = $shell.CreateShortcut($Path)
+            $shortCut.TargetPath = $Target
+            $shortCut.Arguments = $Arguments
+            $shortCut.WorkingDirectory = $WorkingDirectory
+            $shortCut.WindowStyle = $WindowStyle
+            $shortCut.Hotkey = $Hotkey
+            $shortCut.IconLocation = $Icon
+            $shortCut.Description = $Description
+            $shortCut.Save()
+        }
+        Write-Output $Path
     }
     catch {
-        Write-Error "Failed to create shortcut with error: $_"
-    }
-    finally {
-        Write-Output $Path
+        Write-Error -Message "Failed to create shortcut with error: $_"
     }
 }
 
@@ -87,8 +87,8 @@ Start-Transcript -Path $logFile
 $shortcuts = @($(Get-KnownFolderPath -KnownFolder Desktop), "$(Get-KnownFolderPath -KnownFolder StartMenu)\Programs")
 
 # Create the shortcuts
-ForEach ($shortcut in $shortcuts) {
-    If (Test-Path -Path $shortcut) {
+foreach ($shortcut in $shortcuts) {
+    if (Test-Path -Path $shortcut) {
         # Create New-Shortcut arguments
         $shortcutArgs = @{
             Path             = "$shortcut\Microsoft Teams.lnk"
@@ -101,10 +101,10 @@ ForEach ($shortcut in $shortcuts) {
             Description      = "Microsoft Teams"
         }
 
-        If (!(Test-Path -Path $($shortcutArgs.Path))) {
+        if (!(Test-Path -Path $($shortcutArgs.Path))) {
             New-Shortcut @shortcutArgs
         }
-        Else {
+        else {
             Write-Verbose "Shortcut $($shortcutArgs.Path) exists."
         }
     }

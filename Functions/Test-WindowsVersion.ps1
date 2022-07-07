@@ -7,11 +7,11 @@ Function Test-WindowsVersion {
     Param (
         [Parameter(Mandatory = $False)]
         [ValidateSet('17763', '17134', '16299', '15063', '14393', '10240')]
-        [string] $Build = "17763",
+        [System.String] $Build = "17763",
 
         [Parameter(Mandatory = $False)]
         [ValidateSet('Higher', 'Lower', 'Match')]
-        [string] $Test = "Higher"
+        [System.String] $Test = "Higher"
     )
 
     $currentBuild = [Environment]::OSVersion.Version.Build

@@ -31,7 +31,8 @@ Function Set-KnownFolderPath {
         .NOTES
             Forked from: https://gist.github.com/semenko/49a28675e4aae5c8be49b83960877ac5
     #>
-    Param (
+    [CmdletBinding()]
+    param (
         [Parameter(Mandatory = $true)]
         [ValidateSet('AddNewPrograms', 'AdminTools', 'AppUpdates', 'CDBurning', 'ChangeRemovePrograms', 'CommonAdminTools', 'CommonOEMLinks', 'CommonPrograms', `
                 'CommonStartMenu', 'CommonStartup', 'CommonTemplates', 'ComputerFolder', 'ConflictFolder', 'ConnectionsFolder', 'Contacts', 'ControlPanelFolder', 'Cookies', `
@@ -42,10 +43,10 @@ Function Set-KnownFolderPath {
                 'Recent', 'RecycleBinFolder', 'ResourceDir', 'RoamingAppData', 'SampleMusic', 'SamplePictures', 'SamplePlaylists', 'SampleVideos', 'SavedGames', 'SavedSearches', `
                 'SEARCH_CSC', 'SEARCH_MAPI', 'SearchHome', 'SendTo', 'SidebarDefaultParts', 'SidebarParts', 'StartMenu', 'Startup', 'SyncManagerFolder', 'SyncResultsFolder', `
                 'SyncSetupFolder', 'System', 'SystemX86', 'Templates', 'TreeProperties', 'UserProfiles', 'UsersFiles', 'Videos', 'Windows')]
-        [string] $KnownFolder,
+        [System.String] $KnownFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $Path
+        [System.String] $Path
     )
 
     # Define known folder GUIDs
@@ -89,7 +90,9 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
 
     # Make path, if doesn't exist
     If (!(Test-Path $Path -PathType Container)) {
-        New-Item -Path $Path -Type Directory -Force -Verbose
+        if ($PSCmdlet.ShouldProcess($Path, ("New-Item '{0}'" -f $Path))) {
+            New-Item -Path $Path -Type "Directory" -Force -Verbose
+        }
     }
 
     # Validate the path
@@ -130,7 +133,7 @@ Function Get-KnownFolderPath {
                 'CommonVideos', 'Cookies', 'Desktop', 'DesktopDirectory', 'Favorites', 'Fonts', 'History', 'InternetCache', 'LocalApplicationData', 'LocalizedResources', 'MyComputer', `
                 'MyDocuments', 'MyMusic', 'MyPictures', 'MyVideos', 'NetworkShortcuts', 'Personal', 'PrinterShortcuts', 'ProgramFiles', 'ProgramFilesX86', 'Programs', 'Recent', `
                 'Resources', 'SendTo', 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'UserProfile', 'Windows')]
-        [string] $KnownFolder
+        [System.String] $KnownFolder
     )
     [Environment]::GetFolderPath($KnownFolder)
 }
@@ -142,16 +145,16 @@ Function Redirect-Folder {
     #>
     Param (
         [Parameter(Mandatory = $true)]
-        [string] $SyncFolder,
+        [System.String] $SyncFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $GetFolder,
+        [System.String] $GetFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $SetFolder,
+        [System.String] $SetFolder,
 
         [Parameter(Mandatory = $true)]
-        [string] $Target
+        [System.String] $Target
     )
 
     # Get current Known folder path
@@ -197,11 +200,11 @@ Function Invoke-Process {
     param (
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string] $FilePath,
+        [System.String] $FilePath,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string] $ArgumentList
+        [System.String] $ArgumentList
     )
     $ErrorActionPreference = 'Stop'
 
@@ -231,7 +234,7 @@ Function Invoke-Process {
                 }
             }
             else {
-                if ([string]::IsNullOrEmpty($cmdOutput) -eq $false) {
+                if ([System.String]::IsNullOrEmpty($cmdOutput) -eq $false) {
                     Write-Output -InputObject $cmdOutput
                 }
             }

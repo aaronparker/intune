@@ -7,7 +7,7 @@
 [CmdletBinding()]
 Param (
     [Parameter()]
-    [string] $FilePath = $(Join-Path (Resolve-Path $pwd) "Devices.xlsx")
+    [System.String] $FilePath = $(Join-Path (Resolve-Path $pwd) "Devices.xlsx")
 )
 
 # Install required modules

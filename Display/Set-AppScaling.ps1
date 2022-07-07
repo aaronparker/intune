@@ -19,17 +19,17 @@ Function Set-RegistryValue {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $True)]
-        [string] $Key,
+        [System.String] $Key,
 
         [Parameter(Mandatory = $True)]
-        [string] $Value,
+        [System.String] $Value,
 
         [Parameter(Mandatory = $True)]
         $Data,
 
         [Parameter(Mandatory = $False)]
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
-        [string] $Type = "String"
+        [System.String] $Type = "String"
     )
 
     try {

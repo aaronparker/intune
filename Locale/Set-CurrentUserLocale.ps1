@@ -13,6 +13,7 @@
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 Param (
     [System.String] $Locale = "en-AU",
     [System.String] $Path = "$env:Temp"

@@ -21,7 +21,7 @@ Function Set-RegValue {
         [Parameter(Mandatory = $True)] $Data,
         [Parameter(Mandatory = $False)]
         [ValidateSet('Binary', 'ExpandString', 'String', 'Dword', 'MultiString', 'QWord')]
-        [string] $Type = "String"
+        [System.String] $Type = "String"
     )
     try {
         if (!(Test-Path -Path $Key)) {
@@ -38,7 +38,7 @@ Function Get-RegValueCount {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $True)]
-        [string] $Key
+        [System.String] $Key
     )
     $existingValues = (Get-Item -Path $Key).Property
     $value = [int]$existingValues[$existingValues.Count - 1] + 1
