@@ -2,8 +2,16 @@
     .SYNOPSIS
        XML Validation
        http://blogsprajeesh.blogspot.com/2015/06/powershell-xml-schema-validation.html
-#>
 
+    .DESCRIPTION
+        Validates XML files against a schema
+
+    .EXAMPLE
+        Test-XmlSchema -XmlPath $template.FullName -SchemaPath $SchemaFile
+
+    .NOTES
+        Source: http://blogsprajeesh.blogspot.com/2015/06/powershell-xml-schema-validation.html
+#>
 
 function Test-XmlSchema {
     param (

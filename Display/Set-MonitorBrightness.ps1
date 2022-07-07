@@ -21,8 +21,8 @@ try {
     }
     $Monitor = Get-WmiObject @params
     $Monitor.WmiSetBrightness(5, $Brightness)
-    Exit 0
+    exit 0
 }
 catch {
-    Throw $_
+    throw $_
 }
