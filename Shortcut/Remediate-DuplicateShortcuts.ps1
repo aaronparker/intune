@@ -19,6 +19,7 @@
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 Param ()
 
 #region Functions
@@ -51,8 +52,7 @@ try {
     $Shortcuts = Get-ChildItem -Path $Path | Where-Object { $_.Name -match $Filter }
 }
 catch {
-    Write-Host "Failed when enumerating shortcuts at: $Path."
-    Write-Host $_.Exception.Message
+    Write-Host "Failed when enumerating shortcuts at: $Path. $($_.Exception.Message)"
     Exit 1
 }    
 
@@ -60,8 +60,7 @@ try {
     If ($Shortcuts.Count -gt 0) { $Shortcuts | Remove-Item -Force -ErrorAction "SilentlyContinue" }
 }
 catch {
-    Write-Host "Failed when deleting shortcuts at: $Path."
-    Write-Host $_.Exception.Message
+    Write-Host "Failed when deleting shortcuts at: $Path. $($_.Exception.Message)"
     Exit 1
 }
 

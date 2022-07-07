@@ -13,7 +13,8 @@
             http://stealthpuppy.com
     #>
 [CmdletBinding()]
-Param (
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
+param (
     [System.String] $Locale = "en-AU",
     [System.String] $Path = "$env:ProgramData\Microsoft\IntuneManagementExtension"
 )

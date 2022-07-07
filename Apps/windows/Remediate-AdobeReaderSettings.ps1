@@ -3,6 +3,7 @@
         Disables the prompt "Make Adobe Acrobat my default PDF application."
 #>
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 param()
 
 $Settings = @"
@@ -64,6 +65,6 @@ foreach ($Setting in $Settings) {
         $Result = 1
         $Script = 1
     }
-    Write-Output -InputObject "$Result $($Setting.path)"
+    Write-Host "$Result $($Setting.path)"
 }
 exit $Script

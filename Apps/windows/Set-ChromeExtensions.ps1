@@ -24,16 +24,13 @@ Function Set-RegValue {
         [string] $Type = "String"
     )
     try {
-        If (!(Test-Path -Path $Key)) {
+        if (!(Test-Path -Path $Key)) {
             New-Item -Path $Key -Force -ErrorAction SilentlyContinue
+            New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
         }
     }
     catch {
-        Write-Error "Failed to create key $Key with error $_."
-        Break
-    }
-    finally {
-        New-ItemProperty -Path $Key -Name $Value -Value $Data -PropertyType $Type -Force
+        throw "Failed to create key $Key with error $($_Exception.Message)."
     }
 }
 
@@ -48,13 +45,6 @@ Function Get-RegValueCount {
     Write-Output $value
 }
 #endregion
-
-
-# Log file
-$stampDate = Get-Date
-$scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
-Start-Transcript -Path $LogFile
 
 # Extensions
 $extensions = @{
@@ -86,5 +76,3 @@ ForEach ($ext in $extensions.Values) {
     Set-RegValue -Key $regKey -Value $value -Data "$ext;https://clients2.google.com/service/update2/crx"
 }
 #>
-
-Stop-Transcript

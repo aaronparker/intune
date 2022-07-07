@@ -13,6 +13,7 @@
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 Param ()
     
 #region Functions
@@ -45,8 +46,7 @@ try {
     $Shortcuts = Get-ChildItem -Path $PublicDesktop -Filter $FileTypes
 }
 catch {
-    Write-Host "Failed when enumerating shortcuts at: $PublicDesktop."
-    Write-Host $_.Exception.Message
+    Write-Host "Failed when enumerating shortcuts at: $PublicDesktop. $($_.Exception.Message)"
     Exit 1
 }    
 

@@ -11,6 +11,10 @@
         .LINK
             https://stealthpuppy.com
 #>
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
+param()
+
 [System.String[]] $BlockList = (
     "MicrosoftTeams_8wekyb3d8bbwe", # Microsoft Teams package on Windows 11
     "Microsoft.XboxApp_8wekyb3d8bbwe", # Xbox Console Companion

@@ -13,22 +13,17 @@
 $TeamsPath = [System.IO.Path]::Combine($env:LOCALAPPDATA, 'Microsoft', 'Teams')
 $TeamsUpdateExePath = [System.IO.Path]::Combine($env:LOCALAPPDATA, 'Microsoft', 'Teams', 'Update.exe')
 
-try
-{
+try {
     if (Test-Path -Path $TeamsUpdateExePath) {
-        Write-Host "Uninstalling Teams process"
-
         # Uninstall app
         $proc = Start-Process -FilePath $TeamsUpdateExePath -ArgumentList "-uninstall -s" -PassThru
         $proc.WaitForExit()
     }
     if (Test-Path -Path $TeamsPath) {
-        Write-Host "Deleting Teams directory"
-        Remove-Item -Path $TeamsPath -Recurse
+        Remove-Item -Path $TeamsPath -Recurse -Force
     }
 }
-catch
-{
+catch {
     Write-Error -ErrorRecord $_
     exit /b 1
 }

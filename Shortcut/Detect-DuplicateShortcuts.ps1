@@ -19,7 +19,8 @@
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
-Param ()
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
+param ()
     
 #region Functions
 Function Get-KnownFolderPath {
@@ -51,9 +52,8 @@ try {
     $Shortcuts = Get-ChildItem -Path $Path | Where-Object { $_.Name -match $Filter }
 }
 catch {
-    Write-Host "Failed when enumerating shortcuts at: $Path."
-    Write-Host $_.Exception.Message
-    Exit 1
+    Write-Host "Failed when enumerating shortcuts at: $Path. $($_.Exception.Message)"
+    exit 1
 }    
 
 # If $Shortcuts > 1
@@ -63,7 +63,7 @@ If ($Shortcuts.Count -gt 0) {
         $Output += "$($Shortcut.FullName)`n"
     }
     Write-Host "Found shortcuts:`n$Output"
-    Exit 1
+    exit 1
 }
     
 # All settings are good exit cleanly
