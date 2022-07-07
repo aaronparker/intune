@@ -18,7 +18,7 @@ function Test-XmlSchema {
         [Parameter(Mandatory = $true)]
         [ValidateScript( { Test-Path -Path $_ })]
         [System.String] $XmlPath,
-       
+
         [Parameter(Mandatory = $true)]
         [ValidateScript( { Test-Path -Path $_ })]
         [System.String] $SchemaPath
@@ -29,7 +29,7 @@ function Test-XmlSchema {
     $schema = Read-Schema $SchemaPath
     [System.Void]($schemas.Add($schema))
     $schemas.Compile()
-      
+
     try {
         [System.Xml.XmlDocument]$xmlData = Get-Content -Path $XmlPath
         $xmlData.Schemas = $schemas
