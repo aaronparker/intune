@@ -28,7 +28,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
     If (Test-Path -Path $Path -IsValid) {
         If (!(Test-Path -Path $Path)) {
             try {
-                New-Item -Path $Path -ItemType "Directory" 
+                New-Item -Path $Path -ItemType "Directory"
             }
             catch {
                 Write-Warning "Failed to validate path: $Path."

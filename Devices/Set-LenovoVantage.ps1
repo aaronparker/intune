@@ -74,7 +74,7 @@ If ((Get-CimInstance -ClassName "Win32_ComputerSystem").Manufacturer -eq "LENOVO
     # Hardware Settings Section
     Write-Output "Configuring Hardware Settings Section"
     $hardware = @('10DF05AE-BA16-4808-A436-A40A925F6EF6',   # HubPage/Recommended Settings
-                '6F486CF5-5D51-4AE8-ABA9-089B5CB96420'      # Wifi Security Settings 
+                '6F486CF5-5D51-4AE8-ABA9-089B5CB96420'      # Wifi Security Settings
     )
     ForEach ($i in $hardware) {
         New-ItemProperty -Path $path -Name $i -Value 0 -PropertyType DWord -Force > $null

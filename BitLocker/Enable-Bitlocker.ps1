@@ -1,26 +1,26 @@
-<#PSScriptInfo 
+<#PSScriptInfo
     .VERSION 3.0
-    .GUID f5187e3f-ed0a-4ce1-b438-d8f421619ca3 
-    .ORIGINAL AUTHOR Jan Van Meirvenne 
+    .GUID f5187e3f-ed0a-4ce1-b438-d8f421619ca3
+    .ORIGINAL AUTHOR Jan Van Meirvenne
     .MODIFIED BY Sooraj Rajagopalan, Paul Huijbregts & Pieter Wigleven, Sean McLaren, Imad Balute
-    .COPYRIGHT 
-    .TAGS Azure Intune BitLocker  
-    .LICENSEURI  
-    .PROJECTURI  
-    .ICONURI  
-    .EXTERNALMODULEDEPENDENCIES  
-    .REQUIREDSCRIPTS  
-    .EXTERNALSCRIPTDEPENDENCIES  
-    .RELEASENOTES  
+    .COPYRIGHT
+    .TAGS Azure Intune BitLocker
+    .LICENSEURI
+    .PROJECTURI
+    .ICONURI
+    .EXTERNALMODULEDEPENDENCIES
+    .REQUIREDSCRIPTS
+    .EXTERNALSCRIPTDEPENDENCIES
+    .RELEASENOTES
 #>
 <#
-    .DESCRIPTION 
+    .DESCRIPTION
         Check whether BitLocker is enabled; Enable BitLocker on AAD Joined devices and store recovery info in Azure AD
 
     .NOTES
         URL: https://blogs.technet.microsoft.com/showmewindows/2018/01/18/how-to-enable-bitlocker-and-escrow-the-keys-to-azure-ad-when-using-autopilot-for-standard-users/
         Updates with removing aliases, update paths, formatting
-#> 
+#>
 [CmdletBinding()]
 param(
     [Parameter()]
@@ -49,14 +49,14 @@ try {
     # Evaluate the Volume Status to see what we need to do...
     $bdeProtect = Get-BitLockerVolume -MountPoint $OSDrive | Select-Object -Property "VolumeStatus", "KeyProtector"
 
-    # Account for an uncrypted drive 
+    # Account for an uncrypted drive
     if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
 
         # Enable Bitlocker using TPM
         Write-Verbose -Message "Enabling BitLocker due to FullyDecrypted status or KeyProtector count less than 1"
         Enable-BitLocker -MountPoint $OSDrive -TpmProtector -SkipHardwareTest -UsedSpaceOnly -ErrorAction "Continue"
         Enable-BitLocker -MountPoint $OSDrive -RecoveryPasswordProtector -SkipHardwareTest
-    }  
+    }
     elseif ($bdeProtect.VolumeStatus -eq "FullyEncrypted" -or $bdeProtect.VolumeStatus -eq "UsedSpaceOnly") {
 
         # $bdeProtect.ProtectionStatus -eq "Off" - This catches the Wait State
@@ -84,7 +84,7 @@ try {
             Write-Error "'Get-BitLockerVolume' failed to retrieve drive encryption details for $OSDrive"
         }
     }
-    else { 
+    else {
         # BackupToAAD-BitLockerKeyProtector commandlet not available, using other mechanism
         Write-Verbose -Message "BackupToAAD-BitLockerKeyProtector not available"
         Write-Verbose -Message "Saving Key to AAD using Enterprise Registration API"
@@ -125,10 +125,10 @@ try {
     #  Finish - Let's dump the ending point
     # --------------------------------------------------------------------------
     Write-Verbose -Message "ENDING POINT:  Get-BitLockerVolume $OSDrive"
-    $bdeProtect = Get-BitLockerVolume $OSDrive 
-} 
-catch { 
-    Write-Error "Error while setting up AAD BitLocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
+    $bdeProtect = Get-BitLockerVolume $OSDrive
+}
+catch {
+    Write-Error "Error while setting up AAD BitLocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_"
 }
 
 Stop-Transcript

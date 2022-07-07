@@ -48,7 +48,7 @@ try {
 catch {
     Write-Host "Failed when enumerating shortcuts at: $PublicDesktop. $($_.Exception.Message)"
     Exit 1
-}    
+}
 
 try {
     If ($Shortcuts.Count -ge 1) { $Shortcuts | Remove-Item -Force -ErrorAction "SilentlyContinue" }

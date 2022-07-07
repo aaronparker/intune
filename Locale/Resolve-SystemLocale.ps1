@@ -49,7 +49,7 @@ Switch ($Locale) {
 
 #region XML
 $languageXml = @"
-<gs:GlobalizationServices 
+<gs:GlobalizationServices
     xmlns:gs="urn:longhornGlobalizationUnattend">
     <!--User List-->
     <gs:UserList>
@@ -89,7 +89,7 @@ try {
 catch {
     Write-Error -Message $_.Exception.Message
     Exit 1
-}    
+}
 
 try {
     If (!(Test-Path -Path $Path)) { New-Item -Path $Path -ItemType "Directory" }

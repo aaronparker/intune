@@ -6,18 +6,18 @@
     .COPYRIGHT Aaron Parker, https://stealthpuppy.com
     .TAGS Encode Base64
     .LICENSEURI https://github.com/aaronparker/Intune/blob/master/LICENSE
-    .PROJECTURI https://github.com/aaronparker/Intune 
-    .ICONURI 
-    .EXTERNALMODULEDEPENDENCIES 
-    .REQUIREDSCRIPTS 
-    .EXTERNALSCRIPTDEPENDENCIES 
+    .PROJECTURI https://github.com/aaronparker/Intune
+    .ICONURI
+    .EXTERNALMODULEDEPENDENCIES
+    .REQUIREDSCRIPTS
+    .EXTERNALSCRIPTDEPENDENCIES
     .RELEASENOTES
-    .PRIVATEDATA 
+    .PRIVATEDATA
 #>
-<# 
-    .DESCRIPTION 
+<#
+    .DESCRIPTION
         Encode a file in Base64.
-#> 
+#>
 [CmdletBinding()]
 Param (
     [Parameter()]

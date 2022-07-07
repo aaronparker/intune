@@ -5,9 +5,9 @@
 [CmdletBinding()]
 param(
     [System.String] $DeviceName,
-    [System.Management.Automation.SwitchParameter] $LastLocation,		
+    [System.Management.Automation.SwitchParameter] $LastLocation,
     [System.Management.Automation.SwitchParameter] $ShowMap,
-    [System.Management.Automation.SwitchParameter] $Address	
+    [System.Management.Automation.SwitchParameter] $Address
 )
 
 $VerbosePreference = "Continue"
@@ -35,7 +35,7 @@ Else {
                 Url        = $UrlLocation
                 HttpMethod = "GET"
             }
-            $CheckLocation = (Invoke-MSGraphRequest @params).deviceActionResults.deviceLocation	
+            $CheckLocation = (Invoke-MSGraphRequest @params).deviceActionResults.deviceLocation
         }
         catch {
             Throw $_
@@ -43,7 +43,7 @@ Else {
 
         If ($Null -ne $CheckLocation) {
             Write-Verbose -Message "Last check date is: $($CheckLocation.lastCollectedDateTime)."
-        }	
+        }
         Else {
             Write-Warning -Message "Location for device is empty: $DeviceName."
         }
@@ -66,7 +66,7 @@ Else {
                     Url        = $UrlLocation
                     HttpMethod = "GET"
                 }
-                $CheckLocation = (Invoke-MSGraphRequest @params).deviceActionResults.deviceLocation	
+                $CheckLocation = (Invoke-MSGraphRequest @params).deviceActionResults.deviceLocation
             }
             catch {
                 Throw $_

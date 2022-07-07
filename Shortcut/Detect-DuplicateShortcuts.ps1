@@ -54,7 +54,7 @@ try {
 catch {
     Write-Host "Failed when enumerating shortcuts at: $Path. $($_.Exception.Message)"
     exit 1
-}    
+}
 
 # If $Shortcuts > 1
 # Output all shortcuts in a list with line breaks in a single output

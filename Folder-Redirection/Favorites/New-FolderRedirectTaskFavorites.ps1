@@ -43,7 +43,7 @@ $vbScript = $vbScript + 'strCMD = "powershell -ExecutionPolicy Bypass -NonIntera
 $vbScript = $vbScript + 'objShell.Run strCMD,0'
 
 # If local path for script doesn't exist, create it
-If (!(Test-Path -Path $Target)) { 
+If (!(Test-Path -Path $Target)) {
     Write-Verbose "Creating $Target."
     New-Item -Path $Target -Type Directory -Force
 }
@@ -61,7 +61,7 @@ If (Test-Path -Path "$Target\$Script") { Write-Verbose "$Target\$Script download
 $vbScript | Out-File -FilePath "$Target\$ScriptVb" -Force -Encoding ascii
 
 # Get an existing local task if it exists
-If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue ) { 
+If ($Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue ) {
 
     Write-Verbose "Folder redirection task exists."
     # If the task Action differs from what we have above, update the values and save the task

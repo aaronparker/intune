@@ -49,7 +49,7 @@ Switch ($Locale) {
 
 #region #region XML
 $languageXml = @"
-    <gs:GlobalizationServices 
+    <gs:GlobalizationServices
         xmlns:gs="urn:longhornGlobalizationUnattend">
         <!--User List-->
         <gs:UserList>

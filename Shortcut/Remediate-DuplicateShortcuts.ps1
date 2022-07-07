@@ -148,12 +148,12 @@ if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAct
             </subgroup>
         </group>
         <group>
-            <subgroup>     
+            <subgroup>
                 <text hint-style="body" hint-wrap="true" >$BodyText1</text>
             </subgroup>
         </group>
         <group>
-            <subgroup>     
+            <subgroup>
                 <text hint-style="body" hint-wrap="true" >$BodyText2</text>
             </subgroup>
         </group>

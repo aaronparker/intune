@@ -1,4 +1,4 @@
-# Obtain Antivirus information from WMI 
+# Obtain Antivirus information from WMI
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 param ()
