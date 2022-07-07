@@ -8,11 +8,10 @@
         Author: Aaron Parker
 #>
 [CmdletBinding()]
-Param (
-    [Parameter()] $VerbosePreference = "Continue"
-)
+param ()
 
 # Log file
+$VerbosePreference = "Continue"
 $stampDate = Get-Date
 $LogFile = "$env:LocalAppData\IntuneScriptLogs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile

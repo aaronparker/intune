@@ -57,9 +57,9 @@ public class Audio {
 
 try {
   [Audio]::Mute = $false
-  [Audio]::Volume = 0.3
-  Exit 0
+  [Audio]::Volume = $Volume
+  exit 0
 }
 catch {
-  Throw $_
+  throw $_
 }

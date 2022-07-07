@@ -15,10 +15,10 @@ Param (
     [Parameter()] $Group = $((Get-LocalGroup -SID S-1-5-32-545).Name),
     [Parameter()] $Execute = "wscript.exe",
     [Parameter()] $Target = "$env:ProgramData\Intune-Scripts",
-    [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
-    [Parameter()] $VerbosePreference = "Continue"
+    [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo"
 )
 
+$VerbosePreference = "Continue"
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
 $logFile = "$env:ProgramData\IntuneScriptLogs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"

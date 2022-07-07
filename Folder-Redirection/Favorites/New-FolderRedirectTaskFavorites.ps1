@@ -14,11 +14,11 @@ Param (
     [Parameter()] $Group = "S-1-5-32-545",
     [Parameter()] $Execute = "wscript.exe",
     [Parameter()] $Target = "$env:ProgramData\Intune-Scripts",
-    [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo",
-    [Parameter()] $VerbosePreference = "Continue"
+    [Parameter()] $Arguments = "$Target\$ScriptVb /b /nologo"
 )
 
 # Log file
+$VerbosePreference = "Continue"
 $stampDate = Get-Date
 $LogFile = "$env:ProgramData\IntuneScriptLogs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
