@@ -2,13 +2,13 @@
     .SYNOPSIS
         Removes shortcuts from the Public desktop.
         Use with Proactive Remediations or PowerShell scripts
- 
+
     .NOTES
  	    NAME: Remediate-PublicDesktopShortcuts.ps1
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>

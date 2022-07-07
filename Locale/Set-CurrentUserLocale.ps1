@@ -2,13 +2,13 @@
     .SYNOPSIS
         Set locale settings for the current user.
         Use with PowerShell scripts
- 
+
     .NOTES
  	    NAME: Set-CurrentUserLocale.ps1
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>
@@ -17,7 +17,7 @@ Param (
     [System.String] $Locale = "en-AU",
     [System.String] $Path = "$env:Temp"
 )
-    
+
 # Select the locale
 Switch ($Locale) {
     "en-US" {
@@ -45,7 +45,7 @@ Switch ($Locale) {
         $LanguageId = "0c09:00000409"
     }
 }
-    
+
 #region #region XML
 $languageXml = @"
     <gs:GlobalizationServices 
@@ -75,7 +75,7 @@ $languageXml = @"
     </gs:GlobalizationServices>
 "@
 #endregion
-    
+
 # Set regional settings
 try {
     Import-Module -Name "International"
@@ -98,7 +98,7 @@ catch {
     Write-Error -Message $_.Exception.Message
     Exit 1
 }
-    
+
 try {
     & $env:SystemRoot\System32\control.exe "intl.cpl,,/f:$OutFile"
 }

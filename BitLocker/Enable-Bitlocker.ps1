@@ -51,14 +51,14 @@ try {
 
     # Account for an uncrypted drive 
     if ($bdeProtect.VolumeStatus -eq "FullyDecrypted" -or $bdeProtect.KeyProtector.Count -lt 1) {
-        
+
         # Enable Bitlocker using TPM
         Write-Verbose -Message "Enabling BitLocker due to FullyDecrypted status or KeyProtector count less than 1"
         Enable-BitLocker -MountPoint $OSDrive -TpmProtector -SkipHardwareTest -UsedSpaceOnly -ErrorAction "Continue"
         Enable-BitLocker -MountPoint $OSDrive -RecoveryPasswordProtector -SkipHardwareTest
     }  
     elseif ($bdeProtect.VolumeStatus -eq "FullyEncrypted" -or $bdeProtect.VolumeStatus -eq "UsedSpaceOnly") {
-        
+
         # $bdeProtect.ProtectionStatus -eq "Off" - This catches the Wait State
         if ($bdeProtect.KeyProtector.Count -lt 2) {
             Write-Verbose -Message "Volume Status is encrypted, but BitLocker only has one key protector (TPM)"
@@ -70,10 +70,10 @@ try {
             manage-bde -on $OSDrive -UsedSpaceOnly
         }
     }
-				
+
     # Check if we can use BackupToAAD-BitLockerKeyProtector commandlet
     if (Get-Command -Name "BackupToAAD-BitLockerKeyProtector" -ErrorAction "SilentlyContinue") {
-        
+
         # BackupToAAD-BitLockerKeyProtector commandlet exists
         Write-Verbose -Message "Saving Key to AAD using BackupToAAD-BitLockerKeyProtector"
         $BLV = Get-BitLockerVolume -MountPoint $OSDrive | Select-Object *
@@ -88,7 +88,7 @@ try {
         # BackupToAAD-BitLockerKeyProtector commandlet not available, using other mechanism
         Write-Verbose -Message "BackupToAAD-BitLockerKeyProtector not available"
         Write-Verbose -Message "Saving Key to AAD using Enterprise Registration API"
-        
+
         # Get the AAD Machine Certificate
         $cert = Get-ChildItem -Path "Cert:\LocalMachine\My\" | Where-Object { $_.Issuer -match "CN=MS-Organization-Access" }
 
@@ -104,13 +104,13 @@ try {
         # Generate the body to send to AAD containing the recovery information
         Write-Verbose -Message "Saving key protector to AAD for self-service recovery by manually posting it to:"
         Write-Verbose -Message "`t$url"
-        
+
         # Get the BitLocker key information from WMI
         (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' } | ForEach-Object {
             $key = $_
             $body = "{""key"":""$($key.RecoveryPassword)"",""kid"":""$($key.KeyProtectorId.replace('{','').Replace('}',''))"",""vol"":""OSV""}"
             Write-Verbose -Message "KeyProtectorId : $($key.KeyProtectorId) key: $($key.RecoveryPassword)"
-				
+
             # Post the data to the URL and sign it with the AAD Machine Certificate
             $req = Invoke-WebRequest -Uri $url -Body $body -UseBasicParsing -Method "Post" -UseDefaultCredentials -Certificate $cert
             $req.RawContent

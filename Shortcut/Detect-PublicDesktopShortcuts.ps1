@@ -2,20 +2,20 @@
     .SYNOPSIS
         Removes shortcuts from the Public desktop.
         Use with Proactive Remediations or PowerShell scripts
- 
+
     .NOTES
  	    NAME: Detect-PublicDesktopShortcuts.ps1
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 Param ()
-    
+
 #region Functions
 Function Get-KnownFolderPath {
     <#
@@ -38,7 +38,7 @@ Function Get-KnownFolderPath {
     [Environment]::GetFolderPath($KnownFolder)
 }
 #endregion
-    
+
 # Get shortcuts from the Public desktop
 try {
     $PublicDesktop = Get-KnownFolderPath -KnownFolder "CommonDesktopDirectory"
@@ -59,7 +59,7 @@ If ($Shortcuts.Count -ge 1) {
     Write-Host "Found shortcuts:`n$Output"
     Exit 1
 }
-    
+
 # All settings are good exit cleanly
 Write-Host "No shortcuts found at: $PublicDesktop."
 Exit 0

@@ -109,7 +109,7 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
     Else {
         Throw New-Object System.IO.DirectoryNotFoundException "Could not find part of the path $Path."
     }
-	
+
     # Fix up permissions, if we're still here
     Attrib +r $Path
     Write-Output $Path
@@ -190,7 +190,7 @@ Function Invoke-Process {
         are lots of ways to invoke processes in PowerShell with Start-Process, Invoke-Expression, & and others but none account 
         well for the various streams and exit codes that an external process returns. Also, it's hard to write good tests 
         when launching external proceses. 
-    
+
         This function ensures any errors are sent to the error stream, standard output is sent via the Output stream and any 
         time the process returns an exit code other than 0, treat it as an error. 
     #> 

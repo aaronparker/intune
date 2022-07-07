@@ -2,7 +2,7 @@
     .NOTES
         Updated: 26/10/2018
         http://thinkdeploy.blogspot.com/2018/01/configuring-lenovo-vantage-with-mdm.html
-        
+
         10/11/2018
         Aaron Parker, @stealthpuppy
         - Add check for Win32_ComputerSystem.Manufacturer = LENOVO
@@ -126,7 +126,7 @@ If ((Get-CimInstance -ClassName "Win32_ComputerSystem").Manufacturer -eq "LENOVO
 
 }
 Else {
-    
+
     # Local device is not from Lenovo
     Write-Output "Local system is not a Lenovo device. Exiting."
 }

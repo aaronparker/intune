@@ -59,7 +59,7 @@ Else {
         catch {
             Throw $_
         }
-        
+
         Do {
             try {
                 $params = @{
@@ -71,7 +71,7 @@ Else {
             catch {
                 Throw $_
             }
-            
+
             If ($Null -eq $CheckLocation) {
                 Write-Verbose -Message "Locating the device..."
                 Start-Sleep 5
@@ -85,7 +85,7 @@ Else {
         If ($PSBoundParameters.ContainsKey("ShowMap")) {
             Start-Process "https://www.google.com/maps?q=$($CheckLocation.latitude),$($CheckLocation.longitude)"
         }
-        
+
         If ($PSBoundParameters.ContainsKey("Address")) {
             $Latitude = ($CheckLocation.latitude.ToString()).replace(",", ".")
             $Longitude = ($CheckLocation.longitude.ToString()).replace(",", ".")

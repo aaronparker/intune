@@ -1,7 +1,7 @@
 <#
     .SYNOPSIS
         Create a shortcut to an application.
-        
+
     .NOTES
         Author: Aaron Parker
         Twitter: @stealthpuppy
@@ -34,7 +34,7 @@ Function Get-KnownFolderPath {
                 'StartMenu', 'Startup', 'System', 'SystemX86', 'Templates', 'UserProfile', 'Windows')]
         [string] $KnownFolder
     )
-    
+
     $folder = [Environment]::GetFolderPath($KnownFolder)
     Write-Verbose "Location for $KnownFolder is $folder."
     Write-Output $folder

@@ -12,7 +12,7 @@ param (
     [ValidateRange(0, 100)]
     [System.Int32] $Brightness = 30
 )            
-    
+
 try {
     $params = @{
         Namespace   = "RootWmi"

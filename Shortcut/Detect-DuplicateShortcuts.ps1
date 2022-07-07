@@ -1,7 +1,7 @@
 <#
     .SYNOPSIS
         Detects shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
- 
+
         For example, detects shortcuts with the following names:
         Microsoft Teams (3).lnk
         Microsoft Teams - Copy (2).lnk
@@ -14,14 +14,14 @@
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
 param ()
-    
+
 #region Functions
 Function Get-KnownFolderPath {
     <#
@@ -44,7 +44,7 @@ Function Get-KnownFolderPath {
     [Environment]::GetFolderPath($KnownFolder)
 }
 #endregion
-    
+
 # Get shortcuts from the Public desktop
 try {
     $Path = Get-KnownFolderPath -KnownFolder "Desktop"
@@ -65,7 +65,7 @@ If ($Shortcuts.Count -gt 0) {
     Write-Host "Found shortcuts:`n$Output"
     exit 1
 }
-    
+
 # All settings are good exit cleanly
 Write-Host "No shortcuts found at: $Path."
 Exit 0

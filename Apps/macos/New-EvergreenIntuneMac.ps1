@@ -1,12 +1,12 @@
 <#
     .SYNOPSIS
         Download macOS apps and convert into an IntuneMac package
- 
+
     .NOTES
         New-EvergreenIntuneMac.ps1
         Author: Aaron Parker
 	    Twitter: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>
@@ -35,7 +35,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
                 throw $_
             }
         }
-        
+
         #region Get latest IntuneAppUtil binary
         Write-Host "`n== IntuneAppUtil" -ForegroundColor "Cyan"
         $uri = "https://raw.githubusercontent.com/msintuneappsdk/intune-app-wrapping-tool-mac/v1.2/IntuneAppUtil"

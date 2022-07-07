@@ -82,7 +82,7 @@ public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, Int
     Else {
         Throw New-Object System.IO.DirectoryNotFoundException "Could not find part of the path $Path."
     }
-	
+
     # Fix up permissions, if we're still here
     Attrib +r $Path
     Write-Output $Path
@@ -160,7 +160,7 @@ Function Redirect-Folder {
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
         $log = "$env:LocalAppData\IntuneScriptLogs\Robocopy-" + $stampDate.ToFileTimeUtc() + ".log"
         Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log $log
-        
+
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
     }

@@ -2,13 +2,13 @@
     .SYNOPSIS
         Get locale settings for the system.
         Use with Proactive Remediations or PowerShell scripts
- 
+
     .NOTES
  	    NAME: Detect-SystemLocale.ps1
 	    VERSION: 1.0
 	    AUTHOR: Aaron Parker
 	    TWITTER: @stealthpuppy
- 
+
     .LINK
         http://stealthpuppy.com
 #>
@@ -17,7 +17,7 @@
 param (
     [System.String] $Locale = "en-AU"
 )
-    
+
 # Select the locale
 Switch ($Locale) {
     "en-US" {
@@ -41,7 +41,7 @@ Switch ($Locale) {
         $Timezone = "AUS Eastern Standard Time"
     }
 }
-     
+
 # Test regional settings
 try {
     # Get regional settings

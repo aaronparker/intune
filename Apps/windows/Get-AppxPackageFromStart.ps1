@@ -1,14 +1,14 @@
 ﻿<#
         .SYNOPSIS
             Returns the AppX package that correlates to the application display name on the Start menu.
- 
+
         .DESCRIPTION
             Returns the AppX package object that correlates to the application display name on the Start menu.
             Returns null if the name specified is not found or the shortcut points to a non-AppX app.
 
         .PARAMETER Name
             Specify a shortcut display name to return the AppX package for.
-  
+
         .EXAMPLE
             PS C:\> .\Get-AppxPackageFromStart.ps1 -Name "3D Viewer"
 
@@ -18,7 +18,7 @@
  	        NAME: Get-AppxPackageFromStart.ps1
 	        VERSION: 1.2
 	        AUTHOR: Aaron Parker
- 
+
         .LINK
             http://stealthpuppy.com
     #>

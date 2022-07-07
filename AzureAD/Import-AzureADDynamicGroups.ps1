@@ -24,7 +24,7 @@ Param (
             if ($_ -notmatch "(\.csv)") {
                 throw "The file specified in the path argument must be either of type CSV."
             }
-            
+
             return $True
         })]
     [System.IO.FileInfo] $Path = (Join-Path $pwd "AzureADDynamicGroups.csv")
@@ -56,7 +56,7 @@ process {
         $matchingGroup = $existingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
         if ($matchingGroup) {
             Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
-        
+
             # if the description needs updating on the group, update to match that listed in the CSV file
             if ($matchingGroup.Description -ne $group.Description) {
                 try {
