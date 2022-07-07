@@ -7,6 +7,9 @@
         Site: https://stealthpuppy.com
         Twitter: @stealthpuppy
 #>
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments ", "", Justification = "Script is example only.")]
+param()
 
 # Citrix ShareFile / Files sync folder
 $SyncFolder = Get-ItemPropertyValue -Path 'HKCU:\Software\Citrix\ShareFile\Sync' -Name 'PersonalFolderRootLocation' -ErrorAction SilentlyContinue

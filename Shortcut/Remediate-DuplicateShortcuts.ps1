@@ -81,7 +81,7 @@ Function Show-ToastNotification() {
     $Load = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
 
     # Load the notification into the required format
-    $ToastXML = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
+    $ToastXML = New-Object -TypeName "Windows.Data.Xml.Dom.XmlDocument"
     $ToastXML.LoadXml($Toast.OuterXml)
 
     # Display the toast notification
@@ -114,7 +114,7 @@ $HeaderText = "Duplicate shortcuts found"
 $TitleText = "Duplicate shortcuts have been removed from your desktop"
 $BodyText1 = "These shortcuts were removed:"
 
-ForEach ($Shortcut in $Shortcuts) {
+foreach ($Shortcut in $Shortcuts) {
     $BodyText2 += "$($Shortcut.Name)`n"
 }
 $BodyText2 = $BodyText2.TrimEnd("`n")
@@ -125,7 +125,7 @@ $RegPath = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Notifications\Settin
 $App = '{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe'
 
 # Creating registry entries if they don't exist
-if (-NOT(Test-Path -Path "$RegPath\$App")) {
+if (-not(Test-Path -Path "$RegPath\$App")) {
     New-Item -Path "$RegPath\$App" -Force > $Null
     New-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' > $Null
 }
@@ -136,7 +136,7 @@ if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAct
 }
 
 # Formatting the toast notification XML
-[xml]$Toast = @"
+[System.Xml.XmlDocument]$Toast = @"
 <toast scenario="$Scenario">
     <visual>
     <binding template="ToastGeneric">
@@ -167,5 +167,5 @@ if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAct
 
 #Send the notification
 Show-ToastNotification
-Exit 0
+exit 0
 #endregion
