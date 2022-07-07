@@ -14,7 +14,7 @@ Param (
 
 # Log file
 $stampDate = Get-Date
-$LogFile = "$env:LocalAppData\Intune-PowerShell-Logs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
+$LogFile = "$env:LocalAppData\IntuneScriptLogs\Redirect-Folders-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 Function Set-KnownFolderPath {
@@ -158,7 +158,7 @@ Function Redirect-Folder {
 
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
-        $log = "$env:LocalAppData\Intune-PowerShell-Logs\Robocopy-" + $stampDate.ToFileTimeUtc() + ".log"
+        $log = "$env:LocalAppData\IntuneScriptLogs\Robocopy-" + $stampDate.ToFileTimeUtc() + ".log"
         Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log $log
         
         # Hide the source folder (rather than delete it)

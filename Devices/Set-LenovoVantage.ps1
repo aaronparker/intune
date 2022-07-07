@@ -16,12 +16,12 @@
 # Transcript for logging
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+$logFile = "$env:ProgramData\IntuneScriptLogs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $logFile -NoClobber
 $VerbosePreference = "Continue"
 
 # Start PowerShell as 64 bit process
-If ($ENV:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
+If ($ENV:PROCESSOR_ARCHITECTURE -eq "AMD64") {
     Try {
         &"$ENV:WINDIR\SysNative\WindowsPowershell\v1.0\PowerShell.exe" -File $PSCOMMANDPATH
     }
@@ -130,5 +130,3 @@ Else {
     # Local device is not from Lenovo
     Write-Output "Local system is not a Lenovo device. Exiting."
 }
-
-Stop-Transcript

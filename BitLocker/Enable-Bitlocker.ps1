@@ -15,7 +15,7 @@
 #>
 <#
     .DESCRIPTION 
-        Check whether BitLocker is enabled; Enable Bitlocker on AAD Joined devices and store recovery info in Azure AD
+        Check whether BitLocker is enabled; Enable BitLocker on AAD Joined devices and store recovery info in Azure AD
 
     .NOTES
         URL: https://blogs.technet.microsoft.com/showmewindows/2018/01/18/how-to-enable-bitlocker-and-escrow-the-keys-to-azure-ad-when-using-autopilot-for-standard-users/
@@ -32,7 +32,7 @@ param(
 # Transcript for logging/troubleshooting
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+$logFile = "$env:ProgramData\IntuneScriptLogs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $logFile -NoClobber
 $VerbosePreference = "Continue"
 
@@ -128,7 +128,7 @@ try {
     $bdeProtect = Get-BitLockerVolume $OSDrive 
 } 
 catch { 
-    Write-Error "Error while setting up AAD Bitlocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
+    Write-Error "Error while setting up AAD BitLocker, make sure that you are AAD joined and are running the cmdlet as an admin: $_" 
 }
 
 Stop-Transcript

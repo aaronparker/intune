@@ -7,7 +7,7 @@
 #>
 [CmdletBinding()]
 Param (
-    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders-Favorites.ps1",
+    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/main/Folder-Redirection/Redirect-Folders-Favorites.ps1",
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
     [Parameter()] $TaskName = "Folder Redirection",
@@ -20,7 +20,7 @@ Param (
 
 # Log file
 $stampDate = Get-Date
-$LogFile = "$env:ProgramData\Intune-PowerShell-Logs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
+$LogFile = "$env:ProgramData\IntuneScriptLogs\New-FolderRedirectTask-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Resolve group

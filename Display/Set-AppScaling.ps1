@@ -76,12 +76,12 @@ Function Set-RegistryValue {
 #region Actions
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:LocalAppData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+$logFile = "$env:LocalAppData\IntuneScriptLogs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $logFile
 
 # Enable 'Let Windows try to fix apps so they are not blurry'
 $key = "HKCU:\Control Panel\Desktop"
-Set-RegistryValue -Key $key -Value "EnablePerProcessSystemDPI" -Type DWord -Data 1
+Set-RegistryValue -Key $key -Value "EnablePerProcessSystemDPI" -Type "DWord" -Data 1
 
 Stop-Transcript
 #endregion

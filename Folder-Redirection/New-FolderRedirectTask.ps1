@@ -8,7 +8,7 @@
 [CmdletBinding(ConfirmImpact = 'Low', HelpURI = 'https://stealthpuppy.com/', SupportsPaging = $False,
     SupportsShouldProcess = $False, PositionalBinding = $False)]
 Param (
-    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/master/Folder-Redirection/Redirect-Folders.ps1",
+    [Parameter()] $Url = "https://raw.githubusercontent.com/aaronparker/intune/main/Folder-Redirection/Redirect-Folders.ps1",
     [Parameter()] $Script = "Redirect-Folders.ps1",
     [Parameter()] $ScriptVb = "Redirect-Folders.vbs",
     [Parameter()] $TaskName = "Folder Redirection",
@@ -21,7 +21,7 @@ Param (
 
 $stampDate = Get-Date
 $scriptName = ([System.IO.Path]::GetFileNameWithoutExtension($(Split-Path $script:MyInvocation.MyCommand.Path -Leaf)))
-$logFile = "$env:ProgramData\Intune-PowerShell-Logs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
+$logFile = "$env:ProgramData\IntuneScriptLogs\$scriptName-" + $stampDate.ToFileTimeUtc() + ".log"
 Start-Transcript -Path $LogFile
 
 # Construct string to output as a VBscript
