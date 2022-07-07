@@ -104,7 +104,7 @@ Function Get-KnownFolderPath {
     [Environment]::GetFolderPath($KnownFolder)
 }
 
-Function Move-Files {
+Function Move-File {
     <#
         .SYNOPSIS
             Moves contents of a folder with output to a log.
@@ -158,7 +158,7 @@ Function Redirect-Folder {
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
         $log = "$env:LocalAppData\IntuneScriptLogs\Robocopy-" + $stampDate.ToFileTimeUtc() + ".log"
-        Move-Files -Source $Folder -Destination "$SyncFolder\$Target" -Log $log
+        Move-File -Source $Folder -Destination "$SyncFolder\$Target" -Log $log
 
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
