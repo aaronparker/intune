@@ -1,4 +1,4 @@
-# Requires -Version 3
+﻿# Requires -Version 3
 <#
     .SYNOPSIS
         Creates a scheduled task to implement folder redirection for.
@@ -167,7 +167,7 @@ Function Redirect-Folder {
         # Move files/folders into the redirected folder
         Write-Verbose "Moving data from $SetFolder to $SyncFolder\$Target"
         Move-File -Source $Folder -Destination "$SyncFolder\$Target" -Log "$env:LocalAppData\RedirectLogs\Robocopy$Target.log"
-        
+
         # Hide the source folder (rather than delete it)
         Attrib +h $Folder
     }

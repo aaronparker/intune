@@ -1,4 +1,4 @@
-<#
+﻿<#
     .SYNOPSIS
         Removes shortcuts from user's desktop. Use with Proactive Remediations or PowerShell scripts
  
@@ -54,7 +54,7 @@ try {
 catch {
     Write-Host "Failed when enumerating shortcuts at: $Path. $($_.Exception.Message)"
     Exit 1
-}    
+}
 
 try {
     If ($Shortcuts.Count -gt 0) { $Shortcuts | Remove-Item -Force -ErrorAction "SilentlyContinue" }
@@ -76,21 +76,21 @@ Write-Host "Removed shortcuts:`n$Output"
     Source:
     https://msendpointmgr.com/2020/06/25/endpoint-analytics-proactive-remediations/
 #>
-Function Display-ToastNotification() {
+Function Show-ToastNotification() {
     $Load = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
     $Load = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
 
     # Load the notification into the required format
     $ToastXML = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
     $ToastXML.LoadXml($Toast.OuterXml)
-        
+
     # Display the toast notification
     try {
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($App).Show($ToastXml)
     }
-    catch { 
-        Write-Output -Message 'Something went wrong when displaying the toast notification' -Level Warn
-        Write-Output -Message 'Make sure the script is running as the logged on user' -Level Warn     
+    catch {
+        Write-Error -Message 'Something went wrong when displaying the toast notification' -Level Warn
+        Write-Error -Message 'Make sure the script is running as the logged on user' -Level Warn
     }
 }
 <# Setting image variables
@@ -107,7 +107,7 @@ Invoke-WebRequest -Uri $HeroImageUri -OutFile $HeroImage
 #Defining the Toast notification settings
 #ToastNotification Settings
 $Scenario = 'reminder' # <!-- Possible values are: reminder | short | long -->
-        
+
 # Load Toast Notification text
 $AttributionText = "stealthpuppy Service Desk"
 $HeaderText = "Duplicate shortcuts found"
@@ -134,7 +134,6 @@ if (-NOT(Test-Path -Path "$RegPath\$App")) {
 if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAction SilentlyContinue).ShowInActionCenter -ne '1') {
     New-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -Value 1 -PropertyType 'DWORD' -Force > $Null
 }
-
 
 # Formatting the toast notification XML
 [xml]$Toast = @"
@@ -167,6 +166,6 @@ if ((Get-ItemProperty -Path "$RegPath\$App" -Name 'ShowInActionCenter' -ErrorAct
 "@
 
 #Send the notification
-Display-ToastNotification
+Show-ToastNotification
 Exit 0
 #endregion
