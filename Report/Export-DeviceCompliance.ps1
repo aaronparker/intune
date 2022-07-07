@@ -47,7 +47,7 @@ ForEach ($setting in $settings) {
     If ($Null -eq $ComplianceTable) {
         [System.Array] $ComplianceTable = @()
         ForEach ($item in $query.value) {
-            Write-Host "Add $($item.setting) to $($item.deviceName)."
+            #Write-Host "Add $($item.setting) to $($item.deviceName)."
             $device = [PSCustomObject] @{
                 deviceId          = $item.deviceId
                 deviceName        = $item.deviceName
@@ -62,7 +62,7 @@ ForEach ($setting in $settings) {
         ForEach ($item in $query.value) {
             $index = [array]::IndexOf($ComplianceTable.deviceId, $item.deviceId)
             If ($ComplianceTable[$index].PSObject.Properties.name -contains $($item.setting)) {
-                Write-Host "Device $($ComplianceTable[$index].deviceName) already has property $($item.setting)."
+                #Write-Host "Device $($ComplianceTable[$index].deviceName) already has property $($item.setting)."
             }
             Else {
                 $ComplianceTable[$index] | Add-Member -NotePropertyName $($item.setting) -NotePropertyValue $item.state -Force

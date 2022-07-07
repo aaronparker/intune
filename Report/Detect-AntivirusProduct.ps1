@@ -1,25 +1,28 @@
 # Obtain Antivirus information from WMI 
-$params = @{
-    Namespace   = "Root\SecurityCenter2"
-    Query       = "SELECT * FROM AntiVirusProduct"
-    ErrorAction = "SilentlyContinue"
-}
-$AntivirusProduct = Get-WmiObject @params
+[CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
+param ()
 
-# Check for returned values, if null, write output and exit 1
-If ($AntiVirusProduct -gt $null) {
-    # Check for antivirus display name value, if null, write output and exit 1
-    If (-not ([string]::IsNullOrEmpty($($AntivirusProduct.DisplayName)))) {
-        # Write antivirus product name out for proactive remediations display purposes and set exit success
-        Write-Output $AntivirusProduct.displayName
-        Exit 0
+try {
+    $params = @{
+        Namespace   = "root/SecurityCenter2"
+        ClassName   = "AntiVirusProduct"
+        ErrorAction = "SilentlyContinue"
     }
-    Else {
-        Write-Output "Antivirus product not found"
-        Exit 1
-    }
+    $AntivirusProduct = Get-CimInstance @params
 }
-Else {
-    Write-Output "WMI query failed: root\SecurityCenter2"
-    Exit 1
+catch {
+    Write-Output "CIM query failed: root\SecurityCenter2"
+    exit 1
+}
+
+# Check for antivirus display name value, if null, write output and exit 1
+if (-not ([System.String]::IsNullOrEmpty($($AntivirusProduct.DisplayName)))) {
+    # Write antivirus product name out for proactive remediations display purposes and set exit success
+    Write-Output "$($AntivirusProduct.displayName), $($AntivirusProduct.pathToSignedReportingExe)"
+    exit 0
+}
+else {
+    Write-Output "Antivirus product not found"
+    exit 1
 }
