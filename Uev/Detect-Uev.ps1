@@ -137,7 +137,7 @@ if (Test-WindowsEnterprise) {
 
                 try {
                     # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
-                    $srcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
+                    $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
                 }
                 catch {
                     Write-Host "Error at $Uri with $($_.Exception.Message)."

@@ -206,16 +206,17 @@ if (Test-WindowsEnterprise) {
         exit 1
     }
 
+    # If the UE-V client is enabled, then continue with downloading custom templates
     if ($status.UevEnabled -eq $True) {
 
         # Templates local target path
-        $templatesTemp = Join-Path -Path (Resolve-Path -Path $env:Temp) -ChildPath (Get-RandomString)
+        $TemplatesTemp = Join-Path -Path (Resolve-Path -Path $env:Temp) -ChildPath (Get-RandomString)
         try {
-            Write-Verbose -Message "Creating temp folder: $templatesTemp."
-            New-Item -Path $templatesTemp -ItemType "Directory" -Force | Out-Null
+            Write-Verbose -Message "Creating temp folder: $TemplatesTemp."
+            New-Item -Path $TemplatesTemp -ItemType "Directory" -Force | Out-Null
         }
         catch {
-            Write-Host "Failed to create $templatesTemp with $($_.Exception.Message)."
+            Write-Host "Failed to create $TemplatesTemp with $($_.Exception.Message)."
             exit 1
         }
 
@@ -232,6 +233,7 @@ if (Test-WindowsEnterprise) {
         if (Test-Path -Path $CustomTemplatesPath) {
             try {
                 # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
+                Write-Verbose -Message "Get templates from: $Uri"
                 $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
             }
             catch {
@@ -240,12 +242,12 @@ if (Test-WindowsEnterprise) {
             }
 
             # Download each template to the target path and track success
-            $downloadedTemplates = New-Object -TypeName "System.Collections.ArrayList"
+            #$DownloadedTemplates = New-Object -TypeName "System.Collections.ArrayList"
             foreach ($template in $SrcTemplates) {
 
                 # Only download if the file has a .xml extension
                 if ($template.Name -match ".xml$") {
-                    $targetTemplate = Join-Path -Path $templatesTemp -ChildPath $template.Name
+                    $targetTemplate = Join-Path -Path $TemplatesTemp -ChildPath $template.Name
                     try {
                         $iwrParams = @{
                             Uri             = $template.Uri
@@ -255,23 +257,29 @@ if (Test-WindowsEnterprise) {
                             Headers         = @{ "x-ms-version" = "2020-04-08" }
                             ErrorAction     = "SilentlyContinue"
                         }
+                        Write-Verbose -Message "Download: $($template.Uri)"
                         Invoke-WebRequest @iwrParams
                     }
                     catch [System.Exception] {
-                        Write-Host "Invoke-WebRequest failed with $($_.Exception.Message)."
+                        Write-Host "Failed to download $($template.Uri) with $($_.Exception.Message)."
                         exit 1
                     }
                 }
-                $downloadedTemplates.Add($targetTemplate) | Out-Null
-                $Templates.Add($($template.Name)) | Out-Null
+                #$DownloadedTemplates.Add($targetTemplate) | Out-Null
             }
         }
 
         # Move downloaded templates to the template store
-        foreach ($template in $downloadedTemplates) {
+        foreach ($template in $DownloadedTemplates) {
             try {
-                Write-Verbose -Message "Moving template: $template."
-                Move-Item -Path $template -Destination $inboxTemplatesSrc -Force
+                $params = @{
+                    Path        = $(Join-Path -Path $TemplatesTemp -ChildPath $template)
+                    Destination = $CustomTemplatesPath
+                    Force       = $True
+                    ErrorAction = "SilentlyContinue"
+                }
+                Write-Verbose -Message "Moving template: $(Join-Path -Path $TemplatesTemp -ChildPath $template)."
+                Move-Item @params
             }
             catch {
                 Write-Host "Move $template failed with $($_.Exception.Message)."
@@ -279,9 +287,35 @@ if (Test-WindowsEnterprise) {
             }
         }
 
-        Write-Verbose -Message "Removing temp folder: $templatesTemp."
-        Remove-Item -Path $templatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
+        # Remove extra templates
+        $DownloadedTemplates = $(Get-ChildItem -Path $TemplatesTemp -Filter "*.xml" -ErrorAction "SilentlyContinue").Name
+        $ExistingCustomTemplates = $(Get-ChildItem -Path $CustomTemplatesPath -Filter "*.xml" -ErrorAction "SilentlyContinue").Name
+        if (($Null -ne $DownloadedTemplates) -and ($Null -ne $ExistingCustomTemplates)) {
+            $params = @{
+                ReferenceObject  = $DownloadedTemplates
+                DifferenceObject = $ExistingCustomTemplates
+                ErrorAction      = "SilentlyContinue"
+            }
+            $DifferenceItems = Compare-Object @params
+            foreach ($Item in $DifferenceItems.InputObject) {
+                $params = @{
+                    Path        = $(Join-Path -Path $CustomTemplatesPath -ChildPath $Item)
+                    Force       = $True
+                    ErrorAction = "SilentlyContinue"
+                }
+                Write-Verbose -Message "Removing extra template: $(Join-Path -Path $CustomTemplatesPath -ChildPath $Item)."
+                Remove-Item @params
+            }
+        }
+        else {
+            Write-Verbose -Message "Template match."
+        }
 
+        # Remove the downloaded copy of the custom templates
+        Write-Verbose -Message "Removing temp folder: $TemplatesTemp."
+        Remove-Item -Path $TemplatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
+
+        # If we get here, all is good
         Write-Host "UE-V service enabled. Custom templates downloaded. Configure agent via policy."
         exit 0
     }
