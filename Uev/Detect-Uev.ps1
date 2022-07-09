@@ -173,5 +173,5 @@ if (Test-WindowsEnterprise) {
 }
 else {
     Write-Host "Windows 10/11 Enterprise is required to enable UE-V."
-    return 1
+    exit 1
 }
