@@ -222,7 +222,7 @@ if (Test-WindowsEnterprise) {
 
         try {
             Write-Verbose -Message "Creating custom templates folder: $CustomTemplatesPath."
-            New-Item -Path $CustomTemplatesPath -ItemType "Directory" -Force | Out-Null
+            New-Item -Path $CustomTemplatesPath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" | Out-Null
         }
         catch {
             Write-Host "Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
@@ -242,7 +242,6 @@ if (Test-WindowsEnterprise) {
             }
 
             # Download each template to the target path and track success
-            #$DownloadedTemplates = New-Object -TypeName "System.Collections.ArrayList"
             foreach ($template in $SrcTemplates) {
 
                 # Only download if the file has a .xml extension
@@ -265,7 +264,6 @@ if (Test-WindowsEnterprise) {
                         exit 1
                     }
                 }
-                #$DownloadedTemplates.Add($targetTemplate) | Out-Null
             }
         }
 
