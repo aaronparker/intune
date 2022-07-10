@@ -11,6 +11,9 @@
     <Process>
       <Filename>AcroRd32.exe</Filename>
     </Process>
+    <Process>
+      <Filename>Acrobat.exe</Filename>
+    </Process>
   </Processes>
   <Settings>
     <Registry>

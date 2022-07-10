@@ -69,7 +69,7 @@ param (
 )
 
 # Configure TLS
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
 #region Functions
 function Get-AzureBlobItem {
