@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+<SettingsLocationTemplate xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
   <Name>Remote Desktop Connection</Name>
   <ID>RemoteDesktopConnection</ID>
   <Version>1</Version>

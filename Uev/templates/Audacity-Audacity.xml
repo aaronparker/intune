@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This file came from https://github.com/DavidDjerf/UEV-Templates -->
-<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+<SettingsLocationTemplate xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
 	<Name>Audacity</Name>
 	<ID>Audacity-Audacity</ID>
 	<Version>1</Version>

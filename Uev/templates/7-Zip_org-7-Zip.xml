@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This file came from https://github.com/DavidDjerf/UEV-Templates -->
-<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+<SettingsLocationTemplate xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
 	<Name>7-Zip File Manager</Name>
 	<ID>7-Zip_org-7-Zip</ID>
 	<Version>1</Version>

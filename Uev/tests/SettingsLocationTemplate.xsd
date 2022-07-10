@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xs:schema id="UevSettingsLocationTemplate" targetNamespace="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" elementFormDefault="qualified" 
-    xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" 
-    xmlns:mstns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" 
+<xs:schema id="UevSettingsLocationTemplate" targetNamespace="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate" elementFormDefault="qualified"
+    xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate"
+    xmlns:mstns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate"
     xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:simpleType name="Guid">
         <xs:restriction base="xs:string">
