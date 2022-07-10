@@ -152,7 +152,7 @@ if (Test-WindowsEnterprise) {
                     ErrorAction      = "SilentlyContinue"
                 }
                 if (($Null -eq $CustomTemplates) -or ($Null -ne (Compare-Object @params))) {
-                    Write-Host "Local custom templates do not match $CustomTemplatesPath."
+                    Write-Host "Local templates in $CustomTemplates do not match $Uri."
                     exit 1
                 }
 
