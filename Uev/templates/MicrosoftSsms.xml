@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+  <Name>Microsoft SQL Server Management Studio</Name>
+  <ID>Microsoft-SQLServerSsms</ID>
+  <Version>1</Version>
+  <Author>
+    <Name>Aaron Parker</Name>
+    <Email>aaron@stealthpuppy.com</Email>
+  </Author>
+  <Processes>
+    <Process>
+      <Filename>Ssms.exe</Filename>
+      <ProductVersion>
+        <Major Minimum="15" Maximum="*" />
+        <Minor Minimum="0" Maximum="*" />
+      </ProductVersion>
+      <FileVersion>
+        <Major Minimum="2019" Maximum="*" />
+        <Minor Minimum="150" Maximum="*" />
+      </FileVersion>
+    </Process>
+  </Processes>
+  <Settings>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\SQL Server Management Studio</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\VisualStudio\RemoteSettings</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\VSCommon</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\VisualStudio\15.0</Path>
+    </Registry>
+    <Registry>
+      <Path Recursive="true">Software\Microsoft\VisualStudio\Telemetry</Path>
+    </Registry>
+    <File>
+      <Root>
+        <EnvironmentVariable>APPDATA</EnvironmentVariable>
+      </Root>
+      <Path Recursive="true">Microsoft\SQL Server Management Studio</Path>
+    </File>
+  </Settings>
+</SettingsLocationTemplate>
