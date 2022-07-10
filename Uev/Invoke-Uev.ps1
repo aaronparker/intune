@@ -164,7 +164,45 @@ function Test-WindowsEnterprise {
 function Get-RandomString {
     -join ((65..90) + (97..122) | Get-Random -Count 8 | ForEach-Object { [char]$_ })
 }
+
+function Write-ToEventLog ($Message) {
+    switch -Regex ($Message) {
+        "^Information" {
+            $EntryType = "Information"
+            $Number = 0
+        }
+        "^Warning" {
+            $EntryType = "Warning"
+            $Number = 1
+        }
+        "^Error" {
+            $EntryType = "Error"
+            $Number = 2
+        }
+        default {
+            $EntryType = "Information"
+            $Number = 0
+        }
+    }
+    $params = @{
+        LogName     = "Application"
+        Source      = "UevProactiveRemediation"
+        EventID     = (8000 + $Number)
+        EntryType   = $EntryType
+        Message     = $Message
+        ErrorAction = "SilentlyContinue"
+    }
+    Write-EventLog @params
+}
 #endregion
+
+# Create a new event log source
+$params = @{
+    LogName     = "Application"
+    Source      = "UevProactiveRemediation"
+    ErrorAction = "SilentlyContinue"
+}
+New-EventLog @params
 
 # If running Windows 10/11 Enterprise
 if (Test-WindowsEnterprise) {
@@ -177,10 +215,12 @@ if (Test-WindowsEnterprise) {
         $status = Get-UevStatus
         if ($status.UevEnabled -eq $True) {
             if ($status.UevRebootRequired -eq $True) {
-                Write-Verbose -Message "Reboot required to enable the UE-V service."
+                Write-Warning -Message "Reboot required to enable the UE-V service."
+                Write-ToEventLog -Message "Warning: Reboot required to enable the UE-V service."
             }
             else {
                 Write-Verbose -Message "UE-V service is enabled."
+                Write-ToEventLog -Message "UE-V service is enabled."
             }
         }
         else {
@@ -190,6 +230,7 @@ if (Test-WindowsEnterprise) {
                 $status = Get-UevStatus
             }
             catch [System.Exception] {
+                Write-ToEventLog -Message "Error: Failed to enable the UEV service with $($_.Exception.Message)."
                 Write-Host "Failed to enable the UEV service with $($_.Exception.Message)."
                 exit 1
             }
@@ -197,11 +238,13 @@ if (Test-WindowsEnterprise) {
                 Write-Verbose -Message "UE-V service is enabled."
             }
             else {
+                Write-ToEventLog -Message "Error: U-V service is not enabled."
                 Write-Verbose -Message "UE-V service is not enabled."
             }
         }
     }
     else {
+        Write-ToEventLog -Message "Error: UEV module is not installed."
         Write-Host "UEV module not installed."
         exit 1
     }
@@ -215,12 +258,14 @@ if (Test-WindowsEnterprise) {
             $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
         }
         catch {
+            Write-ToEventLog -Message "Error: Error at $Uri with $($_.Exception.Message)."
             Write-Host "Error at $Uri with $($_.Exception.Message)."
             exit 1
         }
 
         # If the number of templates to download is 1 or more
         if ($SrcTemplates.Count -ge 1) {
+            Write-ToEventLog -Message "Returned templates to download:`n$($SrcTemplates.Uri -join "`n")"
 
             # Create the custom templates path
             try {
@@ -228,6 +273,7 @@ if (Test-WindowsEnterprise) {
                 New-Item -Path $CustomTemplatesPath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" | Out-Null
             }
             catch {
+                Write-ToEventLog -Message "Error: Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
                 Write-Host "Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
                 exit 1
             }
@@ -242,6 +288,7 @@ if (Test-WindowsEnterprise) {
                     New-Item -Path $TemplatesTemp -ItemType "Directory" -Force | Out-Null
                 }
                 catch {
+                    Write-ToEventLog -Message "Error: Failed to create $TemplatesTemp with $($_.Exception.Message)."
                     Write-Host "Failed to create $TemplatesTemp with $($_.Exception.Message)."
                     exit 1
                 }
@@ -265,6 +312,7 @@ if (Test-WindowsEnterprise) {
                             Invoke-WebRequest @iwrParams
                         }
                         catch [System.Exception] {
+                            Write-ToEventLog -Message "Error: Failed to download $($template.Uri) with $($_.Exception.Message)."
                             Write-Host "Failed to download $($template.Uri) with $($_.Exception.Message)."
                             exit 1
                         }
@@ -291,6 +339,7 @@ if (Test-WindowsEnterprise) {
                     Move-Item @params
                 }
                 catch {
+                    Write-ToEventLog -Message "Error: Move $template failed with $($_.Exception.Message)."
                     Write-Host "Move $template failed with $($_.Exception.Message)."
                     exit 1
                 }
@@ -302,14 +351,15 @@ if (Test-WindowsEnterprise) {
                     DifferenceObject = $ExistingCustomTemplates
                     ErrorAction      = "SilentlyContinue"
                 }
-                $DifferenceItems = Compare-Object @params
-                foreach ($Item in $DifferenceItems.InputObject) {
+                $DifferenceItems = Compare-Object @params | Where-Object { $_.SideIndicator -eq "=>" }
+                foreach ($File in $DifferenceItems.InputObject) {
                     $params = @{
-                        Path        = $(Join-Path -Path $CustomTemplatesPath -ChildPath $Item)
+                        Path        = $(Join-Path -Path $CustomTemplatesPath -ChildPath $File)
                         Force       = $True
                         ErrorAction = "SilentlyContinue"
                     }
-                    Write-Verbose -Message "Removing extra template: $(Join-Path -Path $CustomTemplatesPath -ChildPath $Item)."
+                    Write-ToEventLog -Message "Warning: Removing extra template: $(Join-Path -Path $CustomTemplatesPath -ChildPath $File)."
+                    Write-Warning -Message "Removing extra template: $(Join-Path -Path $CustomTemplatesPath -ChildPath $File)."
                     Remove-Item @params
                 }
             }
@@ -322,20 +372,26 @@ if (Test-WindowsEnterprise) {
             Remove-Item -Path $TemplatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
 
             # If we get here, all is good
+            $Templates = (Get-ChildItem -Path $CustomTemplatesPath -Filter "*.xml" -ErrorAction "SilentlyContinue").FullName
+            Write-ToEventLog -Message "Installed templates:`n$($Templates -join "`n")."
+            Write-ToEventLog -Message "UE-V service enabled. Custom templates downloaded. Configure agent via policy."
             Write-Host "UE-V service enabled. Custom templates downloaded. Configure agent via policy."
             exit 0
         }
         else {
+            Write-ToEventLog -Message "Warning: Returned 0 templates from $Uri."
             Write-Host "Returned 0 templates from $Uri."
             exit 1
         }
     }
     else {
+        Write-ToEventLog -Message "Warning: UE-V service not enabled."
         Write-Host "UE-V service not enabled."
         exit 1
     }
 }
 else {
+    Write-ToEventLog -Message "Warning: Windows 10/11 Enterprise is required to enable UE-V."
     Write-Host "Windows 10/11 Enterprise is required to enable UE-V."
     exit 1
 }
