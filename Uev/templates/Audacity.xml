@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This file came from https://github.com/DavidDjerf/UEV-Templates -->
-<SettingsLocationTemplate xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
-	<Name>HandBrake</Name>
-	<ID>HandBrake-HandBrake</ID>
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+	<Name>Audacity</Name>
+	<ID>Audacity-Audacity</ID>
 	<Version>1</Version>
 	<Author>
 		<Name>David Djerf</Name>
 	</Author>
 	<Processes>
 		<Process>
-			<Filename>Handbrake.exe</Filename>
+			<Filename>audacity.exe</Filename>
 		</Process>
 	</Processes>
 	<Settings>
@@ -17,7 +17,7 @@
 			<Root>
 				<EnvironmentVariable>APPDATA</EnvironmentVariable>
 			</Root>
-			<Path Recursive="true">HandBrake</Path>
+			<Path Recursive="true">Audacity</Path>
 		</File>
 	</Settings>
 </SettingsLocationTemplate>

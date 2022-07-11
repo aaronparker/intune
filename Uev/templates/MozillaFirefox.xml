@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<SettingsLocationTemplate xmlns="https://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
   <Name>Mozilla Firefox</Name>
   <ID>MozillaFirefox</ID>
   <Version>2</Version>
