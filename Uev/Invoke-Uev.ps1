@@ -150,7 +150,7 @@ function Test-WindowsEnterprise {
         Import-Module -Name "Dism"
         $edition = Get-WindowsEdition -Online -ErrorAction "SilentlyContinue"
     }
-    catch {
+    catch [System.Exception] {
         Write-Error -Message "Failed to run Get-WindowsEdition. Defaulting to False."
     }
     if ($edition.Edition -eq "Enterprise") {
@@ -257,7 +257,7 @@ if (Test-WindowsEnterprise) {
             Write-Verbose -Message "Get templates from: $Uri"
             $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
         }
-        catch {
+        catch [System.Exception] {
             Write-ToEventLog -Message "Error: Error at $Uri with $($_.Exception.Message)."
             Write-Host "Error at $Uri with $($_.Exception.Message)."
             exit 1
@@ -272,7 +272,7 @@ if (Test-WindowsEnterprise) {
                 Write-Verbose -Message "Creating custom templates folder: $CustomTemplatesPath."
                 New-Item -Path $CustomTemplatesPath -ItemType "Directory" -Force -ErrorAction "SilentlyContinue" | Out-Null
             }
-            catch {
+            catch [System.Exception] {
                 Write-ToEventLog -Message "Error: Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
                 Write-Host "Failed to create $CustomTemplatesPath with $($_.Exception.Message)."
                 exit 1
@@ -287,7 +287,7 @@ if (Test-WindowsEnterprise) {
                     Write-Verbose -Message "Creating temp folder: $TemplatesTemp."
                     New-Item -Path $TemplatesTemp -ItemType "Directory" -Force | Out-Null
                 }
-                catch {
+                catch [System.Exception] {
                     Write-ToEventLog -Message "Error: Failed to create $TemplatesTemp with $($_.Exception.Message)."
                     Write-Host "Failed to create $TemplatesTemp with $($_.Exception.Message)."
                     exit 1
@@ -338,7 +338,7 @@ if (Test-WindowsEnterprise) {
                     Write-Verbose -Message "Moving template: $(Join-Path -Path $TemplatesTemp -ChildPath $template)."
                     Move-Item @params
                 }
-                catch {
+                catch [System.Exception] {
                     Write-ToEventLog -Message "Error: Move $template failed with $($_.Exception.Message)."
                     Write-Host "Move $template failed with $($_.Exception.Message)."
                     exit 1

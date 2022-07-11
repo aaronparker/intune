@@ -107,7 +107,7 @@ function Test-WindowsEnterprise {
         Import-Module -Name "Dism"
         $edition = Get-WindowsEdition -Online -ErrorAction "SilentlyContinue"
     }
-    catch {
+    catch [System.Exception] {
         Write-Error -Message "Failed to run Get-WindowsEdition. Defaulting to False."
     }
     if ($edition.Edition -eq "Enterprise") {
@@ -117,7 +117,44 @@ function Test-WindowsEnterprise {
         return $False
     }
 }
+function Write-ToEventLog ($Message) {
+    switch -Regex ($Message) {
+        "^Information" {
+            $EntryType = "Information"
+            $Number = 0
+        }
+        "^Warning" {
+            $EntryType = "Warning"
+            $Number = 1
+        }
+        "^Error" {
+            $EntryType = "Error"
+            $Number = 2
+        }
+        default {
+            $EntryType = "Information"
+            $Number = 0
+        }
+    }
+    $params = @{
+        LogName     = "Application"
+        Source      = "UevProactiveRemediation"
+        EventID     = (8000 + $Number)
+        EntryType   = $EntryType
+        Message     = $Message
+        ErrorAction = "SilentlyContinue"
+    }
+    Write-EventLog @params
+}
 #endregion
+
+# Create a new event log source
+$params = @{
+    LogName     = "Application"
+    Source      = "UevProactiveRemediation"
+    ErrorAction = "SilentlyContinue"
+}
+New-EventLog @params
 
 # If running Windows 10/11 Enterprise
 if (Test-WindowsEnterprise) {
@@ -129,49 +166,72 @@ if (Test-WindowsEnterprise) {
         Import-Module -Name "UEV"
         $status = Get-UevStatus
         if ($status.UevEnabled -eq $True) {
+            $Message = "Detection result:"
+            $Result = 0
+
+            try {
+                # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
+                $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
+            }
+            catch [System.Exception] {
+                $Message += "`nError at $Uri with $($_.Exception.Message)."
+                $Result = 1
+            }
+
+            # Validate the local copy of the custom templates against the Azure Storage account
+            $CustomTemplates = $(Get-ChildItem -Path $CustomTemplatesPath -Filter "*.xml" -ErrorAction "SilentlyContinue").Name
+            $params = @{
+                ReferenceObject  = $SrcTemplates.Name
+                DifferenceObject = $CustomTemplates
+                ErrorAction      = "SilentlyContinue"
+            }
+            if (($Null -eq $CustomTemplates) -or ($Null -ne (Compare-Object @params))) {
+                Write-ToEventLog -Message "Error: Local templates in $CustomTemplates do not match $Uri."
+                $Message += "`nLocal templates in $CustomTemplates do not match $Uri."
+                $Result = 1
+            }
+
+            # Check whether templates are registered
+            $RegisteredTemplates = Get-UevTemplate -ErrorAction "SilentlyContinue"
+            if ($Null -eq $RegisteredTemplates) {
+                Write-ToEventLog -Message "Error: No settings templates are registered."
+                $Message += "`nNo settings templates are registered."
+                $Result = 1
+            }
+
+            # Check whether a reboot is required
             if ($status.UevRebootRequired -eq $True) {
-                Write-Host "Reboot required to enable the UE-V service."
-                exit 1
+                Write-ToEventLog -Message "Warning: Reboot required to enable the UE-V service."
+                $Message += "`nReboot required to enable the UE-V service."
+                $Result = 1
+            }
+
+            # Exit with an error
+            if ($Result -eq 1) {
+                Write-Host $Message
+                exit $Result
             }
             else {
-
-                try {
-                    # Retrieve the list of templates from the Azure Storage account, filter for .XML files only
-                    $SrcTemplates = Get-AzureBlobItem -Uri $Uri | Where-Object { $_.Uri -match ".*.xml$" }
-                }
-                catch {
-                    Write-Host "Error at $Uri with $($_.Exception.Message)."
-                    exit 1
-                }
-
-                # Validate the local copy of the custom templates against the Azure Storage account
-                $CustomTemplates = $(Get-ChildItem -Path $CustomTemplatesPath -Filter "*.xml" -ErrorAction "SilentlyContinue").Name
-                $params = @{
-                    ReferenceObject  = $SrcTemplates.Name
-                    DifferenceObject = $CustomTemplates
-                    ErrorAction      = "SilentlyContinue"
-                }
-                if (($Null -eq $CustomTemplates) -or ($Null -ne (Compare-Object @params))) {
-                    Write-Host "Local templates in $CustomTemplates do not match $Uri."
-                    exit 1
-                }
-
                 # If we get here, all is good
-                Write-Host "UE-V service is enabled. Custom templates are good."
+                Write-ToEventLog -Message "UE-V service is enabled. $($RegisteredTemplates.Count) settings templates are registered."
+                Write-Host "UE-V service is enabled. $($RegisteredTemplates.Count) settings templates are registered."
                 exit 0
             }
         }
         else {
+            Write-ToEventLog -Message "Warning: UE-V service is not enabled."
             Write-Host "UE-V service is not enabled."
             exit 1
         }
     }
     else {
+        Write-ToEventLog -Message "Error: UEV module not installed."
         Write-Host "UEV module not installed."
         exit 1
     }
 }
 else {
+    Write-ToEventLog -Message "Warning: Windows 10/11 Enterprise is required to enable UE-V."
     Write-Host "Windows 10/11 Enterprise is required to enable UE-V."
     exit 1
 }
