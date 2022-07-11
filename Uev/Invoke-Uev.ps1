@@ -371,6 +371,24 @@ if (Test-WindowsEnterprise) {
             Write-Verbose -Message "Removing temp folder: $TemplatesTemp."
             Remove-Item -Path $TemplatesTemp -Recurse -Force -ErrorAction "SilentlyContinue"
 
+            # Let's register the templates if no templates are currently registered because this is probably the first time templates have been copied down
+            $RegisteredTemplates = Get-UevTemplate -ErrorAction "SilentlyContinue"
+            if ($Null -eq $RegisteredTemplates) {
+                try {
+                    $params = @{
+                        Path        = $CustomTemplatesPath
+                        Filter      = "*.xml"
+                        ErrorAction = "SilentlyContinue"
+                    }
+                    Get-ChildItem @params | ForEach-Object { Register-UevTemplate -LiteralPath $_.FullName -Confirm:$False }
+                }
+                catch [System.Exception] {
+                    Write-ToEventLog -Message "Error: Encountered an issue registering templates with $($_.Exception.Message)."
+                    Write-Host "Encountered an issue registering templates with $($_.Exception.Message)."
+                    exit 1
+                }
+            }
+
             # If we get here, all is good
             $Templates = (Get-ChildItem -Path $CustomTemplatesPath -Filter "*.xml" -ErrorAction "SilentlyContinue").FullName
             Write-ToEventLog -Message "Installed templates:`n$($Templates -join "`n")."
