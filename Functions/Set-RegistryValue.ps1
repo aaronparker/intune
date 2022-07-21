@@ -1,10 +1,10 @@
-Function Set-RegistryValue {
+function Set-RegistryValue {
     <#
         .SYNOPSIS
             Creates a registry value in a target key. Creates the target key if it does not exist.
     #>
-    [CmdletBinding()]
-    Param (
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
         [Parameter(Mandatory = $True)]
         [System.String] $Key,
 
@@ -20,22 +20,22 @@ Function Set-RegistryValue {
     )
 
     try {
-        If (Test-Path -Path $Key -ErrorAction "SilentlyContinue") {
+        if (Test-Path -Path $Key -ErrorAction "SilentlyContinue") {
             Write-Verbose "Path exists: $Key"
         }
-        Else {
+        else {
             Write-Verbose -Message "Does not exist: $Key."
 
             $folders = $Key -split "\\"
             $parent = $folders[0]
             Write-Verbose -Message "Parent is: $parent."
 
-            ForEach ($folder in ($folders | Where-Object { $_ -notlike "*:"})) {
+            foreach ($folder in ($folders | Where-Object { $_ -notlike "*:"})) {
                 if ($PSCmdlet.ShouldProcess($Path, ("New-Item '{0}'" -f "$parent\$folder"))) {
                     New-Item -Path $parent -Name $folder -ErrorAction "SilentlyContinue" | Out-Null
                 }
                 $parent = "$parent\$folder"
-                If (Test-Path -Path $parent -ErrorAction "SilentlyContinue") {
+                if (Test-Path -Path $parent -ErrorAction "SilentlyContinue") {
                     Write-Verbose -Message "Created $parent."
                 }
             }
@@ -44,7 +44,7 @@ Function Set-RegistryValue {
     }
     catch {
         Write-Error "Failed to create key $Key."
-        Break
+        break
     }
     finally {
         Write-Verbose -Message "Setting $Value in $Key."
@@ -54,10 +54,10 @@ Function Set-RegistryValue {
     }
 
     $val = Get-Item -Path $Key
-    If ($val.Property -contains $Value) {
+    if ($val.Property -contains $Value) {
         Write-Verbose "Write value success: $Value"
         Write-Output $True
-    } Else {
+    } else {
         Write-Verbose "Write value failed."
         Write-Output $False
     }

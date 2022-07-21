@@ -1,0 +1,50 @@
+[
+    {
+        "Key": "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319",
+        "Value": "SystemDefaultTlsVersions",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\.NETFramework\\v4.0.30319",
+        "Value": "SchUseStrongCrypto",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+        "Value": "SystemDefaultTlsVersions",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+        "Value": "SchUseStrongCrypto",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2\\Server",
+        "Value": "Enabled",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2\\Server",
+        "Value": "DisabledByDefault",
+        "Data": 0,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2\\Client",
+        "Value": "Enabled",
+        "Data": 1,
+        "Type": "DWord"
+    },
+    {
+        "Key": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\SCHANNEL\\Protocols\\TLS 1.2\\Client",
+        "Value": "DisabledByDefault",
+        "Data": 0,
+        "Type": "DWord"
+    }
+]
