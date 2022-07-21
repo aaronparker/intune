@@ -94,12 +94,12 @@ foreach ($Key in ($Keys | ConvertFrom-Json)) {
             $Result = 0
         }
         else {
-            Write-Host "No value match: $($Key.Key)\$($Key.Value)"
+            $Output += "`nNo value match: $($Key.Key)\$($Key.Value)"
             $Result = 1
         }
     }
     else {
-        Write-Host "No value exists: $($Key.Key)\$($Key.Value)"
+        $Output += "`nNo value exists: $($Key.Key)\$($Key.Value)"
         $Result = 1
     }
 }

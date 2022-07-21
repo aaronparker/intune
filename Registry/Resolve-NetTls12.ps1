@@ -120,11 +120,17 @@ $Keys = @"
 ]
 "@
 
+$Output = "Results:"
 foreach ($Key in ($Keys | ConvertFrom-Json)) {
     $Result = Set-RegistryValue -Key $Key.Key -Value $Key.Value -Data $Key.Data -Type $Key.Type
     if ($Result -eq $False) {
-        Write-Host "Failed to set: $($Key.Key)\$($Key.Value)"
-        exit 1
+        $Output += "`nFailed to set: $($Key.Key)\$($Key.Value)"
+        $Result = 1
+    }
+    else {
+        $Output += "`nSuccessfully set: $($Key.Key)\$($Key.Value)"
+        $Result = 0
     }
 }
-exit 0
+Write-Host $Output
+exit $Result
