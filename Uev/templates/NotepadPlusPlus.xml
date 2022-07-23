@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file came from https://github.com/DavidDjerf/UEV-Templates -->
+<SettingsLocationTemplate xmlns="http://schemas.microsoft.com/UserExperienceVirtualization/2013A/SettingsLocationTemplate">
+    <Name>Notepad++</Name>
+    <ID>Notepad-plus-plus_org-Notepad++</ID>
+    <Version>1</Version>
+    <Author>
+        <Name>David Djerf</Name>
+    </Author>
+    <Processes>
+        <Process>
+            <Filename>notepad++.exe</Filename>
+        </Process>
+    </Processes>
+    <Settings>
+        <File>
+            <Root>
+                <EnvironmentVariable>APPDATA</EnvironmentVariable>
+            </Root>
+            <Path Recursive="true">Notepad++</Path>
+        </File>
+    </Settings>
+</SettingsLocationTemplate>

@@ -54,12 +54,12 @@ function Get-AzureBlobItem {
             [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
 
             # Build an object with file properties to return on the pipeline
-            $fileList = New-Object -TypeName System.Collections.ArrayList
+            $fileList = New-Object -TypeName "System.Collections.ArrayList"
             foreach ($node in (Select-Xml -XPath "//Blobs/Blob" -Xml $xml).Node) {
                 $PSObject = [PSCustomObject] @{
-                    Name         = $($node | Select-Object -ExpandProperty "Name")
-                    Uri          = $($node | Select-Object -ExpandProperty "Url")
-                    Size         = $($node | Select-Object -ExpandProperty "Size")
+                    Name        = $($node | Select-Object -ExpandProperty "Name")
+                    Uri         = $($node | Select-Object -ExpandProperty "Url")
+                    Size        = $($node | Select-Object -ExpandProperty "Size")
                     LastModified = $($node | Select-Object -ExpandProperty "LastModified")
                 }
                 $fileList.Add($PSObject) | Out-Null
