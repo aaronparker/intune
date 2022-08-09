@@ -11,7 +11,7 @@
         http://stealthpuppy.com
 #>
 [CmdletBinding()]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Script run locally.")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification = "Function names use product name.")]
 param (
     [Parameter()]
     [ValidateScript({ if (Test-Path -Path $Path) { $true } else { throw [System.IO.FileNotFoundException] } })]
@@ -126,7 +126,7 @@ function Get-1Password7 {
         Version = $response.version
         URI     = $($url -replace "zip$", "pkg")
     }
-    Write-Output -Input $PSObject
+    Write-Output -InputObject $PSObject
 }
 
 function Get-AdobeReader {
@@ -146,7 +146,7 @@ function Get-AdobeReader {
         Version = $Version
         URI     = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$Version/AcroRdrDC_$($Version)_MUI.dmg"
     }
-    Write-Output -Input $PSObject
+    Write-Output -InputObject $PSObject
 }
 
 function Get-CitrixWorkspaceApp {
@@ -165,7 +165,7 @@ function Get-CitrixWorkspaceApp {
         Version = ($response.Catalog.Installers | Where-Object { $_.name -eq "Receiver" }).Installer.Version
         URI     = "https://downloadplugins.citrix.com/ReceiverUpdates/Prod$(($response.Catalog.Installers | Where-Object { $_.name -eq "Receiver" }).Installer.DownloadURL)"
     }
-    Write-Output -Input $PSObject
+    Write-Output -InputObject $PSObject
 }
 
 function Get-MicrosoftTeams {
@@ -184,7 +184,7 @@ function Get-MicrosoftTeams {
         Version = [RegEx]::Match($response.url, "(\d+(\.\d+){1,4}).*").Captures.Groups[1].Value
         URI     = $response.url
     }
-    Write-Output -Input $PSObject
+    Write-Output -InputObject $PSObject
 }
 
 function Get-Zoom {
@@ -195,7 +195,7 @@ function Get-Zoom {
             Version = [RegEx]::Match($Uri, "(\d+(\.\d+){1,4}).*").Captures.Groups[1].Value
             URI     = $Uri
         }
-        Write-Output -Input $PSObject
+        Write-Output -InputObject $PSObject
     }
 }
 #endregion

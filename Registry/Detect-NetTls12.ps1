@@ -3,6 +3,7 @@
     Get registry keys
 #>
 [CmdletBinding()]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Proactive remediations consumes host output.")]
 param ()
 
 #region Restart if running in a 32-bit session
