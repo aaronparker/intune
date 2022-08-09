@@ -22,11 +22,11 @@ $ProgressPreference = "SilentlyContinue"
 $VerbosePreference = "Continue"
 
 # If we are running on macOS, then continue
-If ($PSVersionTable.OS -like "Darwin*") {
+if ($PSVersionTable.OS -like "Darwin*") {
 
     # Check the working folder
-    If (Test-Path -Path $Path -IsValid) {
-        If (!(Test-Path -Path $Path)) {
+    if (Test-Path -Path $Path -IsValid) {
+        if (!(Test-Path -Path $Path)) {
             try {
                 New-Item -Path $Path -ItemType "Directory"
             }
@@ -40,7 +40,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
         Write-Host "`n== IntuneAppUtil" -ForegroundColor "Cyan"
         $uri = "https://raw.githubusercontent.com/msintuneappsdk/intune-app-wrapping-tool-mac/v1.2/IntuneAppUtil"
         $binary = Join-Path -Path $Path -ChildPath (Split-Path -Path $uri -Leaf)
-        If (!(Test-Path -Path $binary)) {
+        if (!(Test-Path -Path $binary)) {
             try {
                 Invoke-WebRequest -Uri $uri -OutFile $binary -UseBasicParsing
             }
@@ -48,7 +48,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
                 Write-Warning "Failed to download: $uri."
                 throw $_
             }
-            If (Test-Path -Path $binary) {
+            if (Test-Path -Path $binary) {
                 try {
                     chmod +x $binary
                 }
@@ -86,7 +86,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
         }
 
         # Convert the Pkg to IntuneMac format
-        If (Test-Path -Path $output) {
+        if (Test-Path -Path $output) {
             . $binary -c $output -o $Path -v
         }
         #endregion
@@ -121,7 +121,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
 
         # Mount the Dmg file
         try {
-            If (Test-Path -Path $output) {
+            if (Test-Path -Path $output) {
                 $RegEx = "\/Volumes.*"
                 $mount = hdiutil attach $output
                 $VolPath = [RegEx]::Match($mount, $RegEx).Captures.Groups[0].Value
@@ -141,7 +141,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
         hdiutil detach $VolPath
 
         # Convert the Pkg to IntuneMac format
-        If (Test-Path -Path $NewPackage) {
+        if (Test-Path -Path $NewPackage) {
             . $binary -c $NewPackage -o $Path -v -n $version
         }
         #endregion
@@ -172,7 +172,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
         }
 
         # Convert the Pkg to IntuneMac format
-        If (Test-Path -Path $output) {
+        if (Test-Path -Path $output) {
             . $binary -c $output -o $Path -v
         }
         #endregion
@@ -202,7 +202,7 @@ If ($PSVersionTable.OS -like "Darwin*") {
             throw $_
         }
         # Convert the Pkg to IntuneMac format
-        If (Test-Path -Path $output) {
+        if (Test-Path -Path $output) {
             . $binary -c $output -o $Path -v -n $version
         }
         #endregion
@@ -224,12 +224,12 @@ If ($PSVersionTable.OS -like "Darwin*") {
         }
 
         # Convert the Pkg to IntuneMac format
-        If (Test-Path -Path $output) {
+        if (Test-Path -Path $output) {
             . $binary -c $output -o $Path -v
         }
         #endregion
     }
 }
-Else {
+else {
     Write-Warning -Message "This script needs to be run on macOS to use the IntuneAppUtil wrapping tool."
 }
