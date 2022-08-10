@@ -54,7 +54,7 @@ function Resolve-SystemNetWebRequest ($Uri) {
     }
 }
 
-Function Get-GitHubRepoRelease {
+function Get-GitHubRepoRelease {
     param (
         [Parameter(Mandatory = $True, Position = 0)]
         [System.String] $Uri,
