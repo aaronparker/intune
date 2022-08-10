@@ -18,7 +18,7 @@ param (
     [System.String] $Path = "/Users/aaron/Temp/macOS-Apps"
 )
 
-# Test path
+#region Test path
 if (Test-Path -Path $Path -IsValid) {
     if (!(Test-Path -Path $Path)) {
         try {
@@ -32,6 +32,7 @@ if (Test-Path -Path $Path -IsValid) {
 else {
     throw "$Path is not a valid path."
 }
+#endregion
 
 #region Functions
 function Resolve-SystemNetWebRequest ($Uri) {
@@ -49,6 +50,76 @@ function Resolve-SystemNetWebRequest ($Uri) {
         if ($webResponse) {
             Write-Output -InputObject $webResponse.ResponseUri.AbsoluteUri
             $webResponse.Dispose()
+        }
+    }
+}
+
+Function Get-GitHubRepoRelease {
+    param (
+        [Parameter(Mandatory = $True, Position = 0)]
+        [System.String] $Uri,
+
+        [Parameter(Mandatory = $False, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $MatchVersion = "(\d+(\.\d+){1,4}).*",
+
+        [Parameter(Mandatory = $False, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $VersionTag = "tag_name",
+
+        [Parameter(Mandatory = $False, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $Filter = "\.dmg$"
+    )
+
+    process {
+        try {
+
+            # Use TLS for connections
+            $SslProtocol = "Tls12"
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::$SslProtocol
+
+            # Invoke the GitHub releases REST API
+            # Note that the API performs rate limiting.
+            # https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-the-latest-release
+            $params = @{
+                ContentType        = "application/vnd.github.v3+json"
+                ErrorAction        = "SilentlyContinue"
+                MaximumRedirection = 0
+                DisableKeepAlive   = $true
+                UseBasicParsing    = $true
+                UserAgent          = "github-aaronparker-evergreen"
+                Uri                = $Uri
+            }
+            $release = Invoke-RestMethod @params
+        }
+        catch {
+            throw $_
+        }
+
+        # Build and array of the latest release and download URLs
+        foreach ($item in $release) {
+            foreach ($asset in $item.assets) {
+
+                # Filter downloads by matching the RegEx in the manifest. The the RegEx may perform includes and excludes
+                if ($asset.browser_download_url -match $Filter) {
+
+                    # Capture the version string from the specified release tag
+                    try {
+                        $version = [RegEx]::Match($item.$VersionTag, $MatchVersion).Captures.Groups[1].Value
+                    }
+                    catch {
+                        $version = $item.$VersionTag
+                    }
+
+                    # Build the output object
+                    $PSObject = [PSCustomObject] @{
+                        Version = $version
+                        URI     = $asset.browser_download_url
+                    }
+                    Write-Output -InputObject $PSObject
+                }
+            }
         }
     }
 }
@@ -129,6 +200,44 @@ function Get-1Password7 {
     Write-Output -InputObject $PSObject
 }
 
+function Get-1Password8x64 {
+    try {
+        $params = @{
+            Uri             = "https://app-updates.agilebits.com/check/2/12.5.0/x64/OPM8/en/80700203/A1/N"
+            UseBasicParsing = $true
+            ErrorAction     = "SilentlyContinue"
+        }
+        $response = Invoke-RestMethod @params
+    }
+    catch {
+        throw $_
+    }
+    $PSObject = [PSCustomObject]@{
+        Version = $response.version
+        URI     = ($response.sources | Select-Object -Index (Get-Random -Minimum 0 -Maximum 2)).url
+    }
+    Write-Output -InputObject $PSObject
+}
+
+function Get-1Password8ARM {
+    try {
+        $params = @{
+            Uri             = "https://app-updates.agilebits.com/check/2/12.5.0/aarch64/OPM8/en/80700203/A1/N"
+            UseBasicParsing = $true
+            ErrorAction     = "SilentlyContinue"
+        }
+        $response = Invoke-RestMethod @params
+    }
+    catch {
+        throw $_
+    }
+    $PSObject = [PSCustomObject]@{
+        Version = $response.version
+        URI     = ($response.sources | Select-Object -Index (Get-Random -Minimum 0 -Maximum 2)).url
+    }
+    Write-Output -InputObject $PSObject
+}
+
 function Get-AdobeReader {
     try {
         $params = @{
@@ -147,6 +256,10 @@ function Get-AdobeReader {
         URI     = "https://ardownload2.adobe.com/pub/adobe/reader/mac/AcrobatDC/$Version/AcroRdrDC_$($Version)_MUI.dmg"
     }
     Write-Output -InputObject $PSObject
+}
+
+function Get-Handbrake {
+    Get-GitHubRepoRelease -Uri "https://api.github.com/repos/handbrake/handbrake/releases/latest" | Where-Object { $_.URI -notmatch "CLI" }
 }
 
 function Get-CitrixWorkspaceApp {
@@ -201,8 +314,10 @@ function Get-Zoom {
 #endregion
 
 Save-File -Path $Path -Object $(Get-1Password7)
+Save-File -Path $Path -Object $(Get-1Password8ARM)
 Save-File -Path $Path -Object $(Get-CitrixWorkspaceApp)
 Save-File -Path $Path -Object $(Get-MicrosoftTeams)
 Save-File -Path $Path -Object $(Get-Zoom)
 $Dmg = Save-File -Path $Path -Object $(Get-AdobeReader)
 Expand-Dmg -Path $Dmg -PkgFile "AcroRdr*.pkg"
+Save-File -Path $Path -Object $(Get-Handbrake)
