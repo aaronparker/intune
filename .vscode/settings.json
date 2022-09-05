@@ -11,6 +11,7 @@
         "HKEY",
         "ICONURI",
         "LICENSEURI",
+        "notin",
         "notlike",
         "PRIVATEDATA",
         "PROJECTURI",
@@ -20,5 +21,6 @@
         "stpydeviceause",
         "tzautoupdate",
         "Wordpad"
-    ]
+    ],
+    "pester.autoRunOnSave": false
 }
