@@ -23,6 +23,7 @@ $params = @{
 }
 $Property = Get-ItemProperty @params
 if ($Property.$Name -eq $Value) {
+    Start-Service -Name "tzautoupdate"
     return 0
 }
 else {
