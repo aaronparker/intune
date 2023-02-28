@@ -1,0 +1,32 @@
+{
+    "Rules": [
+        {
+            "SettingName": "CiscoAMPServiceStatus",
+            "Operator": "IsEquals",
+            "DataType": "String",
+            "Operand": "Running",
+            "MoreInfoUrl": "https://www.cisco.com/site/us/en/products/security/endpoint-security/secure-endpoint/index.html",
+            "RemediationStrings": [
+                {
+                    "Language": "en_US",
+                    "Title": "The Cisco Secure Endpoint service must be started. The service was not found or not started.",
+                    "Description": "The Cisco Secure Endpoint service must be started."
+                }
+            ]
+        },
+        {
+            "SettingName": "CiscoOrbitalServiceStatus",
+            "Operator": "IsEquals",
+            "DataType": "String",
+            "Operand": "Running",
+            "MoreInfoUrl": "https://www.cisco.com/site/us/en/products/security/endpoint-security/secure-endpoint/index.html",
+            "RemediationStrings": [
+                {
+                    "Language": "en_US",
+                    "Title": "The Cisco AMP Orbital service must be started. The service was not found or not started.",
+                    "Description": "The Cisco AMP Orbital service must be started."
+                }
+            ]
+        }
+    ]
+}
