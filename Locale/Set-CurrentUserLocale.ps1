@@ -14,13 +14,13 @@
 #>
 [CmdletBinding()]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification = "Output required by Proactive Remediations.")]
-Param (
+param (
     [System.String] $Locale = "en-AU",
     [System.String] $Path = "$env:Temp"
 )
 
 # Select the locale
-Switch ($Locale) {
+switch ($Locale) {
     "en-US" {
         # United States
         $GeoId = 244
@@ -87,7 +87,7 @@ try {
 }
 catch {
     Write-Error -Message $_.Exception.Message
-    Exit 1
+    exit 1
 }
 
 try {
@@ -97,7 +97,7 @@ try {
 }
 catch {
     Write-Error -Message $_.Exception.Message
-    Exit 1
+    exit 1
 }
 
 try {
@@ -105,9 +105,9 @@ try {
 }
 catch {
     Write-Error -Message $_.Exception.Message
-    Exit 1
+    exit 1
 }
 
 # All settings are good exit cleanly
 Write-Host "Set regional settings to $Locale and $Timezone."
-Exit 0
+exit 0

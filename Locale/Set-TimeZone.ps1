@@ -8,9 +8,8 @@ param (
 )
 try {
     Set-Timezone -Name $TimeZone
+    exit 0
 }
 catch {
-    Return 1
-    Break
+    exit 1
 }
-Return 0
