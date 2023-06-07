@@ -1,6 +1,7 @@
 <#
     .SYNOPSIS
         Delete Microsoft Store apps in an Intune tenant
+        Pass output from Get-MicrosoftStoreApps.ps1 or Get-MicrosoftStoreForBusinessApps.ps1
 
     .NOTES
 

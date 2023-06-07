@@ -59,5 +59,5 @@ process {
         ErrorAction = "Stop"
     }
     $StoreForBusinessApps = Invoke-RestMethod @params
-    $StoreForBusinessApps.value | Select-Object -Property "displayName", "id", @{ Name = "PackageIdentifier"; Expression = {($_.productKey -split "/")[0] }}, "isAssigned", "isFeatured"
+    $StoreForBusinessApps.value | Select-Object -Property "displayName", "id", @{ Name = "PackageIdentifier"; Expression = {($_.productKey -split "/")[0] }}, "isAssigned", "isFeatured", '@odata.type'
 }

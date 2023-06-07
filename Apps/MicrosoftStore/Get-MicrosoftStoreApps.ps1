@@ -58,7 +58,6 @@ process {
         Headers     = $authHeader
         ErrorAction = "Stop"
     }
-    Invoke-RestMethod @params
-    #$StoreForBusinessApps = Invoke-RestMethod @params
-    #$StoreForBusinessApps.value | Select-Object -Property "displayName", "id", @{ Name = "PackageIdentifier"; Expression = {($_.productKey -split "/")[0] }}, "isAssigned", "isFeatured"
+    $StoreApps = Invoke-RestMethod @params
+    $StoreApps.value | Select-Object -Property "displayName", "id", "PackageIdentifier", "isAssigned", "isFeatured", '@odata.type'
 }
