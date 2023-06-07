@@ -1,6 +1,10 @@
 <#
     .SYNOPSIS
-        Import Microsoft Store apps into Intune with an icon
+        Import Microsoft Store apps from JSON definition into Intune with an icon
+
+        Export JSON definitions from an existing tenant with:
+
+        .\Get-MicrosoftStoreForBusinessApps.ps1 | % { $_ | .\Get-MobileAppAssignments.ps1 | Out-File -FilePath ".\$($_.DisplayName).json" }
 
     .NOTES
         Original code sourced from:

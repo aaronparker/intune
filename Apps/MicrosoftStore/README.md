@@ -28,4 +28,9 @@ We can then import these applications into the new Microsoft Store app format in
 Get-ChildItem -Path "*.json" -Exclude "auth.json" | .\Import-MicrosoftStoreAppsFromJson.ps1
 ```
 
-Once complete, you can then delete the Microsoft Store for Business Apps.
+Once complete, you can then delete the Microsoft Store for Business Apps (use `-Confirm:false` to actually delete the apps):
+
+```powershell
+$Apps = .\Get-MicrosoftStoreForBusinessApps.ps1
+$Apps | .\Remove-MobileApp.ps1 -WhatIf
+```

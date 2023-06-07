@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Import Microsoft Store apps into Intune with an icon
+        Import Microsoft Store apps from a simple CSV file into Intune with an icon
 
     .NOTES
         Original code sourced from:
