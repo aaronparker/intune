@@ -83,10 +83,10 @@ process {
         #region Import the app into Intune
         $appBody = @{
             '@odata.type'         = "#microsoft.graph.winGetApp"
-            description           = $appInfo.Description
+            description           = $appInfo.ShortDescription
             developer             = $appInfo.Publisher
             displayName           = $appInfo.packageName
-            informationUrl        = if ($appInfo.PublisherSupportUrl -match "^http") { $appInfo.PublisherSupportUrl } else { "https://$($appInfo.PublisherSupportUrl)" }
+            informationUrl        = if ([System.String]::IsNullOrEmpty($appInfo.PublisherSupportUrl)) { $null } elseif ($appInfo.PublisherSupportUrl -match "^http") {$appInfo.PublisherSupportUrl } else { "https://$($appInfo.PublisherSupportUrl)" }
             largeIcon             = @{
                 "@odata.type" = "#microsoft.graph.mimeContent"
                 "type"        = "image/png"
@@ -96,8 +96,8 @@ process {
                 runAsAccount = $appInstaller[-1].scope
             }
             isFeatured            = $App.isFeatured 
-            packageIdentifier     = $appManifest.Data.PackageIdentifier
-            privacyInformationUrl = if ($appInfo.PrivacyUrl -match "^http") { $appInfo.PrivacyUrl } else { "https://$($appInfo.PrivacyUrl)" }
+            packageIdentifier      = $appManifest.Data.PackageIdentifier
+            privacyInformationUrl = if ([System.String]::IsNullOrEmpty($appInfo.PrivacyUrl)) { $null } elseif ($appInfo.PrivacyUrl -match "^http") { $appInfo.PrivacyUrl } else { "https://$($appInfo.PrivacyUrl)" }
             publisher             = $appInfo.publisher
             repositoryType        = "microsoftStore"
             roleScopeTagIds       = @()
@@ -106,74 +106,75 @@ process {
             Uri         = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps"
             Method      = "POST"
             Headers     = $authHeader
+            ContentType = "application/json"
             Body        = $appBody
             ErrorAction = "Stop"
         }
         Write-Msg -Msg "Import the application into Microsoft Intune."
         $appDeploy = Invoke-RestMethod @params
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 3 #Wait for the application to be imported. There's a better way to do this
         #endregion
 
         #region Configure the app assignment
-        $mobileAppAssignments = @()
-        foreach ($Assignment in $App.Assignments) {
-            switch ($Assignment.target.'@odata.type') {
-                "#microsoft.graph.groupAssignmentTarget" {
-                    $mobileAppAssignments += @{
-                        "@odata.type" = "#microsoft.graph.mobileAppAssignment"
-                        target        = @{
-                            "@odata.type" = "#microsoft.graph.groupAssignmentTarget"
-                            "groupId"     = $Assignment.target.groupId
+        if ($App.Assignments.Count -gt 0) {
+            $mobileAppAssignments = @()
+            foreach ($Assignment in $App.Assignments) {
+                switch ($Assignment.target.'@odata.type') {
+                    "#microsoft.graph.groupAssignmentTarget" {
+                        $mobileAppAssignments += @{
+                            "@odata.type" = "#microsoft.graph.mobileAppAssignment"
+                            target        = @{
+                                "@odata.type" = "#microsoft.graph.groupAssignmentTarget"
+                                "groupId"     = $Assignment.target.groupId
+                            }
+                            intent        = $Assignment.intent
+                            settings      = @{
+                                "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
+                                notifications        = "hideAll"
+                                installTimeSettings = $null
+                                restartSettings     = $null
+                            }
                         }
-                        intent        = $Assignment.intent
-                        settings      = @{
-                            "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
-                            notifications       = "hideAll"
-                            installTimeSettings = $null
-                            restartSettings     = $null
-                        }
+                        Write-Msg -Msg "Add assignment - 'Azure AD group'."
                     }
-                    Write-Msg -Msg "Add assignment - 'Azure AD group'."
-                }
-                "#microsoft.graph.allDevicesAssignmentTarget" {
-                    $mobileAppAssignments += @{
-                        "@odata.type" = "#microsoft.graph.mobileAppAssignment"
-                        target        = @{
-                            "@odata.type" = "#microsoft.graph.allDevicesAssignmentTarget"
+                    "#microsoft.graph.allDevicesAssignmentTarget" {
+                        $mobileAppAssignments += @{
+                            "@odata.type" = "#microsoft.graph.mobileAppAssignment"
+                            target        = @{
+                                "@odata.type" = "#microsoft.graph.allDevicesAssignmentTarget"
+                            }
+                            intent        = $Assignment.intent
+                            settings      = @{
+                                "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
+                                notifications        = "hideAll"
+                                installTimeSettings = $null
+                                restartSettings     = $null
+                            }
                         }
-                        intent        = $Assignment.intent
-                        settings      = @{
-                            "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
-                            notifications       = "hideAll"
-                            installTimeSettings = $null
-                            restartSettings     = $null
-                        }
+                        Write-Msg -Msg "Add assignment - 'All Devices'."
                     }
-                    Write-Msg -Msg "Add assignment - 'All Devices'."
-                }
-                "#microsoft.graph.allLicensedUsersAssignmentTarget" {
-                    $mobileAppAssignments += @{
-                        "@odata.type" = "#microsoft.graph.mobileAppAssignment"
-                        target        = @{
-                            "@odata.type" = "#microsoft.graph.allLicensedUsersAssignmentTarget"
+                    "#microsoft.graph.allLicensedUsersAssignmentTarget" {
+                        $mobileAppAssignments += @{
+                            "@odata.type" = "#microsoft.graph.mobileAppAssignment"
+                            target        = @{
+                                "@odata.type" = "#microsoft.graph.allLicensedUsersAssignmentTarget"
+                            }
+                            intent        = $Assignment.intent
+                            settings      = @{
+                                "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
+                                notifications        = "hideAll"
+                                installTimeSettings = $null
+                                restartSettings     = $null
+                            }
                         }
-                        intent        = $Assignment.intent
-                        settings      = @{
-                            "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
-                            notifications       = "hideAll"
-                            installTimeSettings = $null
-                            restartSettings     = $null
-                        }
+                        Write-Msg -Msg "Add assignment - 'All Users'."
                     }
-                    Write-Msg -Msg "Add assignment - 'All Users'."
+                    default {
+                        Write-Msg -Msg "Assignment type not found or not supported."
+                    }
                 }
-                default {
-                    Write-Msg -Msg "Assignment type not found or not supported."
-                }
-            }
 
-            # Add the assignment
-            if ($mobileAppAssignments.Count -gt 0) {
+                # Add the assignments
                 $assignBody = @{
                     mobileAppAssignments = $mobileAppAssignments
                 } | ConvertTo-Json -Depth 8 -ErrorAction "Stop"

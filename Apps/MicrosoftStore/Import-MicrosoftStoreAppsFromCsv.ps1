@@ -129,6 +129,7 @@ process {
         }
         Write-Msg -Msg "Import the application into Microsoft Intune."
         $appDeploy = Invoke-RestMethod @params
+        Start-Sleep -Seconds 3 #Wait for the application to be imported. There's a better way to do this
         #endregion
 
         #region Configure the app assignment
