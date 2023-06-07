@@ -3,7 +3,7 @@
         Import Microsoft Store apps into Intune with an icon
 
     .NOTES
-        Original code source from:
+        Original code sourced from:
         https://www.rozemuller.com/add-microsoft-store-app-with-icon-into-intune-automated/
         https://github.com/srozemuller/MicrosoftEndpointManager/blob/main/Deployment/Applications/deploy-win-store-app.ps1
 #>
@@ -30,7 +30,7 @@ begin {
     $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
 
     # Read the secrets file
-    Write-Msg -Msg "Import secrets from '$AuthFile'"
+    Write-Msg -Msg "Import secrets from '$AuthFile'."
     $Secrets = Get-Content -Path $AuthFile | ConvertFrom-Json
 
     #region Authenticate to the Microsoft Graph
@@ -46,7 +46,7 @@ begin {
         Body        = $body
         ErrorAction = "Stop"
     }
-    Write-Msg -Msg "Authenticate to the Microsoft Graph"
+    Write-Msg -Msg "Authenticate to the Microsoft Graph.`r`n"
     $connect = Invoke-RestMethod @params
 
     $authHeader = @{
@@ -56,13 +56,13 @@ begin {
     #endregion
 
     # Read apps list
-    Write-Msg -Msg "Import applications list from '$AppList'"
+    Write-Msg -Msg "Import applications list from '$AppList'.`r`n"
     $Apps = Import-Csv -Path $AppList -ErrorAction "Stop"
 }
 
 process {
     foreach ($App in $Apps) {
-        Write-Msg -Msg "Importing application: '$($App.DisplayName)'"
+        Write-Msg -Msg "Importing application: '$($App.DisplayName)'."
 
         #region Search for the app
         $body = @{
@@ -78,13 +78,13 @@ process {
             Body        = $body
             ErrorAction = "Stop"
         }
-        Write-Msg -Msg "Perform application search in the Microsoft Store"
+        Write-Msg -Msg "Perform application search in the Microsoft Store."
         $appSearch = Invoke-RestMethod @params
         $exactApp = $appSearch.Data | Where-Object { $_.PackageName -eq $App.DisplayName }
         #endregion
 
         #region Get details for the app
-        Write-Msg -Msg "Perform application manifest search in the Microsoft Store"
+        Write-Msg -Msg "Perform application manifest search in the Microsoft Store."
         $appUrl = "https://storeedgefd.dsx.mp.microsoft.com/v9.0/packageManifests/{0}" -f $exactApp.PackageIdentifier
         $app = Invoke-RestMethod -Uri $appUrl -Method "GET" -ErrorAction "Stop"
         $appInfo = $app.Data.Versions[-1].DefaultLocale
@@ -92,7 +92,7 @@ process {
         #endregion
 
         #region Get the icon for the app
-        Write-Msg -Msg "Get the icon for this application"
+        Write-Msg -Msg "Get the icon for this application."
         $imageUrl = "https://apps.microsoft.com/store/api/ProductsDetails/GetProductDetailsById/{0}?hl=en-US&gl=US" -f $exactApp.PackageIdentifier
         $image = Invoke-RestMethod -Uri $imageUrl -Method "GET" -ErrorAction "Stop"
         $base64Icon = [System.Convert]::ToBase64String((Invoke-WebRequest -Uri $image.IconUrl -ErrorAction "Stop").Content)
@@ -114,7 +114,7 @@ process {
                 runAsAccount = $appInstaller[-1].scope
             }
             isFeatured            = $false
-            packageIdentifier      = $app.Data.PackageIdentifier
+            packageIdentifier     = $app.Data.PackageIdentifier
             privacyInformationUrl = $appInfo.PrivacyUrl
             publisher             = $appInfo.publisher
             repositoryType        = "microsoftStore"
@@ -127,39 +127,73 @@ process {
             Body        = $appBody
             ErrorAction = "Stop"
         }
-        Write-Msg -Msg "Import the application into Microsoft Intune"
+        Write-Msg -Msg "Import the application into Microsoft Intune."
         $appDeploy = Invoke-RestMethod @params
         #endregion
 
-        <#
-        #region Configure an assignment
-        $assignUrl = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}/assign" -f $appDeploy.Id
-        $assignBody =
-        @{
-            mobileAppAssignments = @(
-                @{
-                    "@odata.type" = "#microsoft.graph.mobileAppAssignment"
-                    target        = @{
-                        "@odata.type" = "#microsoft.graph.allDevicesAssignmentTarget"
-                    }
-                    intent        = "Required"
-                    settings      = @{
-                        "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
-                        notifications       = "showAll"
-                        installTimeSettings = $null
-                        restartSettings     = $null
-                    }
-                }
-            )
-        } | ConvertTo-Json -Depth 8
-        Invoke-RestMethod -Uri $assignUrl -Method POST -Headers $authHeader -ContentType 'application/json' -Body $assignBody
-        #endregion
-        #>
+        #region Configure the app assignment
+        switch ($App.AssignmentTarget) {
+            "AllDevices" {
+                $assignBody = @{
+                    mobileAppAssignments = @(
+                        @{
+                            "@odata.type" = "#microsoft.graph.mobileAppAssignment"
+                            target        = @{
+                                "@odata.type" = "#microsoft.graph.allDevicesAssignmentTarget"
+                            }
+                            intent        = $App.AssignmentType
+                            settings      = @{
+                                "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
+                                notifications       = "hideAll"
+                                installTimeSettings = $null
+                                restartSettings     = $null
+                            }
+                        }
+                    )
+                } | ConvertTo-Json -Depth 8 -ErrorAction "Stop"
+                Write-Msg -Msg "Add assignment - 'All Devices'."
+            }
+            "AllUsers" {
+                $assignBody = @{
+                    mobileAppAssignments = @(
+                        @{
+                            "@odata.type" = "#microsoft.graph.mobileAppAssignment"
+                            target        = @{
+                                "@odata.type" = "#microsoft.graph.allLicensedUsersAssignmentTarget"
+                            }
+                            intent        = $App.AssignmentType
+                            settings      = @{
+                                "@odata.type"       = "#microsoft.graph.winGetAppAssignmentSettings"
+                                notifications       = "hideAll"
+                                installTimeSettings = $null
+                                restartSettings     = $null
+                            }
+                        }
+                    )
+                } | ConvertTo-Json -Depth 8 -ErrorAction "Stop"
+                Write-Msg -Msg "Add assignment - 'All Users'."
+            }
+            default {
+                Write-Msg -Msg "Assignment type not found or not supported."
+            }
+        }
 
-        Write-Msg -Msg "Application import complete"
+        # Add the assignment
+        $params = @{
+            Uri         = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}/assign" -f $appDeploy.Id
+            Method      = "POST"
+            Headers     = $authHeader
+            ContentType = "application/json"
+            Body        = $assignBody
+            ErrorAction = "Stop"
+        }
+        Invoke-RestMethod @params
+        #endregion
+
+        Write-Msg -Msg "Application import complete.`r`n"
     }
 }
 
 end {
-    Write-Msg -Msg "Script complete"
+    Write-Msg -Msg "Script complete."
 }
