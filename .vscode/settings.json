@@ -13,6 +13,7 @@
         "LICENSEURI",
         "notin",
         "notlike",
+        "odata",
         "PRIVATEDATA",
         "PROJECTURI",
         "RELEASENOTES",
