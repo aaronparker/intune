@@ -1,0 +1,24 @@
+{
+  "displayName": "Microsoft 365 (Office)",
+  "id": "126eaf42-4015-4c05-bef3-31bd225ee558",
+  "PackageIdentifier": "9WZDNCRD29V9",
+  "isAssigned": true,
+  "isFeatured": false,
+  "Assignments": [
+    {
+      "id": "acacacac-9df4-4c7d-9d50-4ef0226f57a9_0_0",
+      "intent": "available",
+      "source": "direct",
+      "sourceId": null,
+      "target": {
+        "@odata.type": "#microsoft.graph.allLicensedUsersAssignmentTarget",
+        "deviceAndAppManagementAssignmentFilterId": null,
+        "deviceAndAppManagementAssignmentFilterType": "none"
+      },
+      "settings": {
+        "@odata.type": "#microsoft.graph.microsoftStoreForBusinessAppAssignmentSettings",
+        "useDeviceContext": false
+      }
+    }
+  ]
+}
