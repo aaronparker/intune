@@ -62,7 +62,7 @@ begin {
 process {
     foreach ($Package in $Packages) {
         if ((Test-Path -Path $Package) -and $Package -match "\.pkg$") {
-            
+
             try {
                 # Convert the Pkg to IntuneMac format
                 $params = @{

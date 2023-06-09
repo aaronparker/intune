@@ -63,7 +63,7 @@ begin {
 
 process {
     foreach ($File in $AppList) {
-        
+
         # Read the file in the list and convert from JSON
         Write-Msg -Msg "Importing application files: '$($File.FullName)'."
         $App = Get-Content -Path $File.FullName -ErrorAction "Stop" | ConvertFrom-Json -ErrorAction "Stop"
@@ -99,7 +99,7 @@ process {
             installExperience     = @{
                 runAsAccount = $appInstaller[-1].scope
             }
-            isFeatured            = $App.isFeatured 
+            isFeatured            = $App.isFeatured
             packageIdentifier      = $appManifest.Data.PackageIdentifier
             privacyInformationUrl = if ([System.String]::IsNullOrEmpty($appInfo.PrivacyUrl)) { $null } elseif ($appInfo.PrivacyUrl -match "^http") { $appInfo.PrivacyUrl } else { "https://$($appInfo.PrivacyUrl)" }
             publisher             = $appInfo.publisher

@@ -25,7 +25,7 @@
 				<v3:AllowRemovableDrives/>
             </v2:FileExplorerNamespaceRestrictions>
             <StartLayout>
-                <![CDATA[<LayoutModificationTemplate 
+                <![CDATA[<LayoutModificationTemplate
 				xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout"
 				xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1"
 				xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">

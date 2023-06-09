@@ -43,7 +43,7 @@ process {
     foreach ($group in $csvGroups) {
 
         # Match any existing group with the same display name membership rule. This means that we can run this against any tenant
-        # Update to match against $_.Id if you want to ensure 
+        # Update to match against $_.Id if you want to ensure
         $matchingGroup = $ExistingGroups | Where-Object { $_.DisplayName -eq $group.DisplayName -and $_.MembershipRule -eq $group.MembershipRule }
         if ($matchingGroup) {
             Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
@@ -79,5 +79,5 @@ process {
                 Write-Output -InputObject $newGroup
             }
         }
-    }    
+    }
 }

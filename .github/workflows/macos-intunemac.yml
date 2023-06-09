@@ -2,8 +2,8 @@
 
 name: Package Adobe Acrobat Reader DC
 
-# Controls when the action will run. 
-on:  
+# Controls when the action will run.
+on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -75,7 +75,7 @@ jobs:
                 throw $_
             }
 
-            # Mount the Dmg 
+            # Mount the Dmg
             try {
                 if (Test-Path -Path $output) {
                     $RegEx = "\/Volumes.*"
@@ -100,7 +100,7 @@ jobs:
 
             # Convert the Pkg to IntuneMac format
             if (Test-Path -Path $NewPackage) {
-                
+
                 New-Item -Path $NewPackage -ItemType "Directory" -ErrorAction "SilentlyContinue"
                 Write-Host "Execute: ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version" -ForegroundColor "Cyan"
                 ~/intune/IntuneAppUtil -c $Package -o $Path -v -n $version
