@@ -34,3 +34,11 @@ Once complete, you can then delete the Microsoft Store for Business Apps (use `-
 $Apps = .\Get-MicrosoftStoreForBusinessApps.ps1
 $Apps | .\Remove-MobileApp.ps1 -WhatIf
 ```
+
+## Import Microsoft Store apps
+
+`Import-MicrosoftStoreAppsFromCsv.ps1` can be used to import a list of Microsoft Store apps into an Intune tenant. This script takes a simple CSV file as input that includes the package display name and identifier, and a single assignment per app. This will then import the list of apps and configure the assignments.
+
+```powershell
+.\Import-MicrosoftStoreAppsFromCsv.ps1 -AppList .\StoreApps.csv
+```
