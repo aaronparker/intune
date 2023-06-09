@@ -1,0 +1,5 @@
+DisplayName,MembershipRule,Description
+"DeviceCollection-Disabled",(device.accountEnabled -eq False),Disabled devices
+"DeviceCollection-VirtualMachine","(device.deviceManufacturer -startsWith ""Parallels"") or (device.deviceManufacturer -startsWith ""VMware"") or (device.deviceModel -eq ""Virtual Machine"") or (device.deviceModel -eq ""VirtualBox"")",Virtual machines
+"DeviceCollection-WindowsCorporate","(device.accountEnabled -eq true) and (device.deviceOSType -startsWith ""Windows"") and (device.deviceOSVersion -startsWith ""10.0"") and (device.deviceOwnership -eq ""Company"")","All corporate-owned Windows PCs of any management type"
+"DeviceCollection-WindowsAutoilotEnabled","(device.devicePhysicalIDs -any _ -contains ""[ZTDId]"")",All Windows Autopilot enabled devices

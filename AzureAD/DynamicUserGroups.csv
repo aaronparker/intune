@@ -1,0 +1,2 @@
+DisplayName,MembershipRule,Description,PhotoUrl
+"Microsoft 365 Users","((user.objectId -ne null) -and (user.userType -eq ""Member"") -and (user.accountEnabled -eq true)) -and (user.userPrincipalName -contains ""@cloud.stealthpuppy.com"")","Enabled user accounts (excluding guests) within specific domains will automatically receive a Microsoft 365 E3 license","https://raw.githubusercontent.com/aaronparker/icons/main/groups/m365.png"

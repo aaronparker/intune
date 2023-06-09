@@ -1,7 +1,7 @@
 #Requires -Modules Microsoft.Graph
 <#
     .SYNOPSIS
-        Creates Azure AD dynamic groups from definitions listed in an external CSV file.
+        Creates Azure AD dynamic security groups from definitions listed in an external CSV file.
         Requires external authentication to the tenant before executing the script.
 
         Authenticate to the target tenant with:
@@ -26,7 +26,7 @@ param (
             if ($_ -notmatch "(\.csv)") { throw "The file specified in the path argument must be either of type CSV." }
             return $true
         })]
-    [System.IO.FileInfo] $Path = (Join-Path -Path $PSScriptRoot -ChildPath "AzureADDynamicGroups.csv")
+    [System.IO.FileInfo] $Path = (Join-Path -Path $PSScriptRoot -ChildPath "DynamicDeviceGroups.csv")
 )
 
 begin {}
@@ -42,8 +42,9 @@ process {
     # Step through each group from the CSV file
     foreach ($group in $csvGroups) {
 
-        # Match any existing group with the same membership rule
-        $matchingGroup = $ExistingGroups | Where-Object { $_.MembershipRule -eq $group.MembershipRule }
+        # Match any existing group with the same display name membership rule. This means that we can run this against any tenant
+        # Update to match against $_.Id if you want to ensure 
+        $matchingGroup = $ExistingGroups | Where-Object { $_.DisplayName -eq $group.DisplayName -and $_.MembershipRule -eq $group.MembershipRule }
         if ($matchingGroup) {
             Write-Warning -Message "Skipping import - Membership rule for $($group.DisplayName) matches existing group $($matchingGroup.DisplayName)."
 
