@@ -64,37 +64,16 @@ process {
     foreach ($App in $Apps) {
         Write-Msg -Msg "Importing application: '$($App.DisplayName)'."
 
-        #region Search for the app
-        # $body = @{
-        #     Query = @{
-        #         KeyWord   = $App.DisplayName
-        #         MatchType = "Substring"
-        #     }
-        # } | ConvertTo-Json -ErrorAction "Stop"
-        # $params = @{
-        #     Uri         = "https://storeedgefd.dsx.mp.microsoft.com/v9.0/manifestSearch"
-        #     Method      = "POST"
-        #     ContentType = "application/json"
-        #     Body        = $body
-        #     ErrorAction = "Stop"
-        # }
-        # Write-Msg -Msg "Perform application search in the Microsoft Store."
-        # $appSearch = Invoke-RestMethod @params
-        # $exactApp = $appSearch.Data | Where-Object { $_.PackageName -eq $App.DisplayName }
-        #endregion
-
         #region Get details for the app
         Write-Msg -Msg "Perform application manifest search in the Microsoft Store."
-        # $appUrl = "https://storeedgefd.dsx.mp.microsoft.com/v9.0/packageManifests/{0}" -f $exactApp.PackageIdentifier
         $appUrl = "https://storeedgefd.dsx.mp.microsoft.com/v9.0/packageManifests/{0}" -f $App.PackageIdentifier
         $appManifest = Invoke-RestMethod -Uri $appUrl -Method "GET" -ErrorAction "Stop"
         $appInfo = $appManifest.Data.Versions[-1].DefaultLocale
-        $appInstaller = $appManifest.Data.Versions[-1].Installers
+        #$appInstaller = $appManifest.Data.Versions[-1].Installers
         #endregion
 
         #region Get the icon for the app
         Write-Msg -Msg "Get the icon for this application."
-        # $imageUrl = "https://apps.microsoft.com/store/api/ProductsDetails/GetProductDetailsById/{0}?hl=en-US&gl=US" -f $exactApp.PackageIdentifier
         $imageUrl = "https://apps.microsoft.com/store/api/ProductsDetails/GetProductDetailsById/{0}?hl=en-US&gl=US" -f $App.PackageIdentifier
         $image = Invoke-RestMethod -Uri $imageUrl -Method "GET" -ErrorAction "Stop"
         $base64Icon = [System.Convert]::ToBase64String((Invoke-WebRequest -Uri $image.IconUrl -ErrorAction "Stop").Content)
@@ -113,7 +92,8 @@ process {
                 "value"       = $base64Icon
             }
             installExperience     = @{
-                runAsAccount = $appInstaller[-1].scope
+                #runAsAccount = $appInstaller[-1].scope
+                runAsAccount = $App.InstallAs
             }
             isFeatured            = $false
             packageIdentifier     = $appManifest.Data.PackageIdentifier
@@ -131,7 +111,7 @@ process {
         }
         Write-Msg -Msg "Import the application into Microsoft Intune."
         $appDeploy = Invoke-RestMethod @params
-        Start-Sleep -Seconds 3 #Wait for the application to be imported. There's a better way to do this
+        Start-Sleep -Seconds 3 # Wait for the application to be imported. Avoids having to make a call back to the API to check on import status
         #endregion
 
         #region Configure the app assignment
