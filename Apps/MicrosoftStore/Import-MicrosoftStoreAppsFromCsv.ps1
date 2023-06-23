@@ -13,7 +13,10 @@ param (
     [System.String] $AuthFile = "$PSScriptRoot\auth.json",
 
     [Parameter()]
-    [System.String] $AppList = "$PSScriptRoot\StoreApps.csv"
+    [System.String] $AppList = "$PSScriptRoot\StoreApps.csv",
+
+    [Parameter()]
+    [System.Management.Automation.SwitchParameter] $AddAssignment
 )
 
 begin {
@@ -31,29 +34,34 @@ begin {
 
     # Read the secrets file
     Write-Msg -Msg "Import secrets from '$AuthFile'."
-    $Secrets = Get-Content -Path $AuthFile | ConvertFrom-Json
+    $Secrets = Get-Content -Path $AuthFile -ErrorAction "Stop" | ConvertFrom-Json -ErrorAction "Stop"
 
-    #region Authenticate to the Microsoft Graph
-    $body = @{
-        grant_Type    = "client_credentials"
-        scope         = "https://graph.microsoft.com/.default"
-        client_Id     = $Secrets.ClientId
-        client_Secret = $Secrets.ClientSecret
-    }
-    $params = @{
-        Uri         = "https://login.microsoftonline.com/{0}/oauth2/v2.0/token" -f $Secrets.TenantId
-        Method      = "POST"
-        Body        = $body
-        ErrorAction = "Stop"
-    }
-    Write-Msg -Msg "Authenticate to the Microsoft Graph.`r`n"
-    $connect = Invoke-RestMethod @params
+    try {
+        #region Authenticate to the Microsoft Graph
+        $body = @{
+            grant_Type    = "client_credentials"
+            scope         = "https://graph.microsoft.com/.default"
+            client_Id     = $Secrets.ClientId
+            client_Secret = $Secrets.ClientSecret
+        }
+        $params = @{
+            Uri         = "https://login.microsoftonline.com/{0}/oauth2/v2.0/token" -f $Secrets.TenantId
+            Method      = "POST"
+            Body        = $body
+            ErrorAction = "Stop"
+        }
+        Write-Msg -Msg "Authenticate to the Microsoft Graph.`r`n"
+        $connect = Invoke-RestMethod @params
 
-    $authHeader = @{
-        'Content-Type' = 'application/json'
-        Authorization  = 'Bearer ' + $connect.access_token
+        $authHeader = @{
+            'Content-Type' = 'application/json'
+            Authorization  = 'Bearer ' + $connect.access_token
+        }
+        #endregion
     }
-    #endregion
+    catch {
+        throw $_
+    }
 
     # Read apps list
     Write-Msg -Msg "Import applications list from '$AppList'.`r`n"
@@ -62,14 +70,13 @@ begin {
 
 process {
     foreach ($App in $Apps) {
-        Write-Msg -Msg "Importing application: '$($App.DisplayName)'."
+        Write-Msg -Msg "Importing application: '$($App.DisplayName), $($App.PackageIdentifier)'."
 
         #region Get details for the app
         Write-Msg -Msg "Perform application manifest search in the Microsoft Store."
         $appUrl = "https://storeedgefd.dsx.mp.microsoft.com/v9.0/packageManifests/{0}" -f $App.PackageIdentifier
         $appManifest = Invoke-RestMethod -Uri $appUrl -Method "GET" -ErrorAction "Stop"
         $appInfo = $appManifest.Data.Versions[-1].DefaultLocale
-        #$appInstaller = $appManifest.Data.Versions[-1].Installers
         #endregion
 
         #region Get the icon for the app
@@ -92,7 +99,6 @@ process {
                 "value"       = $base64Icon
             }
             installExperience     = @{
-                #runAsAccount = $appInstaller[-1].scope
                 runAsAccount = $App.InstallAs
             }
             isFeatured            = $false
@@ -110,6 +116,7 @@ process {
             ErrorAction = "Stop"
         }
         Write-Msg -Msg "Import the application into Microsoft Intune."
+        if ($appManifest.Data.Versions.Installers[-1].Scope -ne $App.InstallAs) { Write-Msg -Msg "Changing install as from '$($appManifest.Data.Versions.Installers[-1].Scope)' to '$(App.InstallAs)'" }
         $appDeploy = Invoke-RestMethod @params
         Start-Sleep -Seconds 3 # Wait for the application to be imported. Avoids having to make a call back to the API to check on import status
         #endregion
