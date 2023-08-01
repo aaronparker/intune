@@ -1,0 +1,24 @@
+{
+  "displayName": "HEIF Image Extensions",
+  "id": "1dc3d032-5eb9-4d14-bc36-1720a63b3ca2",
+  "PackageIdentifier": "9PMMSR1CGPWG",
+  "isAssigned": true,
+  "isFeatured": false,
+  "Assignments": [
+    {
+      "id": "adadadad-808e-44e2-905a-0b7873a8a531_1_0",
+      "intent": "required",
+      "source": "direct",
+      "sourceId": null,
+      "target": {
+        "@odata.type": "#microsoft.graph.allDevicesAssignmentTarget",
+        "deviceAndAppManagementAssignmentFilterId": null,
+        "deviceAndAppManagementAssignmentFilterType": "none"
+      },
+      "settings": {
+        "@odata.type": "#microsoft.graph.microsoftStoreForBusinessAppAssignmentSettings",
+        "useDeviceContext": false
+      }
+    }
+  ]
+}

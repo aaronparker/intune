@@ -1,0 +1,24 @@
+{
+  "displayName": "Microsoft Accessory Center",
+  "id": "0769319c-ff0e-4503-8594-06ffcf72459d",
+  "PackageIdentifier": "9N013P0KR5VX",
+  "isAssigned": true,
+  "isFeatured": false,
+  "Assignments": [
+    {
+      "id": "acacacac-9df4-4c7d-9d50-4ef0226f57a9_0_0",
+      "intent": "available",
+      "source": "direct",
+      "sourceId": null,
+      "target": {
+        "@odata.type": "#microsoft.graph.allLicensedUsersAssignmentTarget",
+        "deviceAndAppManagementAssignmentFilterId": null,
+        "deviceAndAppManagementAssignmentFilterType": "none"
+      },
+      "settings": {
+        "@odata.type": "#microsoft.graph.microsoftStoreForBusinessAppAssignmentSettings",
+        "useDeviceContext": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "displayName": "Windows Clock",
+  "id": "2e4cc2e2-77b6-458b-9e7c-f4c98ff0da93",
+  "PackageIdentifier": "9WZDNCRFJ3PR",
+  "isAssigned": true,
+  "isFeatured": false,
+  "Assignments": [
+    {
+      "id": "acacacac-9df4-4c7d-9d50-4ef0226f57a9_0_0",
+      "intent": "available",
+      "source": "direct",
+      "sourceId": null,
+      "target": {
+        "@odata.type": "#microsoft.graph.allLicensedUsersAssignmentTarget",
+        "deviceAndAppManagementAssignmentFilterId": null,
+        "deviceAndAppManagementAssignmentFilterType": "none"
+      },
+      "settings": {
+        "@odata.type": "#microsoft.graph.microsoftStoreForBusinessAppAssignmentSettings",
+        "useDeviceContext": false
+      }
+    },
+    {
+      "id": "adadadad-808e-44e2-905a-0b7873a8a531_1_0",
+      "intent": "required",
+      "source": "direct",
+      "sourceId": null,
+      "target": {
+        "@odata.type": "#microsoft.graph.allDevicesAssignmentTarget",
+        "deviceAndAppManagementAssignmentFilterId": null,
+        "deviceAndAppManagementAssignmentFilterType": "none"
+      },
+      "settings": {
+        "@odata.type": "#microsoft.graph.microsoftStoreForBusinessAppAssignmentSettings",
+        "useDeviceContext": false
+      }
+    }
+  ]
+}
