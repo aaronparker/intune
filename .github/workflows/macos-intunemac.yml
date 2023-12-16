@@ -107,7 +107,7 @@ jobs:
             }
 
       - name: Upload report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: acrobatreader-pkg
           path: ~/intune/AcroRdrDC_2200120142_MUI.pkg.intunemac
