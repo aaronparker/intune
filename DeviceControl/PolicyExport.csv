@@ -1,0 +1,45 @@
+DeviceControlsPolicy,Block Write and Execute Access but allow approved USBs,./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyRules/%7bc544a991-5786-2819-949e-a032cb790d0e%7d/RuleData,"""<PolicyRule Id=""""{c544a991-5786-2819-949e-a032cb790d0e}"""">
+    <!-- ./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyRules/%7bc544a991-5786-2819-949e-a032cb790d0e%7d/RuleData -->
+    <Name>Block Write and Execute Access but allow approved USBs</Name>
+    <IncludedIdList>
+        <GroupId>{9b28fae8-72f7-4267-a1a5-685f747a4345}</GroupId>
+    </IncludedIdList>
+    <ExcludedIdList>
+        <GroupId>{65fa649a-a111-4912-9294-fb6337a25038}</GroupId>
+    </ExcludedIdList>
+    <!-- Block read, write and excute -->
+    <Entry Id=""""{f8ddbbc5-8855-4776-a9f4-ee58c3a21414}"""">
+        <Type>Deny</Type>
+        <Options>0</Options>
+        <AccessMask>15</AccessMask>
+    </Entry>
+    <!-- Audit denied USB devices notify the user-->
+    <Entry Id=""""{7c518c86-38e5-40a9-86ee-e9f79f136817}"""">
+        <Type>AuditDenied</Type>
+        <Options>3</Options>
+        <AccessMask>15</AccessMask>
+    </Entry>
+    <!-- Audit approved USB devices-->
+    <Entry Id=""""{40617182-628e-46c4-9fca-ee1c027ac275}"""">
+        <Type>AuditAllowed</Type>
+        <Options>2</Options>
+        <AccessMask>15</AccessMask>
+    </Entry>
+</PolicyRule>"""
+AllowedRemovableDevices,List of approved storage devices,./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyGroups/%7b65fa649a-a111-4912-9294-fb6337a25038%7d/GroupData,<Group Id=""""{65fa649a-a111-4912-9294-fb6337a25038}"""">
+    <!-- ./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyGroups/%7b65fa649a-a111-4912-9294-fb6337a25038%7d/GroupData -->
+    <MatchType>MatchAny</MatchType>
+    <DescriptorIdList>
+        <!-- Test device; Aaron Parker -->
+        <InstancePathId>USBSTOR\DISK&amp;VEN_SANDISK&amp;PROD_ULTRA&amp;REV_1.00\4C530000180831119300*</InstancePathId>
+    </DescriptorIdList>
+</Group>
+BlockedStorageDevices,Block removable storage devices,./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyGroups/%7b9b28fae8-72f7-4267-a1a5-685f747a4345%7d/GroupData,<Group Id=""""{9b28fae8-72f7-4267-a1a5-685f747a4345}"""">
+    <!-- ./Vendor/MSFT/Defender/Configuration/DeviceControl/PolicyGroups/%7b9b28fae8-72f7-4267-a1a5-685f747a4345%7d/GroupData -->
+    <MatchType>MatchAny</MatchType>
+    <DescriptorIdList>
+        <PrimaryId>RemovableMediaDevices</PrimaryId>
+        <PrimaryId>CdRomDevices</PrimaryId>
+        <PrimaryId>WpdDevices</PrimaryId>
+    </DescriptorIdList>
+</Group>
