@@ -17,15 +17,15 @@ function Get-AzureBlobItem {
             The URL must include the List Container request URI. See https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2 for more information.
 
         .EXAMPLE
-            Get-AzureBlobItems -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
+            Get-AzureBlobItem -Uri "https://aaronparker.blob.core.windows.net/folder/?comp=list"
 
             Description:
             Returns the list of files from the supplied URL, with Name, URL, Size and Last Modified properties for each item.
     #>
-    [CmdletBinding(SupportsShouldProcess = $False)]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     [OutputType([System.Management.Automation.PSObject])]
     param (
-        [Parameter(ValueFromPipeline = $True, Mandatory = $True, HelpMessage = "Azure blob storage URL with List Containers request URI '?comp=list'.")]
+        [Parameter(ValueFromPipeline = $true, Mandatory = $true, HelpMessage = "Azure blob storage URL with List Containers request URI '?comp=list'.")]
         [ValidatePattern("^(http|https)://")]
         [System.String] $Uri
     )
@@ -34,13 +34,13 @@ function Get-AzureBlobItem {
     process {
         # Get response from Azure blog storage; Convert contents into usable XML, removing extraneous leading characters
         try {
-            $iwrParams = @{
+            $params = @{
                 Uri             = $Uri
-                UseBasicParsing = $True
+                UseBasicParsing = $true
                 ContentType     = "application/xml"
                 ErrorAction     = "Stop"
             }
-            $list = Invoke-WebRequest @iwrParams
+            $list = Invoke-WebRequest @params
         }
         catch [System.Net.WebException] {
             Write-Warning -Message ([System.String]::Format("Error : {0}", $_.Exception.Message))
@@ -50,7 +50,7 @@ function Get-AzureBlobItem {
             Write-Warning -Message "failed to download: $Uri."
             throw $_.Exception.Message
         }
-        if ($Null -ne $list) {
+        if ($null -ne $list) {
             [System.Xml.XmlDocument] $xml = $list.Content.Substring($list.Content.IndexOf("<?xml", 0))
 
             # Build an object with file properties to return on the pipeline
@@ -64,7 +64,7 @@ function Get-AzureBlobItem {
                 }
                 $fileList.Add($PSObject) | Out-Null
             }
-            if ($Null -ne $fileList) {
+            if ($null -ne $fileList) {
                 Write-Output -InputObject $fileList
             }
         }
